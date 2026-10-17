@@ -1,7 +1,7 @@
 {
   "format_version": "interventions-v1",
   "corridor_id": "ttc-505-west-broadview-tmu",
-  "price_year": 2025,
+  "price_year": 2026,
   "focus": "Extra service is the focus. Streetcar priority is optional: costs are filled in, its effect is not simulated yet.",
   "service": {
     "cycle_s": {
@@ -52,9 +52,9 @@
         "extra_vehicles": 3,
         "extra_vehicle_hours_per_year": 1882.5,
         "annual_operating_cad": {
-          "low": 314378,
-          "central": 519570,
-          "high": 818888
+          "low": 321908,
+          "central": 532748,
+          "high": 837712
         }
       },
       {
@@ -64,9 +64,9 @@
         "extra_vehicles": 8,
         "extra_vehicle_hours_per_year": 5020.0,
         "annual_operating_cad": {
-          "low": 838340,
-          "central": 1385520,
-          "high": 2183700
+          "low": 858420,
+          "central": 1420660,
+          "high": 2233900
         }
       },
       {
@@ -76,17 +76,17 @@
         "extra_vehicles": 14,
         "extra_vehicle_hours_per_year": 8785.0,
         "annual_operating_cad": {
-          "low": 1467095,
-          "central": 2424660,
-          "high": 3821475
+          "low": 1502235,
+          "central": 2486155,
+          "high": 3909325
         }
       }
     ],
     "default_headway_s": 300,
     "cost_per_hour_cad": {
-      "low": 167,
-      "central": 276,
-      "high": 435,
+      "low": 171,
+      "central": 283,
+      "high": 445,
       "selected": "central"
     },
     "applies_to": "whole 505 route",
@@ -111,15 +111,15 @@
     "saving_per_cycle_s": 217,
     "lane_cycle_s": 7703.0,
     "capital_cad": {
-      "low": 1888804,
-      "central": 3699833,
-      "high": 6863413,
+      "low": 1933666,
+      "central": 3787710,
+      "high": 7026429,
       "selected": "central"
     },
     "operating_cad_per_year": {
-      "low": 434647,
-      "central": 896460,
-      "high": 1358272,
+      "low": 444971,
+      "central": 917752,
+      "high": 1390533,
       "selected": "central"
     },
     "simulated": false
@@ -135,18 +135,18 @@
         "central": 0.0,
         "high": 0.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "no new vehicles purchased; spare fleet assumed",
         "unit": "CAD",
         "status": "assumed",
         "source_ids": []
       },
       "operating_cost": {
-        "low": 314378.0,
-        "central": 519570.0,
-        "high": 818888.0,
+        "low": 321908.0,
+        "central": 532748.0,
+        "high": 837712.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "3 extra cars x 2.5 h/day x 251 days",
         "unit": "CAD/year",
         "status": "assumed",
@@ -183,18 +183,18 @@
         "central": 0.0,
         "high": 0.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "no new vehicles purchased; spare fleet assumed",
         "unit": "CAD",
         "status": "assumed",
         "source_ids": []
       },
       "operating_cost": {
-        "low": 838340.0,
-        "central": 1385520.0,
-        "high": 2183700.0,
+        "low": 858420.0,
+        "central": 1420660.0,
+        "high": 2233900.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "8 extra cars x 2.5 h/day x 251 days",
         "unit": "CAD/year",
         "status": "assumed",
@@ -231,18 +231,18 @@
         "central": 0.0,
         "high": 0.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "no new vehicles purchased; spare fleet assumed",
         "unit": "CAD",
         "status": "assumed",
         "source_ids": []
       },
       "operating_cost": {
-        "low": 1467095.0,
-        "central": 2424660.0,
-        "high": 3821475.0,
+        "low": 1502235.0,
+        "central": 2486155.0,
+        "high": 3909325.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "14 extra cars x 2.5 h/day x 251 days",
         "unit": "CAD/year",
         "status": "assumed",
@@ -284,11 +284,11 @@
       ],
       "headway_s": null,
       "capital_cost": {
-        "low": 1888804.0,
-        "central": 3699833.0,
-        "high": 6863413.0,
+        "low": 1933666.0,
+        "central": 3787710.0,
+        "high": 7026429.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "King Street pilot, permanent and 2024 improvement costs; similar-project budgets, not a quote",
         "unit": "CAD",
         "status": "assumed",
@@ -301,11 +301,11 @@
         ]
       },
       "operating_cost": {
-        "low": 434647.0,
-        "central": 896460.0,
-        "high": 1358272.0,
+        "low": 444971.0,
+        "central": 917752.0,
+        "high": 1390533.0,
         "currency": "CAD",
-        "price_year": 2025,
+        "price_year": 2026,
         "scope": "King Street 2019 operating and maintenance, annualised; traffic-agent cost not included",
         "unit": "CAD/year",
         "status": "assumed",

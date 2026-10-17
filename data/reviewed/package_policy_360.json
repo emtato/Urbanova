@@ -6,21 +6,21 @@
   "peak_hours": 2.5,
   "service_days": 251,
   "cost_per_hour": {
-    "low": 167,
-    "central": 276,
-    "high": 435
+    "low": 171,
+    "central": 283,
+    "high": 445
   },
   "lane_capital": {
-    "low": 1888804,
-    "central": 3699833,
-    "high": 6863413
+    "low": 1933666,
+    "central": 3787710,
+    "high": 7026429
   },
   "lane_operating": {
-    "low": 434647,
-    "central": 896460,
-    "high": 1358272
+    "low": 444971,
+    "central": 917752,
+    "high": 1390533
   },
-  "price_year": 2025,
+  "price_year": 2026,
   "earliest_phase": "phase-1",
   "source_ids": [
     "ttc-gtfs",

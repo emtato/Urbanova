@@ -1,7 +1,7 @@
 {
   "purpose": "Hand-reviewed figures for A10 (docs/interventions.md). Each figure is quoted from a downloaded document with its page. build_interventions.py reads this file; it does not re-extract PDFs.",
   "reviewed_on": "2026-10-17",
-  "price_year": 2025,
+  "price_year": 2026,
   "cpi": {
     "source_id": "statcan-cpi-annual",
     "title": "Consumer Price Index, annual average, not seasonally adjusted (Table 18-10-0005-01), Canada, all-items",
@@ -13,8 +13,10 @@
       "2017": 130.4,
       "2019": 136.0,
       "2024": 160.9,
-      "2025": 164.2
-    }
+      "2025": 164.2,
+      "2026": 168.1
+    },
+    "note_2026": "2026 is the mean of monthly CPI Jan-Aug 2026 (Table 18-10-0004-01, vector v41690973), as the year is incomplete. Price year 2026 matches Lane C's fixed budget_price_year."
   },
   "documents": [
     {

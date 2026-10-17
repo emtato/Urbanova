@@ -164,7 +164,7 @@ def cost_ranges(evidence, cycle_s):
     running = factors["per_vehicle_hour"] + factors["per_vehicle_km"] * km_per_vehicle_hour
     per_hour = {
         "low": to_2025(evidence, running, 2015),
-        "central": f["ttc_cost_per_service_hour"]["value"],
+        "central": to_2025(evidence, f["ttc_cost_per_service_hour"]["value"], f["ttc_cost_per_service_hour"]["year"]),
         "high": to_2025(evidence, running + factors["per_vehicle_day"] / PEAK_HOURS, 2015),
     }
     pilot = to_2025(evidence, f["king_pilot_capital_2017"]["value"], 2017)
