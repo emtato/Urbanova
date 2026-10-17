@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState, type FC } from 'react'
-import {
-  Map as MapLibreMap,
+import mapboxgl, {
+  Map as MapboxMap,
   NavigationControl,
   LngLatBounds,
-  setWorkerUrl,
   type MapLayerMouseEvent,
-  type StyleSpecification,
-} from 'maplibre-gl'
+} from 'mapbox-gl'
 import type { Corridor, Development, Stop } from '../lib/types'
 import {
   setupCorridorMapLayers,
@@ -16,11 +14,6 @@ import {
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
 } from './MassingLayer'
-
-// Explicitly register MapLibre Web Worker URL for Vite environment
-// This enables GeoJSON parsing, 3D extruded polygon tessellation, and stop markers
-setWorkerUrl('/maplibre-gl-worker.mjs')
-
 
 export interface CorridorMapProps {
   corridor: Corridor
@@ -33,47 +26,7 @@ export interface CorridorMapProps {
   className?: string
 }
 
-// 100% Free, NO-API-KEY Esri World Dark Gray Canvas with official MapLibre demo glyphs
-// maxzoom: 16 ensures MapLibre smoothly overscales tiles when zooming in, preventing "Map data is unavailable"
-const DARK_RASTER_STYLE: StyleSpecification = {
-  version: 8,
-  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-  sources: {
-    'esri-dark-base': {
-      type: 'raster',
-      tiles: [
-        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      ],
-      tileSize: 256,
-      maxzoom: 16,
-      attribution: 'Esri, © OpenStreetMap contributors, and the GIS user community',
-    },
-    'esri-dark-reference': {
-      type: 'raster',
-      tiles: [
-        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      ],
-      tileSize: 256,
-      maxzoom: 16,
-    },
-  },
-  layers: [
-    {
-      id: 'esri-dark-base-tiles',
-      type: 'raster',
-      source: 'esri-dark-base',
-      minzoom: 0,
-      maxzoom: 22,
-    },
-    {
-      id: 'esri-dark-reference-tiles',
-      type: 'raster',
-      source: 'esri-dark-reference',
-      minzoom: 0,
-      maxzoom: 22,
-    },
-  ],
-}
+const MAPBOX_STANDARD_STYLE = 'mapbox://styles/mapbox/standard'
 
 export const CorridorMap: FC<CorridorMapProps> = ({
   corridor,
@@ -86,32 +39,67 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   className = '',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<MapLibreMap | null>(null)
+  const mapRef = useRef<MapboxMap | null>(null)
   const [is3D, setIs3D] = useState(true)
   const [currentPhase, setCurrentPhase] = useState(activePhase)
-  const [statusMessage, setStatusMessage] = useState<string>('Initializing 3D Map...')
+  const [statusMessage, setStatusMessage] = useState<string>('Initializing Mapbox Standard 3D Scene...')
+
+  // Mapbox token state (checks env, then localStorage)
+  const [mapboxToken, setMapboxToken] = useState<string>(() => {
+    return (
+      import.meta.env.VITE_MAPBOX_TOKEN ||
+      (typeof window !== 'undefined' ? localStorage.getItem('urbanova_mapbox_token') || '' : '')
+    )
+  })
+  const [tokenInput, setTokenInput] = useState<string>('')
+  const [showTokenPrompt, setShowTokenPrompt] = useState<boolean>(!mapboxToken)
+
+  const handleSaveToken = () => {
+    const trimmed = tokenInput.trim()
+    if (!trimmed) return
+    localStorage.setItem('urbanova_mapbox_token', trimmed)
+    setMapboxToken(trimmed)
+    setShowTokenPrompt(false)
+  }
 
   // Map initialization
   useEffect(() => {
     if (!mapContainerRef.current) return
-    if (mapRef.current) return // Prevent multiple instances
+    if (mapRef.current) return // Prevent duplicate instances
+    if (!mapboxToken) return // Wait for token
 
-    const defaultCenter: [number, number] = [-79.367, 43.661]
+    mapboxgl.accessToken = mapboxToken
+
+    const defaultCenter: [number, number] = [-79.364, 43.660]
 
     try {
-      const map = new MapLibreMap({
+      const map = new MapboxMap({
         container: mapContainerRef.current,
-        style: DARK_RASTER_STYLE,
+        style: MAPBOX_STANDARD_STYLE,
         center: defaultCenter,
-        zoom: 14.2,
+        zoom: 14.6,
         pitch: 55,
-        bearing: -25,
+        bearing: -20,
       })
 
       map.addControl(new NavigationControl({ showCompass: true }), 'bottom-right')
 
+      map.on('style.load', () => {
+        // Mapbox Standard 3D lighting configuration
+        try {
+          map.setConfigProperty('basemap', 'lightPreset', 'dusk')
+          map.setConfigProperty('basemap', 'show3dObjects', true)
+        } catch (e) {
+          console.warn('Mapbox Standard basemap config note:', e)
+        }
+      })
+
       map.on('error', (e) => {
-        console.warn('MapLibre event:', e)
+        console.warn('Mapbox event error:', e)
+        if (e.error && String(e.error).includes('Forbidden') || String(e.error).includes('Unauthorized') || String(e.error).includes('401')) {
+          setStatusMessage('Mapbox Token Invalid or Expired (401). Please check token.')
+          setShowTokenPrompt(true)
+        }
       })
 
       map.on('load', () => {
@@ -166,7 +154,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
       mapRef.current = map
 
-      // Resize observer to ensure canvas matches container bounding box
       const resizeObserver = new ResizeObserver(() => {
         if (mapRef.current) {
           mapRef.current.resize()
@@ -180,10 +167,10 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         mapRef.current = null
       }
     } catch (err) {
-      console.error('MapLibre creation error:', err)
-      setStatusMessage(`WebGL / Map error: ${err instanceof Error ? err.message : String(err)}`)
+      console.error('Mapbox creation error:', err)
+      setStatusMessage(`WebGL / Mapbox error: ${err instanceof Error ? err.message : String(err)}`)
     }
-  }, [corridor, developments])
+  }, [mapboxToken, corridor, developments])
 
   // React to phase or dataset changes
   useEffect(() => {
@@ -226,7 +213,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   }, [selectedDevId, developments, is3D])
 
   // Fit bounds helper (preserves 3D pitch and adds right panel padding)
-  const fitToCorridor = (map: MapLibreMap, stops: Stop[]) => {
+  const fitToCorridor = (map: MapboxMap, stops: Stop[]) => {
     if (stops.length === 0) return
     const bounds = new LngLatBounds()
     stops.forEach((s) => bounds.extend([s.lon, s.lat]))
@@ -272,7 +259,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       }}
       className={className}
     >
-      {/* MapLibre Canvas Container */}
+      {/* Mapbox Canvas Container */}
       <div
         ref={mapContainerRef}
         style={{
@@ -286,11 +273,56 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         }}
       />
 
+      {/* Mapbox Token Prompt Dialog if missing */}
+      {showTokenPrompt && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-md z-50 flex items-center justify-center p-6">
+          <div className="liquid-glass-panel rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4">
+            <div>
+              <div className="status-chip status-chip-sourced mb-2">OPTION A · MAPBOX STANDARD 3D</div>
+              <h2
+                className="text-2xl text-foreground font-normal tracking-tight"
+                style={{ fontFamily: "'Instrument Serif', serif" }}
+              >
+                Mapbox Standard 3D Setup
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Option A uses Mapbox GL JS 3 with <code className="text-cyan-300">mapbox://styles/mapbox/standard</code> for native city-wide 3D buildings and twilight lighting.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] text-muted-foreground uppercase tracking-wider">
+                Mapbox Public Access Token
+              </label>
+              <input
+                type="text"
+                placeholder="pk.eyJ1..."
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-black/40 border border-border/60 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-400"
+              />
+              <span className="text-[10px] text-muted-foreground/80">
+                You can also configure <code className="text-foreground">VITE_MAPBOX_TOKEN</code> in <code className="text-foreground">frontend/.env.local</code>.
+              </span>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={handleSaveToken}
+                disabled={!tokenInput.trim()}
+                className="liquid-glass rounded-full px-5 py-2 text-xs font-medium text-cyan-300 hover:scale-[1.03] transition-transform disabled:opacity-50"
+              >
+                Activate Mapbox 3D
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Status or Error Banner if map is initializing */}
-      {statusMessage && (
-        <div
-          className="liquid-glass rounded-xl px-5 py-3 text-sm text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 shadow-2xl"
-        >
+      {statusMessage && !showTokenPrompt && (
+        <div className="liquid-glass rounded-xl px-5 py-3 text-sm text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 shadow-2xl">
           {statusMessage}
         </div>
       )}
@@ -356,16 +388,26 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           >
             Fit Corridor
           </button>
+          <span className="text-white/20">|</span>
+          <button
+            type="button"
+            onClick={() => setShowTokenPrompt(true)}
+            className="px-2.5 py-1 rounded-full text-muted-foreground hover:text-cyan-300 transition-colors"
+            title="Configure Mapbox Token"
+          >
+            Token
+          </button>
         </div>
       </div>
 
       {/* Legend Badge Bottom Left */}
       <div className="!absolute bottom-6 left-6 z-20 min-w-[200px] liquid-glass rounded-2xl p-4 text-xs flex flex-col gap-2">
         <div
-          className="text-sm tracking-tight text-foreground"
+          className="text-sm tracking-tight text-foreground flex items-center justify-between"
           style={{ fontFamily: "'Instrument Serif', serif" }}
         >
-          505 Dundas Streetcar
+          <span>505 Dundas Streetcar</span>
+          <span className="text-[10px] text-cyan-300 font-mono tracking-normal">Mapbox Standard</span>
         </div>
         <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
           <span className="w-3.5 h-1 bg-red-500 rounded-full inline-block"></span>
@@ -387,3 +429,5 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     </div>
   )
 }
+
+export default CorridorMap

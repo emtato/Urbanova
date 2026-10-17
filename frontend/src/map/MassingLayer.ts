@@ -7,7 +7,7 @@
  * Reusable module designed so WalkMode (4.1) reuses every layer directly.
  */
 
-import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl'
+import type { Map as MapboxMap, GeoJSONSource, AnyLayer } from 'mapbox-gl'
 import type { Feature, FeatureCollection } from 'geojson'
 import type { Corridor, Development, Stop } from '../lib/types'
 import { corridorMassing, reviewedWalkingRoutes } from '../data'
@@ -273,7 +273,7 @@ export function generateCorridorStopsGeoJSON(stops: Stop[]): FeatureCollection {
  * Initializes all layers on the MapLibre instance
  */
 export function setupCorridorMapLayers(
-  map: MapLibreMap,
+  map: MapboxMap,
   corridor: Corridor,
   developments: Development[]
 ): void {
@@ -285,13 +285,14 @@ export function setupCorridorMapLayers(
       id: LAYER_BUILDINGS_EXISTING,
       type: 'fill-extrusion',
       source: SOURCE_BUILDINGS,
+      slot: 'top',
       paint: {
         'fill-extrusion-color': '#1e293b',
         'fill-extrusion-height': ['get', 'height_m'],
         'fill-extrusion-base': 0,
         'fill-extrusion-opacity': 0.85,
       },
-    })
+    } as AnyLayer)
   }
 
   // 2. Walking Catchment Connectors (Dashed paths)
@@ -302,13 +303,14 @@ export function setupCorridorMapLayers(
       id: LAYER_WALK_LINKS,
       type: 'line',
       source: SOURCE_WALK_LINKS,
+      slot: 'top',
       paint: {
         'line-color': '#06b6d4',
-        'line-width': 2,
+        'line-width': 2.5,
         'line-dasharray': [2, 3],
-        'line-opacity': 0.75,
+        'line-opacity': 0.85,
       },
-    })
+    } as AnyLayer)
   }
 
   // 3. Proposed Development Towers (Luminous, non-approved design stylings)
@@ -319,6 +321,7 @@ export function setupCorridorMapLayers(
       id: LAYER_DEVELOPMENTS_EXTRUSION,
       type: 'fill-extrusion',
       source: SOURCE_DEVELOPMENTS,
+      slot: 'top',
       paint: {
         'fill-extrusion-color': [
           'match',
@@ -331,7 +334,7 @@ export function setupCorridorMapLayers(
         'fill-extrusion-base': 0,
         'fill-extrusion-opacity': 0.95,
       },
-    })
+    } as AnyLayer)
   }
 
   // 4. Streetcar Corridor Track / Route Alignment
@@ -344,25 +347,27 @@ export function setupCorridorMapLayers(
       id: LAYER_LINKS_CASING,
       type: 'line',
       source: SOURCE_CORRIDOR_LINKS,
+      slot: 'top',
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-color': 'rgba(239, 68, 68, 0.45)', // TTC red glow
         'line-width': 8,
         'line-blur': 2,
       },
-    })
+    } as AnyLayer)
 
     // Center active track line
     map.addLayer({
       id: LAYER_LINKS_CORE,
       type: 'line',
       source: SOURCE_CORRIDOR_LINKS,
+      slot: 'top',
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-color': '#ef4444', // TTC Red
         'line-width': 3.5,
       },
-    })
+    } as AnyLayer)
   }
 
   // 5. Corridor Stops (Point markers with glow)
@@ -375,37 +380,39 @@ export function setupCorridorMapLayers(
       id: LAYER_STOPS_GLOW,
       type: 'circle',
       source: SOURCE_CORRIDOR_STOPS,
+      slot: 'top',
       paint: {
         'circle-radius': 11,
         'circle-color': '#06b6d4',
-        'circle-opacity': 0.35,
+        'circle-opacity': 0.45,
       },
-    })
+    } as AnyLayer)
 
     // Inner crisp circle
     map.addLayer({
       id: LAYER_STOPS_CIRCLE,
       type: 'circle',
       source: SOURCE_CORRIDOR_STOPS,
+      slot: 'top',
       paint: {
         'circle-radius': 6,
         'circle-color': '#ffffff',
         'circle-stroke-width': 2,
         'circle-stroke-color': '#0f172a',
       },
-    })
+    } as AnyLayer)
 
     // Stop Labels (without hardcoded fonts so it resolves against any base style glyphs)
     map.addLayer({
       id: LAYER_STOPS_LABEL,
       type: 'symbol',
       source: SOURCE_CORRIDOR_STOPS,
+      slot: 'top',
       layout: {
         'text-field': ['get', 'name'],
         'text-size': 11,
         'text-offset': [0, 1.4],
         'text-anchor': 'top',
-        'text-font': ['Noto Sans Regular'],
         'text-optional': true,
       },
       paint: {
@@ -413,7 +420,7 @@ export function setupCorridorMapLayers(
         'text-halo-color': '#0a0f1d',
         'text-halo-width': 2,
       },
-    })
+    } as AnyLayer)
   }
 
   // 6. Real-time Simulation Vehicle Stream
@@ -427,13 +434,14 @@ export function setupCorridorMapLayers(
       id: LAYER_VEHICLES,
       type: 'circle',
       source: SOURCE_VEHICLES,
+      slot: 'top',
       paint: {
         'circle-radius': 8,
         'circle-color': '#3b82f6', // Streetcar Blue
         'circle-stroke-width': 2.5,
         'circle-stroke-color': '#ffffff',
       },
-    })
+    } as AnyLayer)
   }
 }
 
@@ -443,7 +451,7 @@ export function setupCorridorMapLayers(
  * Phase 1 = 1 (Phase 1 Cyan tower replaces 239 Dundas parcel)
  * Phase 2 = 2 (Phase 1 + 2 towers replace 239, 500, and 761 Dundas parcels)
  */
-export function updateDevelopmentsPhase(map: MapLibreMap, activePhase: number): void {
+export function updateDevelopmentsPhase(map: MapboxMap, activePhase: number): void {
   // 1. Proposed Development Towers
   if (map.getLayer(LAYER_DEVELOPMENTS_EXTRUSION)) {
     if (activePhase === 0) {
@@ -488,7 +496,7 @@ export function updateDevelopmentsPhase(map: MapLibreMap, activePhase: number): 
  * Dynamically updates all corridor map sources when data changes
  */
 export function updateCorridorMapData(
-  map: MapLibreMap,
+  map: MapboxMap,
   corridor: Corridor,
   developments: Development[]
 ): void {
@@ -522,7 +530,7 @@ export function updateCorridorMapData(
  * Updates positions of simulated moving streetcars on the map
  */
 export function updateVehiclePositions(
-  map: MapLibreMap,
+  map: MapboxMap,
   vehicles: Array<{ vehicle_id: string; lon: number; lat: number; load: number }>
 ): void {
   const source = map.getSource(SOURCE_VEHICLES) as GeoJSONSource | undefined
