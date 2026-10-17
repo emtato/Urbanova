@@ -133,6 +133,8 @@ class SimulationInput:
     parallel_route_bands: tuple[float, float] = (0.40, 0.60)  # Fraction of the way to College/Queen: below the first -> all consider the 505; up to the second -> half.
     incoming_load_range: tuple[int, int] = (12, 24)  # Riders already aboard each car entering at Broadview & Dundas (uniform, inclusive).
     stop_dwell_range_s: tuple[int, int] = (15, 30)  # Dwell seconds at each non-terminus stop (uniform, inclusive).
+    # NOTE (B6): B6 passenger-dependent dwell calculation (door time + boardings/alightings feedback)
+    # is intentionally ignored/omitted per project plan; stop dwell remains bounded by stop_dwell_range_s.
 
 
 # CURRENT DATA AUDIT — repository files checked on 2026-10-17 9AM.

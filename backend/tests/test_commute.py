@@ -334,3 +334,110 @@ def test_cutoff_in_progress_passengers_excluded_from_unresolved():
     assert ov["denied_boarding_share"] == pytest.approx(0.5)
 
 
+def test_b5_berth_rule_prevents_simultaneous_service():
+    """B5: Only one streetcar can occupy/serve a stop's berth at a time.
+
+    Car 1 is generated at t=0 and dwells until t=20 at stop s0.
+    Car 2 is generated at t=10 at s0, but must wait in the berth queue
+    because Car 1 is currently occupying the berth.
+    When Car 1 departs at t=20, Car 2 enters the berth and begins service.
+    """
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Passenger, Stop
+    from backend.simulation.runner import run_simulation
+
+    stops = (
+        Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
+        Stop(id="s1", name="Terminus", sequence=1, latitude=LAT, longitude=lon_at(500)),
+    )
+    inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(30.0,),
+        streetcar_capacity=1,
+        headway_s=10.0,
+        headway_randomness_s=0.0,
+        rush_hour_duration_s=15.0,
+        trips_per_resident_in_window=0.3,
+        start_time_s=0,
+        end_time_s=75,
+        stop_dwell_range_s=(20, 20),
+        seed=42,
+    )
+    # Passenger p1 arrives at t=0 and boards Car 1 (which fills Car 1).
+    # Passenger p2 arrives at t=12 while Car 1 is dwelling and Car 2 is waiting for berth.
+    # p2 should board Car 2 only after Car 1 departs at t=20 and Car 2 enters the berth.
+    passengers = {
+        "p1": Passenger(id="p1", origin_stop_id="s0", destination_stop_id="s1", get_to_stop_time=0, rider_group="existing"),
+        "p2": Passenger(id="p2", origin_stop_id="s0", destination_stop_id="s1", get_to_stop_time=12, rider_group="existing"),
+    }
+    res = run_simulation(inputs, passengers)
+
+    # Car 1: generated at 0, boards p1 at 0, departs s0 at 20.
+    # Car 2: generated at 10, queues for berth, enters berth at 20, boards p2 at 20, departs s0 at 40.
+    board_events = [e for e in res["sim_log"] if e["action"] == "board"]
+    depart_events = [e for e in res["sim_log"] if e["action"] == "depart"]
+
+    assert len(board_events) == 2
+    assert board_events[0]["time_s"] == 0
+    assert board_events[0]["streetcar"]["id"] == "streetcar-1"
+    assert board_events[0]["passenger_ids"] == ["p1"]
+
+    assert board_events[1]["time_s"] == 20
+    assert board_events[1]["streetcar"]["id"] == "streetcar-2"
+    assert board_events[1]["passenger_ids"] == ["p2"]
+
+    assert passengers["p1"].boarding_time_s == 0
+    assert passengers["p1"].status == "arrived"
+    assert passengers["p2"].boarding_time_s == 20
+    assert passengers["p2"].status == "arrived"
+
+
+def test_b5_no_overtaking_rule_on_links():
+    """B5: Trailing streetcar cannot overtake leading streetcar on a link."""
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Stop
+    from backend.simulation.runner import run_simulation
+
+    stops = (
+        Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
+        Stop(id="s1", name="Mid", sequence=1, latitude=LAT, longitude=lon_at(500)),
+        Stop(id="s2", name="End", sequence=2, latitude=LAT, longitude=lon_at(1000)),
+    )
+    inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(50.0, 50.0),
+        streetcar_capacity=10,
+        headway_s=10.0,
+        headway_randomness_s=0.0,
+        rush_hour_duration_s=25.0,
+        trips_per_resident_in_window=0.3,
+        start_time_s=0,
+        end_time_s=150,
+        stop_dwell_range_s=(5, 5),
+        link_travel_time_variation_share=0.5,
+        seed=1,
+    )
+    res = run_simulation(inputs, passengers={})
+
+    # For every stop along the line, streetcar-1 must arrive at or before streetcar-2
+    arrive_events = [e for e in res["sim_log"] if e["action"] == "arrive"]
+    s1_arrivals = [e for e in arrive_events if e["stop_id"] == "s1"]
+    s2_arrivals = [e for e in arrive_events if e["stop_id"] == "s2"]
+
+    assert len(s1_arrivals) >= 2
+    # Car 1 must arrive at s1 at or before Car 2
+    car1_s1 = next(e for e in s1_arrivals if e["streetcar"]["id"] == "streetcar-1")
+    car2_s1 = next(e for e in s1_arrivals if e["streetcar"]["id"] == "streetcar-2")
+    assert car1_s1["time_s"] <= car2_s1["time_s"]
+
+    if len(s2_arrivals) >= 2:
+        car1_s2 = next(e for e in s2_arrivals if e["streetcar"]["id"] == "streetcar-1")
+        car2_s2 = next(e for e in s2_arrivals if e["streetcar"]["id"] == "streetcar-2")
+        assert car1_s2["time_s"] <= car2_s2["time_s"]
+
+
+
