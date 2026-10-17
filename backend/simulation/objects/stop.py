@@ -13,5 +13,4 @@ class Stop:
     longitude: float
     # FIFO: append arrivals on the right, board from the left.
     waiting_passenger_ids: deque[str] = field(default_factory=deque)
-    # None means the berth is free; initially assume one serving vehicle per stop.
-    serving_streetcar_id: str | None = None
+    serving_streetcar_id: str | None = None #streetcar currently at stop?
