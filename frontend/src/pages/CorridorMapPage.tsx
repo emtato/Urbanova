@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { fetchComparison, isUsingFixture, setUseFixture } from '../lib/api'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { NoComparisonError, fetchComparison, fixtureComparison, isUsingFixture, runAnalysis } from '../lib/api'
 import type { Comparison, Scenario } from '../lib/types'
 import {
   type CorridorStop,
@@ -35,7 +35,6 @@ type ActiveTool =
 export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [comparison, setComparison] = useState<Comparison | null>(null)
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
   const [platformViewRequest, setPlatformViewRequest] = useState<{ stopId: string; requestId: number } | null>(null)
   const [selectedStop, setSelectedStop] = useState<CorridorStop | null>(null)
   const [selectedDev, setSelectedDev] = useState<CorridorDevelopment | null>(null)
@@ -49,6 +48,19 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [activeTool, setActiveTool] = useState<ActiveTool>(null)
   const [isToolMinimized, setIsToolMinimized] = useState(false)
   const [scenarioNotice, setScenarioNotice] = useState<string | null>(null)
+  // The map always opens at once. Live mode never starts a job on load: without a stored result it
+  // shows the labelled fixture, and a notice on the map offers to run a live comparison.
+  const [liveNotice, setLiveNotice] = useState<string | null>(null)
+  const [running, setRunning] = useState<{ stage: string; startedAt: number } | null>(null)
+  const [elapsedS, setElapsedS] = useState(0)
+  const runController = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    if (!running) return
+    const timer = setInterval(() => setElapsedS(Math.floor((Date.now() - running.startedAt) / 1000)), 1000)
+    return () => clearInterval(timer)
+  }, [running])
+  useEffect(() => () => runController.current?.abort(), [])
 
   // Preserve map data identity when only page controls change.
   const developments = useMemo(
@@ -78,24 +90,50 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     loadData()
   }, [])
 
+  function applyComparison(data: Comparison) {
+    setComparison(data)
+    setUsingFixtureState(data.fixture)
+    if (data.corridor.stops.length > 0) {
+      setSelectedStop(normalizeStop(data.corridor.stops[4])) // Default to Sumach / Regent Park
+    }
+  }
+
   async function loadData() {
     try {
       setLoading(true)
-      setLoadError('')
-      const data = await fetchComparison()
-      setComparison(data)
-      setUsingFixtureState(data.fixture)
-      if (data.corridor.stops.length > 0) {
-        setSelectedStop(normalizeStop(data.corridor.stops[4])) // Default to Sumach / Regent Park
-      }
+      setLiveNotice(null)
+      applyComparison(await fetchComparison())
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : 'Failed to load comparison')
+      // Fall back to the labelled fixture so the map still opens; the notice says why.
+      applyComparison(fixtureComparison())
+      setLiveNotice(err instanceof NoComparisonError
+        ? 'Showing labelled fixture data. No live comparison has been run in this browser yet.'
+        : `Showing labelled fixture data. Live result unavailable: ${err instanceof Error ? err.message : 'unknown error'}`)
     } finally {
       setLoading(false)
     }
   }
 
-  if (loadError) return <main className="contract-review"><h1>Live API unavailable</h1><p role="alert">{loadError}</p><button onClick={() => void loadData()}>Retry</button>{' '}<button onClick={() => { setUseFixture(true); setUsingFixtureState(true); void loadData() }}>Show labelled fixture</button>{' '}<button onClick={() => onNavigate?.('/analysis')}>Scenario workspace</button></main>
+  async function runLiveComparison() {
+    runController.current?.abort()
+    const controller = new AbortController()
+    runController.current = controller
+    setElapsedS(0)
+    setRunning({ stage: 'Starting', startedAt: Date.now() })
+    try {
+      applyComparison(await runAnalysis({}, {
+        signal: controller.signal,
+        onProgress: stage => setRunning(current => current ? { ...current, stage } : current),
+      }))
+      setLiveNotice(null)
+    } catch (err) {
+      setLiveNotice(controller.signal.aborted
+        ? 'Cancelled; still showing labelled fixture data. The server may still finish that job.'
+        : `Live comparison failed: ${err instanceof Error ? err.message : 'unknown error'}. Still showing labelled fixture data.`)
+    } finally {
+      if (runController.current === controller) { runController.current = null; setRunning(null) }
+    }
+  }
 
   if (loading || !comparison) {
     return (
@@ -132,6 +170,22 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     <div
       className="flex flex-col w-screen h-screen overflow-hidden bg-background text-foreground font-body transition-colors duration-500"
     >
+      {/* Live-data notice: labels fixture data at every width and runs a live comparison without blocking the map */}
+      {(liveNotice || running) && (
+        <div role="status" aria-live="polite" className="map-live-notice">
+          {running ? <>
+            <span className="map-live-dot is-running" aria-hidden="true" />
+            <span>Running live comparison… {running.stage} · {Math.floor(elapsedS / 60)}:{String(elapsedS % 60).padStart(2, '0')}</span>
+            <button type="button" onClick={() => runController.current?.abort()}>Cancel</button>
+          </> : <>
+            <span className="map-live-dot" aria-hidden="true" />
+            <span>{liveNotice}</span>
+            <button type="button" onClick={() => void runLiveComparison()} title="Starts a full simulation job on the shared backend; it can take several minutes">Run live comparison</button>
+            <button type="button" aria-label="Dismiss notice" onClick={() => setLiveNotice(null)}>✕</button>
+          </>}
+        </div>
+      )}
+
       {/* Dynamic Scenario Change Notification */}
       {scenarioNotice && (
         <div

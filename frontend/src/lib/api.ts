@@ -4,10 +4,30 @@ import type { NativeBatch, NativeMetrics, NativeReplay, PackagePolicy, RunSimula
 
 let runtimeUseFixture = import.meta.env.VITE_USE_FIXTURE !== 'false'
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
-let latestComparisonId: string | undefined
+const LATEST_COMPARISON_KEY = 'urbanova.latestComparisonId'
+// Remembered across reloads so opening the map reuses the last result instead of starting a new job.
+let latestComparisonId: string | undefined = readStoredComparisonId()
 export const isUsingFixture = () => runtimeUseFixture
 export const setUseFixture = (value: boolean) => { runtimeUseFixture = value }
 const clone = <T,>(value: T): T => structuredClone(value)
+
+function readStoredComparisonId(): string | undefined {
+  try { return globalThis.localStorage?.getItem(LATEST_COMPARISON_KEY) || undefined } catch { return undefined }
+}
+function rememberComparison(id: string) {
+  latestComparisonId = id
+  try { globalThis.localStorage?.setItem(LATEST_COMPARISON_KEY, id) } catch { /* storage unavailable: keep it in memory only */ }
+}
+export function forgetLatestComparison() {
+  latestComparisonId = undefined
+  try { globalThis.localStorage?.removeItem(LATEST_COMPARISON_KEY) } catch { /* nothing stored */ }
+}
+export const getLatestComparisonId = () => latestComparisonId
+
+/** No live comparison has been run (or the remembered one is gone); callers decide whether to start one. */
+export class NoComparisonError extends Error {
+  constructor(message = 'No live comparison has been run in this browser yet.') { super(message); this.name = 'NoComparisonError' }
+}
 
 export async function apiRequest<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const timeoutMs = path === '/run/simulation' ? 120000 : 30000
@@ -54,11 +74,27 @@ function comparisonResponse(value: Comparison) {
   return value
 }
 
-export async function fetchComparison(comparisonId?: string): Promise<Comparison> {
+/**
+ * Loads a stored comparison: the given ID, else the last one this browser ran. Never starts a job;
+ * throws NoComparisonError when there is nothing to show, so the page can offer to run one.
+ */
+/** The labelled fixture, for showing the map before any live comparison exists. */
+export const fixtureComparison = (): Comparison => clone(sampleComparison)
+
+export async function fetchComparison(comparisonId?: string, signal?: AbortSignal): Promise<Comparison> {
   if (runtimeUseFixture) return clone(sampleComparison)
   const id = comparisonId ?? latestComparisonId
-  if (!id) return runAnalysis({})
-  return comparisonResponse(await apiRequest<Comparison>(`/results/${encodeURIComponent(id)}`))
+  if (!id) throw new NoComparisonError()
+  try {
+    return comparisonResponse(await apiRequest<Comparison>(`/results/${encodeURIComponent(id)}`, undefined, signal))
+  } catch (error) {
+    // A remembered ID the server no longer has (404) or cannot read (422) is dropped, not retried forever.
+    if (!comparisonId && error instanceof Error && /^HTTP (404|422)\b/.test(error.message)) {
+      forgetLatestComparison()
+      throw new NoComparisonError('The last live comparison is no longer available on the server.')
+    }
+    throw error
+  }
 }
 
 export async function fetchCorridor(_corridorId?: string): Promise<Corridor> {
@@ -116,7 +152,7 @@ export async function runAnalysis(patch: ScenarioPatch, options: RunOptions = {}
   if (job.stale) throw Error('Result became stale while running; submit the scenario again')
   const result = comparisonResponse(await apiRequest<Comparison>(`/results/${job.comparison_id}`, undefined, signal))
   if (result.fixture) throw Error('The server returned a fixture for a real simulation request')
-  latestComparisonId = job.comparison_id
+  rememberComparison(job.comparison_id)
   onProgress?.('Completed')
   return result
 }
