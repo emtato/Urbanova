@@ -87,9 +87,8 @@ The successful Gemini access check uses GEMINI_MODEL=gemini-3.8-flash.
 Set that same value in Railway Variables and apply/redeploy; Google rejected gemini-2.5-flash for the new account.
 Keys and database URLs remain backend-only and are excluded from the committed evidence.
 
-## Next gate
-The corridor/feasibility work is ready for the team to review.
-The overall Phase 01 gate remains open until 1.5–1.16 land: Pydantic schemas, matching TypeScript types and a validated full sample Comparison/replay fixture.
-Do not treat corridor.json as that final API contract.
+## Phase 01 handoff
+Steps 1.5–1.16 now land in [contract.md](contract.md): Pydantic models, matching TypeScript, the full validated Comparison fixture and two-car replay. The implementation gate is complete; team laptop confirmation and the walking review caveats above remain explicit.
+The frozen API boundary is backend/schemas/Comparison, version 1.0.0. The reviewed corridor.json remains the data evidence rather than the API response shape.
 
 The separate [Lawrence East study](feasibility-lawrence-east.md) is preserved for reference; this handoff follows the confirmed 505 endpoints.

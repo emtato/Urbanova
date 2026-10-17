@@ -93,6 +93,8 @@ All four people have the Express backend (`npm run dev` in `backend/`), the fron
 
 ## Prove feasibility, freeze the contract
 
+Implementation complete for 505 eastbound Jarvis to Dundas/Broadview (seven stops). Runtime uses FastAPI/Pydantic. See [contract 1.0.0](../contract.md) for executed checks and scope adjustments; the generic bus candidates below are retained as planning context. Four-laptop owner confirmation and walking field review remain separate.
+
 All four together · Sat 00:30 → 02:30 · blocking ·
 
 The final idea says to choose the corridor only after inspecting real files, and to agree IDs, units, direction, coordinates, scenario fields, event types and result fields before splitting. Do both here. The simulation and data owners work side by side: a demand and model mismatch can invalidate two working lanes at once.
@@ -125,12 +127,12 @@ In pairs · time-boxed to 75 minutes
    docs/feasibility.md
 
    Confirm three developments exist in the Development Pipeline with unit counts and stages, and that the GTFS feed has the chosen pattern on a weekday service date. List which demand observations are missing. If stop-level demand stays unavailable, the product is labelled a *scenario experiment* from here on.
-3. [ ] 1.3
+3. [x] 1.3
 
-   scripts/check_access.js
+   backend/scripts/check_access.py
 
    Tiger Data service reachable with PostGIS enabled; one Gemini call returns a valid structured response. If either fails, decide the fallback now, not at hour 20.
-4. [ ] 1.4
+4. [x] 1.4
 
    sim/tiny_case.pyOwner 3's first milestone
 
@@ -140,64 +142,64 @@ All hands · strict order
 
 ### Schemas, innermost to outermost
 
-Each object below is composed by the next. Build them in this order and the last one assembles itself. Schemas are **zod** modules in the Express backend (`backend/schemas/*.js`); the Python pipelines and simulator read and write the same field names.
+Each object below is composed by the next. Build them in this order and the last one assembles itself. Schemas are **Pydantic** modules in the active FastAPI backend (`backend/schemas/*.py`); the Python pipelines and simulator read and write the same field names.
 
-1. [ ] 1.5
+1. [x] 1.5
 
-   backend/schemas/source.js
+   backend/schemas/source.py
 
    `SourceRef`: source_id, title, url, publisher, retrieved_at, version, licence. Every other object points at these ids.
-2. [ ] 1.6
+2. [x] 1.6
 
-   backend/schemas/assumption.jsCritical
+   backend/schemas/assumption.pyCritical
 
    `Assumption`: key, unit, meaning, low / central / high, allowed range, status (`sourced` | `assumed` | `user_selected`), source_ids. The UI shows unit, meaning, status and range on every control, and this is where they come from.
-3. [ ] 1.7
+3. [x] 1.7
 
-   backend/schemas/corridor.js
+   backend/schemas/corridor.py
 
    `Stop` (stop_id, gtfs_stop_id, name, seq, lon, lat), `Link` (link_id, from_stop, to_stop, length_m, base_time_s), `Corridor` (route pattern, direction, peak window, stops\[\], links\[\], berths per stop, incoming load at the first stop).
-4. [ ] 1.8
+4. [x] 1.8
 
-   backend/schemas/development.js
+   backend/schemas/development.py
 
    `Development`: dev_id, pipeline_ref, address, units, stage, record_date, kind (`proposal` | `hypothetical`), footprint, access\[\] (stop_id, walk_m), source_ids. Units are proposed; residents exist only after an occupancy assumption.
-5. [ ] 1.9
+5. [x] 1.9
 
-   backend/schemas/intervention.js
+   backend/schemas/intervention.py
 
    `Intervention`: id, type (`priority_lane` | `extra_service`), link_ids or headway, capital_cost and operating_cost ranges with price year and scope, extra vehicles, earliest_phase, effect with status.
-6. [ ] 1.10
+6. [x] 1.10
 
-   backend/schemas/scenario.js
+   backend/schemas/scenario.py
 
    `Scenario`: scenario_id, version, developments per phase, occupied share, demand case, intervention availability dates, capital and operating budgets, fleet allowance, planning criterion. Housing totals are fixed across package comparisons.
-7. [ ] 1.11
+7. [x] 1.11
 
-   backend/schemas/run.js
+   backend/schemas/run.py
 
    `Run`: run_id, scenario_version, package, model_version, data_version, seed ids, status, diagnostics (conservation, unresolved passengers, runtime).
-8. [ ] 1.12
+8. [x] 1.12
 
-   backend/schemas/replay_event.js
+   backend/schemas/replay_event.py
 
    `ReplayEvent`: run_id, t_s, kind (`dispatch` | `arrive` | `alight` | `board` | `deny` | `depart`), vehicle_id, stop_id, count, load_after, rider_group. This one type drives the moving buses, the queues and the replay stored in Tiger Data.
-9. [ ] 1.13
+9. [x] 1.13
 
-   backend/schemas/results.js
+   backend/schemas/results.py
 
    `StopResult` by rider group (existing, new): mean and p95 wait, share denied at least once, remaining queue, headway variability. `CaseResult` adds per-run arrays, run count and unresolved passengers.
-10. [ ] 1.14
+10. [x] 1.14
 
-    backend/schemas/comparison.jsConvergence
+    backend/schemas/comparison.pyConvergence
 
     `Comparison`: scenario, corridor, cases (current, growth, supported growth), packages\[\] with feasibility reasons and criterion results per phase and demand case, sensitivity, assumptions\[\], sources\[\], warnings\[\]. If a lane's output does not fit in here, that lane is building the wrong thing.
-11. [ ] 1.15
+11. [x] 1.15
 
     frontend/src/lib/types.ts
 
-    Hand-mirror 1.5 through 1.14 in TypeScript, with field names identical to the zod schemas.
-12. [ ] 1.16
+    Hand-mirror 1.5 through 1.14 in TypeScript, with field names identical to the Pydantic models.
+12. [x] 1.16
 
     data/fixtures/sample_comparison.jsonDo not skip
 
@@ -205,7 +207,7 @@ Each object below is composed by the next. Build them in this order and the last
 
 Gate — do not proceed until
 
-The corridor is chosen from real files, the tiny case matches the hand calculation, `sample_comparison.json` validates against the zod schemas and the TypeScript types compile against it. Then split up.
+The corridor is chosen from real files, the tiny case matches the hand calculation, `sample_comparison.json` validates against the Pydantic models and the TypeScript types compile against it. Then split up.
 
 02
 
