@@ -3,6 +3,10 @@ import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, runSi
 import type { Scenario } from '../lib/types'
 import type { NativeBatch, NativeReplay } from '../lib/liveTypes'
 import { NativeReplayPanel } from '../panels/NativeReplayPanel'
+import { HeadwaySelector } from '../panels/HeadwaySelector'
+import { ServiceCostCard } from '../panels/ServiceCostCard'
+import { HeadwayImpactCard, type ImpactPair } from '../panels/HeadwayImpactCard'
+import { BASELINE_HEADWAY_S, DEFAULT_HEADWAY_S, isBaseline } from '../lib/serviceOptions'
 import '../App.css'
 
 const message = (error: unknown) => error instanceof Error ? error.message : String(error)
@@ -36,7 +40,11 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   const [includedDevs, setIncludedDevs] = useState<Record<string, boolean>>({})
   const [runCount, setRunCount] = useState(1)
   const [seed, setSeed] = useState(42)
-  const [headwayS, setHeadwayS] = useState(419.8125)
+  const [headwayS, setHeadwayS] = useState(DEFAULT_HEADWAY_S)
+  const [headwayValid, setHeadwayValid] = useState(true)
+  const [progress, setProgress] = useState('')
+  const [impactPair, setImpactPair] = useState<ImpactPair | null>(null)
+  const [impactInputs, setImpactInputs] = useState('')
   const [headwayRandomnessS, setHeadwayRandomnessS] = useState(0)
   const [linkVariationShare, setLinkVariationShare] = useState(0)
   const [startTimeS, setStartTimeS] = useState(25200)
@@ -65,6 +73,9 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     return () => { abort.abort(); controller.current?.abort() }
   }, [])
 
+  const inputsKey = JSON.stringify([includedDevs, runCount, seed, headwayS, headwayRandomnessS, linkVariationShare, startTimeS, endTimeS, rushHourDurationS])
+  const impactStale = impactPair !== null && impactInputs !== inputsKey
+
   const currentBatch = simulations.find(item => item.id === selectedBatchId) ?? simulations[0] ?? null
   const replay = currentBatch ? toReplay(currentBatch, selectedRunIndex) : null
 
@@ -78,25 +89,35 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     setError('')
     try {
       const development_ids = defaults.developments.filter(d => includedDevs[d.id]).map(d => d.id)
-      const batch = await runSimulation({
+      const request = (headway_s: number) => runSimulation({
         run_count: runCount,
         seed,
         development_ids,
-        headway_s: headwayS,
+        headway_s,
         headway_randomness_s: headwayRandomnessS,
         link_travel_time_variation_share: linkVariationShare,
         start_time_s: startTimeS,
         end_time_s: endTimeS,
         rush_hour_duration_s: rushHourDurationS,
       }, abort.signal)
+      // A non-current headway also runs today's service with the same buildings and seeds, for a fair before/after.
+      const compare = !isBaseline(headwayS)
+      setProgress(compare ? `Running today's service (${Math.round(BASELINE_HEADWAY_S)} s)…` : 'Running simulation…')
+      const before = compare ? await request(BASELINE_HEADWAY_S) : null
       if (abort.signal.aborted) return
-      setSimulations(prev => [batch, ...prev.filter(item => item.id !== batch.id)])
+      if (compare) setProgress(`Running ${Math.round(headwayS)} s headway…`)
+      const batch = await request(headwayS)
+      if (abort.signal.aborted) return
+      const added = before ? [batch, before] : [batch]
+      setSimulations(prev => [...added, ...prev.filter(item => !added.some(a => a.id === item.id))])
       setSelectedBatchId(batch.id)
       setSelectedRunIndex(0)
+      setImpactPair(before ? { before, after: batch, before_headway_s: BASELINE_HEADWAY_S, after_headway_s: headwayS } : null)
+      setImpactInputs(inputsKey)
     } catch (reason) {
       if (!abort.signal.aborted) setError(message(reason))
     } finally {
-      if (!abort.signal.aborted) setBusy(false)
+      if (!abort.signal.aborted) { setBusy(false); setProgress('') }
     }
   }
 
@@ -134,19 +155,32 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
             </label>
           ))}
         </div>
+        <HeadwaySelector
+          value={headwayS}
+          onChange={setHeadwayS}
+          onValidityChange={setHeadwayValid}
+          disabled={busy || !defaults}
+        />
         <div className="analysis-grid">
           <label>Number of runs<input required type="number" min={1} max={25} step={1} value={runCount} onChange={e => setRunCount(Number(e.target.value))} /></label>
           <label>Seed<input required type="number" min={0} max={2147483647} step={1} value={seed} onChange={e => setSeed(Number(e.target.value))} /></label>
-          <label>Headway (s)<input required type="number" min={1} max={86400} step="any" value={headwayS} onChange={e => setHeadwayS(Number(e.target.value))} /></label>
           <label>Headway randomness (s)<input required type="number" min={0} max={86400} step="any" value={headwayRandomnessS} onChange={e => setHeadwayRandomnessS(Number(e.target.value))} /></label>
           <label>Link variation share (0–0.99)<input required type="number" min={0} max={0.99} step="any" value={linkVariationShare} onChange={e => setLinkVariationShare(Number(e.target.value))} /></label>
           <label>Start time (s)<input required type="number" min={0} max={86400} step={1} value={startTimeS} onChange={e => setStartTimeS(Number(e.target.value))} /></label>
           <label>End time (s)<input required type="number" min={1} max={172800} step={1} value={endTimeS} onChange={e => setEndTimeS(Number(e.target.value))} /></label>
           <label>Rush-hour duration (s)<input required type="number" min={1} max={86400} step="any" value={rushHourDurationS} onChange={e => setRushHourDurationS(Number(e.target.value))} /></label>
         </div>
-        <button type="submit">{busy ? 'Running simulation…' : `Run simulation (${runCount} ${runCount === 1 ? 'trial' : 'trials'})`}</button>
+        <button type="submit" disabled={!headwayValid}>{busy ? progress || 'Running simulation…' : `Run simulation (${runCount} ${runCount === 1 ? 'trial' : 'trials'}${isBaseline(headwayS) ? '' : ', plus today for comparison'})`}</button>
       </fieldset>
     </form>
+
+    <div className="service-cards">
+      <ServiceCostCard headway_s={headwayS} />
+      <div>
+        {impactStale && <p className="service-stale" role="status">Inputs changed since this comparison ran; run again to update it.</p>}
+        <HeadwayImpactCard pair={impactPair} />
+      </div>
+    </div>
 
     {simulations.length > 0 && (
       <section aria-label="Saved simulation batches">
@@ -157,6 +191,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
               <tr>
                 <th>Batch ID</th>
                 <th>Buildings included</th>
+                <th>Headway</th>
                 <th>Runs (seeds)</th>
                 <th>Mean wait (avg)</th>
                 <th>P95 wait (avg)</th>
@@ -174,6 +209,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
                   <tr key={batch.id} style={isSelected ? { fontWeight: 600 } : undefined}>
                     <th className="analysis-id">{batch.id.slice(0, 8)}…</th>
                     <td>{devs.length ? devs.map(d => d.name).join(', ') : 'None (baseline only)'}</td>
+                    <td>{typeof batch.individual_results[0]?.inputs.headway_s === 'number' ? `${Math.round(batch.individual_results[0].inputs.headway_s)} s` : 'Unknown'}</td>
                     <td>{batch.overall_results.run_count} ({batch.overall_results.seeds.join(', ')})</td>
                     <td>{seconds(metrics.mean_wait_s?.mean)}</td>
                     <td>{seconds(metrics.p95_wait_s?.mean)}</td>
