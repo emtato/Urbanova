@@ -1,0 +1,35 @@
+{
+  "status": "structural_and_source_checks_passed; behavioural_calibration_not_performed",
+  "source_checksums_verified": 8,
+  "expected_cma_tracts": 1227,
+  "count_rows": 1227,
+  "matched_boundaries": 1227,
+  "missing_counts": 0,
+  "suppressed_or_flagged_counts": 0,
+  "duplicate_count_rows": 0,
+  "invalid_boundaries": 0,
+  "points_outside_own_tract": 0,
+  "zero_count_tracts": 0,
+  "toronto_city_relation_counts": {
+    "inside": 585,
+    "outside": 642
+  },
+  "published_cma_worker_total": 1636020,
+  "sum_of_tract_worker_counts": 1636000,
+  "tract_sum_minus_published_total": -20,
+  "absolute_difference_percent": 0.001222,
+  "counts_rescaled": false,
+  "nonzero_census_geography_quality_codes": 31,
+  "census_geography_quality_note": "General geography flags retained for review; these differ from the count-level STATUS and SYMBOL fields, which were empty for every imported workplace count.",
+  "filters": {
+    "REF_DATE": "2021",
+    "Work activity during the reference year (4A)": "Total - Work activity during the reference year",
+    "Age (15A)": "Total - Age",
+    "Gender (3)": "Total - Gender",
+    "Industry - Sectors - North American Industry Classification System (NAICS) 2017 (21)": "Total - Industry - Sectors - North American Industry Classification System (NAICS) 2017",
+    "Place of work status (3)": "Usual place of work",
+    "SCALAR_FACTOR": "units",
+    "DECIMALS": "0"
+  },
+  "interpretation": "Suitable as historical, coarse destination weights. Not validated 505 ridership, current workplace attendance, exact addresses or commuting directions."
+}

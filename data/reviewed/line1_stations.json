@@ -1,0 +1,393 @@
+{
+  "schema_version": 1,
+  "route": "TTC Line 1 Yonge-University",
+  "gtfs_feed_version": "S1000542",
+  "gtfs_sha256": "5e0191d59cb991b6c88ba9c1a5f2ca93a5a064a4d258dbc7ba93801d15f3dfca",
+  "built_at": "2026-10-17T14:20:11.928208+00:00",
+  "coordinate_method": "Mean of the station's Line 1 platform coordinates; not an entrance",
+  "source_ids": [
+    "ttc-gtfs"
+  ],
+  "stations": [
+    {
+      "station_id": "ttc-line1-bloor-station",
+      "name": "Bloor Station",
+      "latitude": 43.670547,
+      "longitude": -79.385654,
+      "gtfs_platform_stop_ids": [
+        "13863",
+        "13864"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-cedarvale-station",
+      "name": "Cedarvale Station",
+      "latitude": 43.699998,
+      "longitude": -79.436491,
+      "gtfs_platform_stop_ids": [
+        "13831",
+        "13832"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-college-station",
+      "name": "College Station",
+      "latitude": 43.660799,
+      "longitude": -79.382888,
+      "gtfs_platform_stop_ids": [
+        "13807",
+        "13808"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-davisville-station",
+      "name": "Davisville Station",
+      "latitude": 43.697648,
+      "longitude": -79.39709,
+      "gtfs_platform_stop_ids": [
+        "13797",
+        "13798"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-downsview-park-station",
+      "name": "Downsview Park Station",
+      "latitude": 43.753311,
+      "longitude": -79.478693,
+      "gtfs_platform_stop_ids": [
+        "15664",
+        "15665"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-dupont-station",
+      "name": "Dupont Station",
+      "latitude": 43.674349,
+      "longitude": -79.40689,
+      "gtfs_platform_stop_ids": [
+        "13827",
+        "13828"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-eglinton-station",
+      "name": "Eglinton Station",
+      "latitude": 43.705598,
+      "longitude": -79.39864,
+      "gtfs_platform_stop_ids": [
+        "13795",
+        "13796"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-finch-station",
+      "name": "Finch Station",
+      "latitude": 43.780497,
+      "longitude": -79.415492,
+      "gtfs_platform_stop_ids": [
+        "14111",
+        "14944"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-finch-west-station",
+      "name": "Finch West Station",
+      "latitude": 43.764855,
+      "longitude": -79.491118,
+      "gtfs_platform_stop_ids": [
+        "15658",
+        "15659"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-glencairn-station",
+      "name": "Glencairn Station",
+      "latitude": 43.708598,
+      "longitude": -79.440541,
+      "gtfs_platform_stop_ids": [
+        "13833",
+        "13834"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-highway-407-station",
+      "name": "Highway 407 Station",
+      "latitude": 43.783359,
+      "longitude": -79.523454,
+      "gtfs_platform_stop_ids": [
+        "15660",
+        "15661"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-king-station",
+      "name": "King Station",
+      "latitude": 43.649049,
+      "longitude": -79.377888,
+      "gtfs_platform_stop_ids": [
+        "13813",
+        "13814"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-lawrence-station",
+      "name": "Lawrence Station",
+      "latitude": 43.725948,
+      "longitude": -79.40239,
+      "gtfs_platform_stop_ids": [
+        "13793",
+        "13794"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-lawrence-west-station",
+      "name": "Lawrence West Station",
+      "latitude": 43.715266,
+      "longitude": -79.443915,
+      "gtfs_platform_stop_ids": [
+        "13835",
+        "13836"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-museum-station",
+      "name": "Museum Station",
+      "latitude": 43.666599,
+      "longitude": -79.393189,
+      "gtfs_platform_stop_ids": [
+        "13825",
+        "13826"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-north-york-centre-station",
+      "name": "North York Centre Station",
+      "latitude": 43.767947,
+      "longitude": -79.412542,
+      "gtfs_platform_stop_ids": [
+        "13789",
+        "13790"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-osgoode-station",
+      "name": "Osgoode Station",
+      "latitude": 43.651099,
+      "longitude": -79.386688,
+      "gtfs_platform_stop_ids": [
+        "13819",
+        "13820"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-pioneer-village-station",
+      "name": "Pioneer Village Station",
+      "latitude": 43.776746,
+      "longitude": -79.509353,
+      "gtfs_platform_stop_ids": [
+        "15656",
+        "15657"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-queen-station",
+      "name": "Queen Station",
+      "latitude": 43.652749,
+      "longitude": -79.379388,
+      "gtfs_platform_stop_ids": [
+        "13811",
+        "13812"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-queens-park-station",
+      "name": "Queen's Park Station",
+      "latitude": 43.659899,
+      "longitude": -79.390489,
+      "gtfs_platform_stop_ids": [
+        "13823",
+        "13824"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-rosedale-station",
+      "name": "Rosedale Station",
+      "latitude": 43.676649,
+      "longitude": -79.388339,
+      "gtfs_platform_stop_ids": [
+        "13803",
+        "13804"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-sheppard-west-station",
+      "name": "Sheppard West Station",
+      "latitude": 43.749675,
+      "longitude": -79.462387,
+      "gtfs_platform_stop_ids": [
+        "14110",
+        "14945"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-sheppard-yonge-station",
+      "name": "Sheppard-Yonge Station",
+      "latitude": 43.760998,
+      "longitude": -79.410791,
+      "gtfs_platform_stop_ids": [
+        "13859",
+        "13860"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-spadina-station",
+      "name": "Spadina Station",
+      "latitude": 43.669649,
+      "longitude": -79.404989,
+      "gtfs_platform_stop_ids": [
+        "13853",
+        "13854"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-st-andrew-station",
+      "name": "St Andrew Station",
+      "latitude": 43.647649,
+      "longitude": -79.384788,
+      "gtfs_platform_stop_ids": [
+        "13817",
+        "13818"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-st-clair-station",
+      "name": "St Clair Station",
+      "latitude": 43.688049,
+      "longitude": -79.393289,
+      "gtfs_platform_stop_ids": [
+        "13799",
+        "13800"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-st-clair-west-station",
+      "name": "St Clair West Station",
+      "latitude": 43.684548,
+      "longitude": -79.41564,
+      "gtfs_platform_stop_ids": [
+        "13829",
+        "13830"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-st-george-station",
+      "name": "St George Station",
+      "latitude": 43.668399,
+      "longitude": -79.398789,
+      "gtfs_platform_stop_ids": [
+        "13857",
+        "13858"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-st-patrick-station",
+      "name": "St Patrick Station",
+      "latitude": 43.654649,
+      "longitude": -79.388188,
+      "gtfs_platform_stop_ids": [
+        "13821",
+        "13822"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-summerhill-station",
+      "name": "Summerhill Station",
+      "latitude": 43.682699,
+      "longitude": -79.390989,
+      "gtfs_platform_stop_ids": [
+        "13801",
+        "13802"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-tmu-station",
+      "name": "TMU Station",
+      "latitude": 43.656549,
+      "longitude": -79.380988,
+      "gtfs_platform_stop_ids": [
+        "13809",
+        "13810"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-union-station",
+      "name": "Union Station",
+      "latitude": 43.645699,
+      "longitude": -79.380588,
+      "gtfs_platform_stop_ids": [
+        "13815",
+        "13816"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-vaughan-metropolitan-centre-station",
+      "name": "Vaughan Metropolitan Centre Station",
+      "latitude": 43.794021,
+      "longitude": -79.527906,
+      "gtfs_platform_stop_ids": [
+        "15662",
+        "15663"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-wellesley-station",
+      "name": "Wellesley Station",
+      "latitude": 43.665549,
+      "longitude": -79.383638,
+      "gtfs_platform_stop_ids": [
+        "13805",
+        "13806"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-wilson-station",
+      "name": "Wilson Station",
+      "latitude": 43.734448,
+      "longitude": -79.450042,
+      "gtfs_platform_stop_ids": [
+        "13839",
+        "13840"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-york-mills-station",
+      "name": "York Mills Station",
+      "latitude": 43.743848,
+      "longitude": -79.406091,
+      "gtfs_platform_stop_ids": [
+        "13791",
+        "13792"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-york-university",
+      "name": "York University",
+      "latitude": 43.774097,
+      "longitude": -79.499888,
+      "gtfs_platform_stop_ids": [
+        "15666",
+        "15667"
+      ]
+    },
+    {
+      "station_id": "ttc-line1-yorkdale-station",
+      "name": "Yorkdale Station",
+      "latitude": 43.724598,
+      "longitude": -79.447492,
+      "gtfs_platform_stop_ids": [
+        "13837",
+        "13838"
+      ]
+    }
+  ]
+}
