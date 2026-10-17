@@ -77,9 +77,9 @@ export const RunSimulationRequestSchema=z.strictObject({
 });
 export type RunSimulationRequest=z.infer<typeof RunSimulationRequestSchema>;
 export const SimulationListSchema=z.array(NativeBatchSchema);
-export const DeleteSimulationRequestSchema=z.strictObject({id:z.string().uuid()});
+export const DeleteSimulationRequestSchema=z.strictObject({id:z.string().trim().uuid()});
 export const RenameSimulationRequestSchema=z.strictObject({
-  id:z.string().uuid(),
+  id:z.string().trim().uuid(),
   name:z.string().trim().min(1,'Name must be between 1 and 80 characters.').max(80,'Name must be between 1 and 80 characters.'),
 });
 export type RenameSimulationRequest=z.infer<typeof RenameSimulationRequestSchema>;

@@ -39,13 +39,11 @@ export function HeadwaySelector({ value, onChange, onValidityChange, disabled }:
     <div className="headway-custom-row">
       <label className="headway-custom" htmlFor="headway-custom">Custom headway (s)
         <input id="headway-custom" type="number" required min={CUSTOM_MIN_S} max={maximum} step="any"
-          value={draft} disabled={disabled} aria-invalid={Boolean(error)} aria-describedby="headway-custom-help"
+          value={draft} disabled={disabled} aria-invalid={Boolean(error)} aria-describedby={error ? 'headway-custom-help' : undefined}
           onChange={event => edit(event.target.value)} />
       </label>
       <button type="button" className="analysis-text-button" disabled={disabled} onClick={() => edit(String(maximum))}>Use today’s service ↗</button>
     </div>
-    <p id="headway-custom-help" className={error ? 'analysis-field-error' : 'analysis-help'}>
-      {error ?? 'Drag to explore, or type an exact interval in seconds.'}
-    </p>
+    {error && <p id="headway-custom-help" className="analysis-field-error">{error}</p>}
   </div>
 }

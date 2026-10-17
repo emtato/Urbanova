@@ -33,7 +33,7 @@ export function nativeBatchSchema(event: z.ZodType, passenger: z.ZodType, street
   });
   return z.strictObject({
     id: z.string().min(1),
-    name: z.string().min(1).max(80).optional(),
+    name: z.string().min(1).max(80).nullish().transform(v => v ?? undefined),
     overall_results: z.strictObject({
       run_count: z.int().positive(), seeds: z.array(z.int()).min(1),
       metrics: z.record(z.string(), RunStatisticsSchema),

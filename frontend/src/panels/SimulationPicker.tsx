@@ -23,7 +23,10 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
 
   const handleDelete = async (simulation: SavedSimulation) => {
     if (deletingId) return
-    if (!window.confirm(`Delete simulation "${simulation.name}"? This cannot be undone.`)) return
+    const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+      ? window.confirm(`Delete simulation "${simulation.name}"? This cannot be undone.`)
+      : true
+    if (!confirmed) return
     setDeletingId(simulation.id)
     setActionError('')
     try {
@@ -46,7 +49,9 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
         top: rect.bottom + height + 8 < window.innerHeight ? rect.bottom + 8 : Math.max(12, rect.top - height - 8) })
     }
     const outside = (event: PointerEvent) => {
-      if (!popup.current?.contains(event.target as Node) && !trigger.current?.contains(event.target as Node)) setOpen(false)
+      const target = event.target as Node | null
+      if (!target || !target.isConnected) return
+      if (!popup.current?.contains(target) && !trigger.current?.contains(target)) setOpen(false)
     }
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { event.preventDefault(); close() } }
     place()

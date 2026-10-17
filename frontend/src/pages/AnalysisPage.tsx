@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { ArrowLeft, ArrowUpRight, Building2, Clock3, Play, Settings2, TrainFront } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Play, Settings2 } from 'lucide-react'
 import { simulationTimes } from '../lib/analysisParameters'
 import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, renameSimulation, runSimulation, setUseFixture } from '../lib/api'
 import type { Scenario } from '../lib/types'
@@ -128,7 +128,8 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   }
 
   async function handleRename(id: string, currentName: string) {
-    const newName = window.prompt('Enter new name for simulation:', currentName)
+    const promptFn = typeof window !== 'undefined' && typeof window.prompt === 'function' ? window.prompt : null
+    const newName = promptFn ? promptFn('Enter new name for simulation:', currentName) : null
     if (newName === null) return
     const trimmed = newName.trim()
     if (!trimmed || trimmed.length > 80) {
@@ -145,7 +146,10 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm('Delete this simulation? This cannot be undone.')) return
+    const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+      ? window.confirm('Delete this simulation? This cannot be undone.')
+      : true
+    if (!confirmed) return
     setError('')
     try {
       await deleteSimulation(id)
@@ -163,20 +167,14 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     <div className="analysis-shell">
     <nav className="analysis-nav" aria-label="Simulation navigation">
       <button onClick={() => onNavigate('/')}><ArrowLeft size={15} /> Policy briefing</button>
-      <span className="analysis-nav-label">FUTUREPROOF <span>/</span> SCENARIO LAB</span>
       <button onClick={() => { setActiveSimulation(currentBatch?.id ?? null); setUseFixture(false); onNavigate('/map') }}>View map <ArrowUpRight size={15} /></button>
     </nav>
     <header className="analysis-hero">
       <div>
-        <p className="analysis-eyebrow"><span /> LIVE SCENARIO EXPERIMENT</p>
-        <h1>A better morning,<br /><em>one scenario at a time.</em></h1>
-        <p className="analysis-intro">Explore how new homes and more frequent streetcars change the westbound 505 commute.</p>
+        <h1>Run simulation</h1>
+        <p className="analysis-intro">505 Dundas westbound · Broadview → TMU / Yonge</p>
       </div>
-      <div className="analysis-route-card">
-        <span className="analysis-route-tag"><TrainFront size={15} /> 505 DUNDAS · WESTBOUND</span>
-        <div className="analysis-route-line"><span>Broadview</span><span aria-hidden="true">→</span><span>TMU / Yonge</span></div>
-        <p className={`analysis-health${health === 'API and database connected' ? ' is-connected' : ''}`} role="status"><span />{health}</p>
-      </div>
+      <p className={`analysis-health${health === 'API and database connected' ? ' is-connected' : ''}`} role="status"><span />{health}</p>
     </header>
     {error && <p role="alert" className="analysis-error">{error}</p>}
     <form onSubmit={submit} className="analysis-form" aria-label="Simulation configuration">
@@ -184,20 +182,18 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
         <legend className="analysis-sr-only">Proposed developments and simulation parameters</legend>
         <div className="analysis-configuration">
           <section className="analysis-card analysis-developments" aria-labelledby="developments-title">
-            <div className="analysis-card-heading"><span className="analysis-icon"><Building2 size={19} /></span><div><span className="analysis-step">01 / HOUSING</span><h2 id="developments-title">Build your scenario</h2></div></div>
-            <p className="analysis-help">Include proposed buildings to explore their impact on the corridor.</p>
+            <div className="analysis-card-heading"><h2 id="developments-title">Proposed developments</h2></div>
             <div className="analysis-building-list">
               {defaults?.developments.map(d => <label key={d.id} className={`analysis-building${includedDevs[d.id] ? ' is-included' : ''}`}>
                 <input type="checkbox" checked={Boolean(includedDevs[d.id])} onChange={e => setIncludedDevs({ ...includedDevs, [d.id]: e.target.checked })} />
                 <span className="analysis-building-copy"><strong>{d.name}</strong><span><b>+{d.net_added_units.toLocaleString()}</b> net-added homes</span></span>
-                <Building2 size={23} aria-hidden="true" />
               </label>)}
               {!defaults && <p className="analysis-help">Loading proposed buildings…</p>}
             </div>
             <div className="analysis-selection-summary"><span>{includedCount} of {defaults?.developments.length ?? 3} buildings selected</span><strong>+{includedUnits.toLocaleString()} <small>homes</small></strong></div>
           </section>
           <section className="analysis-card analysis-service" aria-labelledby="service-title">
-            <div className="analysis-card-heading"><span className="analysis-icon is-cyan"><TrainFront size={19} /></span><div><span className="analysis-step">02 / SERVICE</span><h2 id="service-title">Set the frequency</h2></div></div>
+            <div className="analysis-card-heading"><h2 id="service-title">Simulation settings</h2></div>
             <HeadwaySelector value={headwayS} onChange={setHeadwayS} onValidityChange={setHeadwayValid} disabled={busy || !defaults} />
             <div className="analysis-runs-control">
               <div className="analysis-control-heading"><div><label htmlFor="simulation-runs">Number of runs</label><p className="analysis-help">Repeat with a different seed for each trial</p></div><output htmlFor="simulation-runs" className="analysis-value">{runCount}<small> / 25</small></output></div>
@@ -207,7 +203,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
             </div>
           </section>
           <section className="analysis-card analysis-timing" aria-labelledby="timing-title">
-            <div className="analysis-card-heading"><span className="analysis-icon is-amber"><Clock3 size={19} /></span><div><span className="analysis-step">03 / TIME WINDOW</span><h2 id="timing-title">Choose your morning</h2></div></div>
+            <div className="analysis-card-heading"><h2 id="timing-title">Time window</h2></div>
             <div className="analysis-time-grid">
               <label htmlFor="start-hours">Start time (hours)<div className="analysis-unit-input"><input id="start-hours" required type="number" min={0} max={24} step="any" value={startHours} onChange={e => setStartHours(e.target.value)} aria-describedby="time-input-help" /><span>h</span></div></label>
               <label htmlFor="end-hours">End time (hours)<div className="analysis-unit-input"><input id="end-hours" required type="number" min={0} max={48} step="any" value={endHours} onChange={e => setEndHours(e.target.value)} aria-describedby="time-input-help" /><span>h</span></div></label>
@@ -216,7 +212,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
             <p id="time-input-help" className="analysis-help">Use 24-hour time: 7 = 07:00, 7.5 = 07:30. Duration is in hours.</p>
             {times.error && <p className="analysis-field-error" role="alert">{times.error}</p>}
             <details className="analysis-advanced">
-              <summary><Settings2 size={15} /> Randomness &amp; seed <span>Advanced</span></summary>
+              <summary><Settings2 size={15} /> Randomness &amp; seed</summary>
               <div className="analysis-advanced-grid">
                 <label htmlFor="simulation-seed">Starting seed<input id="simulation-seed" required type="number" min={0} max={2147483647} step={1} value={seed} onChange={e => setSeed(Number(e.target.value))} /></label>
                 <label htmlFor="headway-randomness">Headway randomness (s)<input id="headway-randomness" required type="number" min={0} max={headwayS} step="any" value={headwayRandomnessS} onChange={e => setHeadwayRandomnessS(Number(e.target.value))} /></label>
@@ -228,8 +224,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
           </section>
         </div>
         <div className="analysis-launch">
-          <div><span className="analysis-step">READY WHEN YOU ARE</span><p>{includedCount ? `${includedCount} proposed ${includedCount === 1 ? 'building' : 'buildings'}` : 'Existing homes only'} <span>·</span> {Number((headwayS / 60).toFixed(2))} min headway <span>·</span> {runCount} {runCount === 1 ? 'trial' : 'trials'}</p></div>
-          <button className="analysis-run-button" type="submit" disabled={!canRun}><Play size={17} fill="currentColor" />{busy ? progress || 'Running simulation…' : 'Run simulation'}{!busy && <ArrowUpRight size={17} />}</button>
+          <button className="analysis-run-button" type="submit" disabled={!canRun}><Play size={17} fill="currentColor" />{busy ? progress || 'Running simulation…' : 'Run simulation'}</button>
         </div>
       </fieldset>
     </form>
