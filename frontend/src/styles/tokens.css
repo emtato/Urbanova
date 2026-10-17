@@ -309,3 +309,51 @@
   border-bottom: 1px solid rgba(245, 158, 11, 0.4);
   z-index: 1000;
 }
+
+/* =========================================================================
+   7. D14 Accessibility Pass (WCAG 2.1 AA)
+   ========================================================================= */
+
+/* Visible Focus for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #06b6d4 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.6) !important;
+}
+
+.theme-sunlight :focus-visible {
+  outline: 2px solid #0f172a !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 8px rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Pause and eliminate motion for users with vestibular / motion sensitivities */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-pulse,
+  .animate-fade-rise {
+    animation: none !important;
+  }
+}
+
+/* Accessible screen-reader text alternative */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+

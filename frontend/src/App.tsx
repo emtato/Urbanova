@@ -1,9 +1,11 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { ContractLandingPage } from './pages/ContractLandingPage'
+import { sampleComparison } from './lib/sampleComparison'
 
 const CorridorMapPage = lazy(() => import('./pages/CorridorMapPage'))
+const ListView = lazy(() => import('./views/ListView'))
 const AnalysisPage = lazy(() => import('./pages/AnalysisPage').then(module => ({ default: module.AnalysisPage })))
-const route = (path: string) => path.startsWith('/analysis') ? '/analysis' : path.startsWith('/map') ? '/map' : '/'
+const route = (path: string) => path.startsWith('/analysis') ? '/analysis' : path.startsWith('/map') ? '/map' : path.startsWith('/list') ? '/list' : '/'
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -42,6 +44,23 @@ export function App() {
         }
       >
         <CorridorMapPage onNavigate={navigate} />
+      </Suspense>
+    )
+  }
+
+  if (currentPath === '/list') {
+    return (
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-screen w-screen bg-background text-foreground font-mono text-sm">
+            Loading 2D Corridor Data Inventory...
+          </div>
+        }
+      >
+        <ListView
+          comparison={sampleComparison as any}
+          onSwitchToMap={() => navigate('/map')}
+        />
       </Suspense>
     )
   }
