@@ -13,6 +13,10 @@ export function App() {
   const [activePhase] = useState<number>(2)
   const [showDrawer, setShowDrawer] = useState(false)
   const [showFixturePopup, setShowFixturePopup] = useState(true)
+  const [shadowsEnabled, setShadowsEnabled] = useState(false)
+  const [hideAllPopups, setHideAllPopups] = useState(false)
+  const [isStopMinimized, setIsStopMinimized] = useState(false)
+  const [isDevMinimized, setIsDevMinimized] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -64,9 +68,13 @@ export function App() {
   const growthCase = comparison.cases.find((c) => c.kind === 'growth')
 
   return (
-    <div className="flex flex-col w-screen h-screen overflow-hidden bg-background text-foreground font-body">
+    <div
+      className={`flex flex-col w-screen h-screen overflow-hidden ${
+        shadowsEnabled ? 'theme-sunlight bg-amber-50/20 text-slate-900' : 'bg-background text-foreground'
+      } font-body transition-colors duration-500`}
+    >
       {/* Floating Fixture Mode Alert Popup */}
-      {usingFixture && showFixturePopup && (
+      {usingFixture && showFixturePopup && !hideAllPopups && (
         <div
           role="status"
           className="fixed bottom-6 right-6 z-50 max-w-md animate-fade-rise bg-amber-950/90 text-amber-100 border border-amber-500/60 rounded-2xl p-4 shadow-2xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -191,6 +199,7 @@ export function App() {
                     onClick={() => {
                       setSelectedDev(dev)
                       setSelectedStop(null)
+                      setIsDevMinimized(false)
                     }}
                     className={`liquid-glass rounded-full px-3.5 py-1.5 text-xs transition-all flex items-center gap-2 cursor-pointer ${
                       isSelected
@@ -253,35 +262,82 @@ export function App() {
           selectedStopId={selectedStop?.stop_id}
           selectedDevId={selectedDev?.dev_id}
           activePhase={activePhase}
+          shadowsEnabled={shadowsEnabled}
+          onToggleShadows={setShadowsEnabled}
+          hideAllPopups={hideAllPopups}
+          onToggleHideAllPopups={() => setHideAllPopups((prev) => !prev)}
           onSelectStop={(stop) => {
             setSelectedStop(stop)
             setSelectedDev(null)
+            setIsStopMinimized(false)
           }}
           onSelectDevelopment={(dev) => {
             setSelectedDev(dev)
             setSelectedStop(null)
+            setIsDevMinimized(false)
           }}
         />
 
         {/* Selected Development Panel (Lane D4) */}
-        {selectedDev && (
+        {selectedDev && !hideAllPopups && (
           <div className="!absolute top-6 right-6 z-30">
             <DevelopmentPanel
               development={selectedDev}
               stops={comparison.corridor.stops}
+              isMinimized={isDevMinimized}
+              onToggleMinimize={() => setIsDevMinimized((prev) => !prev)}
               onClose={() => setSelectedDev(null)}
               onSelectStop={(stop) => {
                 setSelectedStop(stop)
                 setSelectedDev(null)
+                setIsStopMinimized(false)
               }}
             />
           </div>
         )}
 
         {/* Selected Stop Inspector Panel (Floating Top Right) */}
-        {selectedStop && !selectedDev && (() => {
+        {selectedStop && !selectedDev && !hideAllPopups && (() => {
           const currentStopResult = currentCase?.stops.find((s) => s.stop_id === selectedStop.stop_id)
           const growthStopResult = growthCase?.stops.find((s) => s.stop_id === selectedStop.stop_id)
+
+          if (isStopMinimized) {
+            return (
+              <div className="!absolute top-6 right-6 z-30 animate-fade-rise">
+                <div className="liquid-glass rounded-full px-4 py-2 shadow-2xl flex items-center gap-3 border border-border/40">
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse shrink-0" />
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="text-xs font-semibold text-foreground truncate">
+                      {selectedStop.name}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+                      #{selectedStop.gtfs_stop_id}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 border-l border-border/40 pl-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsStopMinimized(false)}
+                      className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
+                      title="Expand stop details"
+                      aria-label="Expand stop details"
+                    >
+                      ▾
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStop(null)}
+                      className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          }
 
           return (
             <div className="!absolute top-6 right-6 w-[360px] z-30 max-h-[calc(100vh-14rem)] overflow-y-auto animate-fade-rise liquid-glass-panel rounded-2xl p-6 shadow-2xl">
@@ -290,13 +346,26 @@ export function App() {
                   <span className="status-chip status-chip-sourced">
                     TTC STOP #{selectedStop.gtfs_stop_id}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStop(null)}
-                    className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-                  >
-                    ✕
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsStopMinimized(true)}
+                      className="text-muted-foreground hover:text-foreground text-sm p-1 transition-colors cursor-pointer font-bold leading-none"
+                      title="Minimize panel"
+                      aria-label="Minimize panel"
+                    >
+                      −
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStop(null)}
+                      className="text-muted-foreground hover:text-foreground text-sm p-1 transition-colors cursor-pointer"
+                      title="Close panel"
+                      aria-label="Close panel"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
 
                 <h3

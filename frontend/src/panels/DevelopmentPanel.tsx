@@ -7,6 +7,8 @@ export interface DevelopmentPanelProps {
   stops: Stop[]
   onClose: () => void
   onSelectStop?: (stop: Stop) => void
+  isMinimized?: boolean
+  onToggleMinimize?: () => void
   className?: string
 }
 
@@ -59,6 +61,8 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
   stops,
   onClose,
   onSelectStop,
+  isMinimized = false,
+  onToggleMinimize,
   className = '',
 }) => {
   const meta = REVIEWED_METADATA[development.dev_id]
@@ -72,6 +76,51 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
   const aicUrl = meta?.applicationUrl ?? 'http://app.toronto.ca/AIC/'
 
   const isUnderReview = development.stage.toLowerCase().includes('review')
+
+  if (isMinimized) {
+    return (
+      <div
+        data-testid="development-panel"
+        className={`liquid-glass rounded-full px-4 py-2 shadow-2xl animate-fade-rise flex items-center gap-3 border border-border/40 ${className}`}
+      >
+        <span
+          className={`w-2.5 h-2.5 rounded-full ${
+            phase === 1 ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]' : 'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
+          } animate-pulse shrink-0`}
+        />
+        <div className="flex items-baseline gap-1.5 min-w-0">
+          <span className="text-xs font-semibold text-foreground truncate">
+            {development.address}
+          </span>
+          <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+            ({development.units.toLocaleString()}u)
+          </span>
+        </div>
+        <div className="flex items-center gap-1 border-l border-border/40 pl-2 shrink-0">
+          {onToggleMinimize && (
+            <button
+              type="button"
+              onClick={onToggleMinimize}
+              className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
+              title="Expand development details"
+              aria-label="Expand development details"
+            >
+              ▾
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
+            title="Close development panel"
+            aria-label="Close development panel"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -97,23 +146,36 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
           </span>
         </div>
 
-        <button
-          type="button"
-          data-testid="close-panel-btn"
-          onClick={onClose}
-          aria-label="Close Development Panel"
-          className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-full hover:bg-white/10"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
+        <div className="flex items-center gap-1 shrink-0">
+          {onToggleMinimize && (
+            <button
+              type="button"
+              onClick={onToggleMinimize}
+              aria-label="Minimize Development Panel"
+              className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-full hover:bg-white/10 text-xs font-bold leading-none cursor-pointer"
+              title="Minimize panel"
+            >
+              −
+            </button>
+          )}
+          <button
+            type="button"
+            data-testid="close-panel-btn"
+            onClick={onClose}
+            aria-label="Close Development Panel"
+            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-full hover:bg-white/10 cursor-pointer"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Main Title & Application Info */}

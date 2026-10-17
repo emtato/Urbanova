@@ -59,14 +59,16 @@
    3. Liquid Glass Effect
    ========================================================================= */
 .liquid-glass {
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(15, 23, 42, 0.45);
   background-blend-mode: luminosity;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: none;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 1px rgba(255, 255, 255, 0.15);
   position: relative;
   overflow: hidden;
+  color: #f8fafc;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .liquid-glass::before {
@@ -87,11 +89,107 @@
 
 /* Subtler panel variation */
 .liquid-glass-panel {
-  background: rgba(4, 21, 38, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  background: rgba(8, 20, 36, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* =========================================================================
+   3b. Sunlight Theme - Light Liquid Glass Mode with Crisp Black Text
+   ========================================================================= */
+.theme-sunlight .liquid-glass,
+.liquid-glass.light-glass {
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 12px 32px 0 rgba(71, 85, 105, 0.2), inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  color: #0f172a !important;
+}
+
+.theme-sunlight .liquid-glass::before,
+.liquid-glass.light-glass::before {
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 30%,
+    rgba(255,255,255,0) 50%,
+    rgba(255,255,255,0.4) 80%, rgba(255,255,255,0.95) 100%) !important;
+}
+
+.theme-sunlight .liquid-glass-panel,
+.liquid-glass-panel.light-glass {
+  background: rgba(255, 255, 255, 0.84) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 24px 50px rgba(51, 65, 85, 0.22), inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  color: #0f172a !important;
+}
+
+/* Text & border adaptations when sunlight theme is active */
+.theme-sunlight {
+  --foreground: 222 47% 11%;
+  --muted-foreground: 215 16% 40%;
+}
+
+.theme-sunlight .text-foreground {
+  color: #0f172a !important;
+}
+.theme-sunlight .text-muted-foreground {
+  color: #334155 !important;
+}
+.theme-sunlight header {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-bottom-color: rgba(203, 213, 225, 0.8) !important;
+}
+.theme-sunlight .border-border\/30,
+.theme-sunlight .border-border\/40,
+.theme-sunlight .border-border\/60 {
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+.theme-sunlight .bg-black\/30,
+.theme-sunlight .bg-black\/40 {
+  background-color: rgba(241, 245, 249, 0.75) !important;
+}
+.theme-sunlight .bg-amber-950\/40,
+.theme-sunlight .bg-amber-950\/30 {
+  background-color: rgba(254, 243, 199, 0.75) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+.theme-sunlight .text-orange-300 {
+  color: #c2410c !important;
+}
+.theme-sunlight .text-amber-300,
+.theme-sunlight .text-amber-200 {
+  color: #b45309 !important;
+}
+.theme-sunlight .bg-emerald-950\/40,
+.theme-sunlight .bg-emerald-950\/30 {
+  background-color: rgba(209, 250, 229, 0.75) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+.theme-sunlight .text-emerald-300 {
+  color: #047857 !important;
+}
+.theme-sunlight .text-cyan-200,
+.theme-sunlight .text-cyan-300 {
+  color: #0e7490 !important;
+}
+.theme-sunlight .text-rose-400 {
+  color: #be123c !important;
+}
+.theme-sunlight .status-chip-sourced {
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #047857 !important;
+  border-color: #059669 !important;
+}
+.theme-sunlight .status-chip-assumed {
+  background: rgba(139, 92, 246, 0.16) !important;
+  color: #6d28d9 !important;
+  border-color: #7c3aed !important;
 }
 
 /* =========================================================================
