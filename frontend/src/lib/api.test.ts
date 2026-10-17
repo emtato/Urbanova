@@ -9,6 +9,7 @@ import {
   runAnalysis,
   fetchNativeReplay,
   fetchNativeMetrics,
+  API_BASE_URL,
 } from './api'
 
 describe('D1: API Client & Fixture Service (Contract 1.0.0)', () => {
@@ -81,7 +82,7 @@ describe('Live B11 transport', () => {
     const run = runAnalysis({ capital_budget_cad: 500000 }, { seed_ids: [7], draws_id: 'paired-browser-test' })
     await vi.advanceTimersByTimeAsync(1000)
     expect(await run).toEqual(result)
-    expect(fetchMock.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/api/scenarios', `/api/scenarios/${sampleComparison.scenario.scenario_id}/patch`, '/api/jobs', '/api/jobs/job-id', '/api/results/stored-id'])
+    expect(fetchMock.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/scenarios', `/scenarios/${sampleComparison.scenario.scenario_id}/patch`, '/jobs', '/jobs/job-id', '/results/stored-id'].map(path => API_BASE_URL + path))
     const options = (fetchMock.mock.calls[2] as unknown[])[1] as RequestInit
     expect(JSON.parse(String(options.body))).toMatchObject({ version: 2, evaluator: 'b11', retain_replay: true, random: { seed_ids: [7], draws_id: 'paired-browser-test' } })
   })
@@ -101,7 +102,7 @@ describe('Live B11 transport', () => {
     vi.stubGlobal('fetch', fetchMock)
     expect((await fetchNativeReplay('stored-id')).format_version).toBe('b11-events-v1')
     expect((await fetchNativeMetrics('stored-id')).format_version).toBe('b11-metrics-v1')
-    expect(fetchMock.mock.calls.map(call => call[0])).toEqual(['/api/replay/stored-id', '/api/results/stored-id/b11-metrics'])
+    expect(fetchMock.mock.calls.map(call => call[0])).toEqual(['/replay/stored-id', '/results/stored-id/b11-metrics'].map(path => API_BASE_URL + path))
     setUseFixture(false)
     await expect(fetchReplayStream('stored-id')).rejects.toThrow('B11 replay viewer')
   })
