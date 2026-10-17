@@ -4,6 +4,7 @@ from copy import deepcopy
 from dataclasses import asdict
 from math import isfinite
 from random import Random
+from time import perf_counter
 
 # commute.py helpers:
 #   corridor_505_share(home_lat, home_lon, corridor_stops)
@@ -15,6 +16,7 @@ from random import Random
 #      travel outside this corridor model.
 from .commute import corridor_505_share, sample_streetcar_trip
 from .inputs import SimulationInput
+from .metrics import analyze_simulation
 from .objects import Passenger, SimLog, Streetcar
 from .objects.sim_log import SimAction
 
@@ -177,14 +179,14 @@ def seed_incoming_passengers(
 
 
 def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | None = None) -> dict:
-    """Run streetcars and passengers and return their activity and final state as JSON-ready data.
+    """Run streetcars and passengers and return their activity, final state, and summary metrics.
 
     start/end are service-day seconds; activity and vehicle times are elapsed
     from the start. Actions happen on whole-second ticks once their time is due.
     Entry stops at the earlier of the rush-window end or run end.
     Cars still travelling at run end stay in transit in the saved state.
     """
-    # TODO: Add summary metrics.
+    run_start_s = perf_counter()
 
     # Read the clock boundaries that control how long this simulation runs.
     start_time = inputs.start_time_s
@@ -317,13 +319,15 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             begin_stop_service(streetcar, elapsed_s)
             next_entry_s = next(entry_times, None)
 
-    # Package the inputs, final state and activity history as JSON-ready saved-run data.
+    # Package the inputs, final state, activity history, and summary metrics as JSON-ready saved-run data.
     saved_inputs = asdict(inputs)
     for stop in saved_inputs["stops"]:
         stop["waiting_passenger_ids"] = list(stop["waiting_passenger_ids"])
-    return {
+    run_data = {
         "inputs": saved_inputs,
         "streetcars": [asdict(streetcar) for streetcar in streetcars],
         "passengers": [asdict(passenger) for passenger in passengers.values()],
         "sim_log": [asdict(entry) for entry in sim_log],
     }
+    run_data["summary"] = analyze_simulation(run_data, runtime_s=perf_counter() - run_start_s)
+    return run_data

@@ -151,6 +151,15 @@ def test_terminus_boarding_handles_overcrowding_and_wait_detection():
     assert passengers["p2"].status == "beyond_segment"
     assert len(stops[1].waiting_passenger_ids) == 0
 
+    summary = res["summary"]
+    assert summary["overview"]["corridor_passengers"] == 2
+    assert summary["overview"]["completed_corridor_passengers"] == 2
+    assert summary["overview"]["denied_boarding_count"] == 1
+    assert summary["overview"]["denied_boarding_share"] == pytest.approx(0.5)
+    assert summary["overview"]["peak_streetcar_load"] == 1
+    assert summary["overview"]["conservation_valid"] is True
+    assert summary["overcrowding"]["worst_stop_by_denied_share"]["stop_id"] == "s1"
+
 
 def test_run_simulation_generates_passengers_via_commute_helper():
     from backend.simulation.inputs import SimulationInput
@@ -196,6 +205,17 @@ def test_run_simulation_generates_passengers_via_commute_helper():
     assert all(p["origin_stop_id"] == "ttc-stop-1756" for p in incoming_riders)
     assert any(p["status"] in ("arrived", "beyond_segment") for p in result["passengers"])
 
+    summary = result["summary"]
+    assert summary["overview"]["new_development_passengers"] == len(new_riders)
+    assert summary["overview"]["incoming_broadview_passengers"] == len(incoming_riders)
+    assert summary["overview"]["existing_corridor_passengers"] == 0
+    assert summary["overview"]["conservation_valid"] is True
+    assert len(summary["by_stop"]) == len(corridor_stops)
+    assert len(summary["by_development"]) == 1
+    assert summary["by_development"][0]["development_id"] == "dev-500-dundas"
+    assert summary["by_development"][0]["passengers"] == len(new_riders)
+    assert len(summary["contract"]["stop_results"]) == 2 * len(corridor_stops)
+
 
 def test_corridor_505_share_bands():
     from backend.simulation.commute import (
@@ -214,3 +234,4 @@ def test_corridor_505_share_bands():
     assert corridor_505_share(LAT - (0.30 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 1.0
     assert corridor_505_share(LAT - (0.50 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.5
     assert corridor_505_share(LAT - (0.70 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.0
+
