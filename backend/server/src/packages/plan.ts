@@ -25,6 +25,7 @@ export function evaluationPlan(request:EvaluationRequest) {
     corridor,source_manifest:sourceManifest,field_metadata:reviewed.field_metadata,
     data_version:dataVersion,model_version:simulationModelVersion,
     demand_factors:request.demand_factors??{low:.8,central:1,high:1.2},
+    operations:request.operations??{warmup_s:0,clearance_s:0},
   };
 }
 export interface B11Adapter {evaluate(plan:ReturnType<typeof evaluationPlan>):{comparison:NativeComparison;delayedComparison:NativeComparison}|Promise<{comparison:NativeComparison;delayedComparison:NativeComparison}>}

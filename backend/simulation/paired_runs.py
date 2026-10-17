@@ -5,7 +5,7 @@ not yet guarantee vehicle/link-matched draws when packages change event order
 (B2). It does not convert results into Lane C's Comparison/replay contract.
 """
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import replace
 from statistics import mean, median, stdev
@@ -64,6 +64,7 @@ def run_repeated_simulations(
     run_count: int = 20,
     seeds: Sequence[int] | None = None,
     batch_id: str | None = None,
+    result_transform: Callable[[dict], dict] | None = None,
 ) -> dict:
     """Return id, overall_results and an ordered array of untouched single-run dictionaries.
 
@@ -88,7 +89,9 @@ def run_repeated_simulations(
         run_start = perf_counter()
         result = run_simulation(replace(deepcopy(inputs), seed=seed))
         runtimes.append(perf_counter() - run_start)
-        results.append(result)
+        # API callers keep full dictionaries by default. Package comparisons
+        # can retain summaries immediately, bounding memory across many seeds.
+        results.append(result_transform(result) if result_transform else result)
 
     overviews = [result["summary"]["overview"] for result in results]
     metric_names = [

@@ -941,7 +941,29 @@
     "stop_dwell_range_s": [
       15,
       30
-    ]
+    ],
+    "max_corridor_delay_s": 0,
+    "entry_schedule_s": [
+      169,
+      769,
+      1069,
+      1369,
+      1969,
+      2569,
+      3226,
+      3646,
+      4006,
+      4366,
+      4726,
+      5086,
+      5446,
+      5806,
+      6166,
+      6526,
+      6886
+    ],
+    "warmup_duration_s": 0,
+    "clearance_s": 0
   },
   "evidence": {
     "developments": [
@@ -1186,6 +1208,32 @@
       "source_ids": [],
       "meaning": "Each stop's dwell is drawn uniformly from this range. Scheduled link times may already include some dwell, so this can double count.",
       "defined_in": "backend/simulation/runner.py (run_simulation)"
+    },
+    "entry_schedule_s": {
+      "status": "sourced",
+      "unit": "elapsed seconds",
+      "meaning": "GTFS entries; regular service outside the measured window is assumed.",
+      "source_ids": [
+        "ttc-gtfs"
+      ]
+    },
+    "warmup_duration_s": {
+      "status": "assumed",
+      "unit": "seconds",
+      "meaning": "Pre-window operation, excluded from recorded replay events.",
+      "source_ids": []
+    },
+    "clearance_s": {
+      "status": "assumed",
+      "unit": "seconds",
+      "meaning": "Additional post-window service and reporting time.",
+      "source_ids": []
+    },
+    "max_corridor_delay_s": {
+      "status": "assumed",
+      "unit": "seconds/corridor",
+      "meaning": "Upper bound of one shared corridor delay split across links; zero disables it.",
+      "source_ids": []
     }
   }
 }

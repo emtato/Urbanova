@@ -7,10 +7,11 @@ import { hash } from '../core/cache.js';
 import type { Comparison, Scenario } from '../shared/schemas.js';
 import { NativeBatchSchema, NativeReplaySchema,type NativeReplay } from '../shared/schemas.js';
 import type { NativeBatch } from '../shared/nativeResults.js';
-import { defaultScenario, reviewed, corridor, dataVersion,simulationModelVersion } from '../services/bundle.js';
+import { defaultScenario, reviewed, corridor, dataVersion,simulationModelVersion,workerTag } from '../services/bundle.js';
 import { ApiError } from '../core/errors.js';
 import { checkedComparison } from '../services/comparisonIntegrity.js';
 import { checkNativeBatch } from '../services/nativeIntegrity.js';
+import { seedBundle } from './seedBundle.js';
 export type Job={job_id:string;scenario_id:string;scenario_version:number;status:'queued'|'running'|'completed'|'failed';comparison_id:string|null;error:string|null;stale:boolean;notice:string;package_screen:unknown;payload:any;lease_token:string};
 export type EvaluationResult={comparison:Comparison;delayedComparison?:Comparison;native_replay?:NativeReplay|null;native_metrics?:{run_id:string;summary:unknown}[];package_screen:unknown;notice:string};
 export type PastRun={comparison_id:string;scenario_id:string;scenario_version:number;created_at:string;contract_version:string;fixture:boolean};
@@ -37,13 +38,14 @@ export class PgStore implements Store {
     // Preserve the URL's libpq sslmode semantics, matching the existing psycopg
     // service. In particular require encrypts; verify-full verifies hostname/CA.
     if(url){const parsed=new URL(url);if(parsed.searchParams.get('sslmode')==='require'&&!parsed.searchParams.has('uselibpqcompat')){parsed.searchParams.set('uselibpqcompat','true');url=parsed.toString();}}
-    this.pool=new Pool({connectionString:url,max:5,connectionTimeoutMillis:5000,statement_timeout:10000});this.pool.on('error',()=>console.error('Database pool unavailable'));
+    this.pool=new Pool({connectionString:url,application_name:workerTag,max:5,connectionTimeoutMillis:5000,statement_timeout:10000});this.pool.on('error',()=>console.error('Database pool unavailable'));
   }
   async ping(){await this.pool.query('SELECT 1');}
   async close(){await this.pool.end();}
   async init(){
     if(!settings.databaseUrl) throw new Error('DATABASE_URL is required.');
     await this.pool.query(readFileSync(resolve(ROOT,'backend/server/db/schema.sql'),'utf8'));
+    await seedBundle(this.pool);
     await this.pool.query('INSERT INTO c_scenarios(scenario_id,version,payload) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[defaultScenario.scenario_id,defaultScenario.version,defaultScenario]);
     for(const stop of corridor.stops) await this.pool.query('INSERT INTO c_stops VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[dataVersion,stop.id,stop.name]);
     for(const d of reviewed.inputs.developments) for(const stop of d.accessible_stop_ids) await this.pool.query('INSERT INTO c_development_access VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[dataVersion,d.id,stop,JSON.stringify(reviewed.source_ids)]);
@@ -68,6 +70,7 @@ export class PgStore implements Store {
       if(latest.rows[0].version!==s.version)throw new ApiError(409,'Scenario changed before enqueue; reload the latest version.');
       const r=await client.query(`INSERT INTO c_jobs(job_id,scenario_id,scenario_version,cache_key,payload) VALUES($1,$2,$3,$4,$5)
         ON CONFLICT(cache_key) DO UPDATE SET status=CASE WHEN c_jobs.status='failed' THEN 'queued' ELSE c_jobs.status END,
+        payload=CASE WHEN c_jobs.status='failed' THEN EXCLUDED.payload ELSE c_jobs.payload END,
         error=CASE WHEN c_jobs.status='failed' THEN NULL ELSE c_jobs.error END RETURNING *`,[randomUUID(),s.scenario_id,s.version,key,payload]);
       await client.query('COMMIT');return r.rows[0];
     }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
@@ -75,8 +78,11 @@ export class PgStore implements Store {
   async job(id:string){const r=await this.pool.query('SELECT * FROM c_jobs WHERE job_id=$1',[id]);return r.rows[0]??null;}
   async claim(){
     const r=await this.pool.query(`UPDATE c_jobs SET status='running',lease_token=$1,lease_until=now()+interval '150 seconds'
-      WHERE job_id=(SELECT job_id FROM c_jobs WHERE status='queued' OR (status='running' AND lease_until<now())
-      ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`,[randomUUID()]);return r.rows[0]??null;
+      WHERE job_id=(SELECT job_id FROM c_jobs WHERE (status='queued' OR (status='running' AND lease_until<now()))
+      AND (payload->'execution_versions' IS NULL OR
+        (payload->'execution_versions'->>'data_version'=$2 AND payload->'execution_versions'->>'model_version'=$3
+        AND (payload->'execution_versions'->>'simulation_model' IS NULL OR payload->'execution_versions'->>'simulation_model'=$4)))
+      ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`,[randomUUID(),dataVersion,settings.modelVersion,simulationModelVersion]);return r.rows[0]??null;
   }
   async renew(job:Job){const r=await this.pool.query("UPDATE c_jobs SET lease_until=now()+interval '150 seconds' WHERE job_id=$1 AND lease_token=$2 AND status='running' RETURNING job_id",[job.job_id,job.lease_token]);return Boolean(r.rowCount);}
   async fail(job:Job){await this.pool.query("UPDATE c_jobs SET status='failed',error='Evaluation unavailable; retry with a new job after checking worker logs.',lease_until=NULL WHERE job_id=$1 AND lease_token=$2 AND status='running'",[job.job_id,job.lease_token]);}
@@ -91,15 +97,19 @@ export class PgStore implements Store {
         const c=structuredClone(input),replay=retainReplay?c.replay:null;
         c.replay=null;c.comparison_id=comparisonId;
         await client.query('INSERT INTO c_comparisons VALUES($1,$2,$3,$4,$5,$6,now())',[comparisonId,c,job.payload.evaluator==='b11'?job.payload.execution_versions.simulation_model:job.payload.execution_versions?.model_version??settings.modelVersion,job.payload.execution_versions?.data_version??dataVersion,job.scenario_id,job.scenario_version]);
+        const aggregates:unknown[][]=[],native:unknown[][]=[],stops:unknown[][]=[];
         for(const caseResult of c.cases){
-        for(const [i,run] of caseResult.runs.entries()) await client.query(`INSERT INTO c_run_aggregates VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+        for(const [i,run] of caseResult.runs.entries()) aggregates.push(
           [comparisonId,run.run_id,c.scenario.scenario_id,caseResult.phase_id,caseResult.package_id,caseResult.demand_case,run.model_version,run.data_version,hash(c.assumptions),JSON.stringify(run.seed_ids),JSON.stringify(c.sources.map(s=>s.source_id)),{...run.diagnostics,...('individual_results' in caseResult?caseResult.individual_results[i].summary.overview:{}),p95_wait_s:caseResult.per_run_p95_wait_s[i],denied_share:caseResult.per_run_denied_share[i]},c.fixture]);
         for(const [i,run] of caseResult.runs.entries()){
           const summary='individual_results' in caseResult?caseResult.individual_results[i].summary:result.native_metrics?.find(m=>m.run_id===run.run_id)?.summary;
-          if(summary)await client.query('INSERT INTO c_b11_run_metrics VALUES($1,$2,$3)',[comparisonId,run.run_id,summary]);
+          if(summary)native.push([comparisonId,run.run_id,summary]);
         }
-        for(const stop of caseResult.stops) await client.query('INSERT INTO c_stop_aggregates VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[comparisonId,caseResult.case_id,caseResult.phase_id,caseResult.package_id,caseResult.demand_case,stop.stop_id,stop.rider_group,stop]);
+        for(const stop of caseResult.stops) stops.push([comparisonId,caseResult.case_id,caseResult.phase_id,caseResult.package_id,caseResult.demand_case,stop.stop_id,stop.rider_group,stop]);
         }
+        // Bounded parameter batches avoid one network round trip per run/stop.
+        const insert=async(table:string,rows:unknown[][])=>{for(let at=0;at<rows.length;at+=100){const batch=rows.slice(at,at+100),width=batch[0].length;await client.query(`INSERT INTO ${table} VALUES ${batch.map((_,i)=>'('+Array.from({length:width},(_,j)=>'$'+(i*width+j+1)).join(',')+')').join(',')}`,batch.flat());}};
+        await insert('c_run_aggregates',aggregates);await insert('c_b11_run_metrics',native);await insert('c_stop_aggregates',stops);
         if(replay) await client.query('INSERT INTO c_replays VALUES($1,$2,$3)',[comparisonId,replay.run_id,replay]);
       };
       await persist(result.comparison,id,Boolean(job.payload.retain_replay));
@@ -127,7 +137,7 @@ export class PgStore implements Store {
   async nativeReplay(id:string){const r=await this.pool.query('SELECT payload FROM c_b11_replays WHERE comparison_id=$1',[id]);return r.rows[0]?.payload??null;}
   async nativeMetrics(id:string){const r=await this.pool.query('SELECT run_id,payload AS summary FROM c_b11_run_metrics WHERE comparison_id=$1 ORDER BY run_id',[id]);return r.rows;}
   async pastRuns({scenario_id,limit=20,offset=0}:{scenario_id?:string;limit?:number;offset?:number}={}){
-    if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0)throw new ApiError(422,'History limit must be 1–100 and offset a nonnegative integer.');
+    if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0)throw new ApiError(422,'History limit must be 1â€“100 and offset a nonnegative integer.');
     const r=await this.pool.query(`SELECT comparison_id, requested_scenario_id AS scenario_id,
       requested_scenario_version AS scenario_version, created_at::text,
       payload->>'contract_version' AS contract_version, (payload->>'fixture')::boolean AS fixture

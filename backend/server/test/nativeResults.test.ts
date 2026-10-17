@@ -51,10 +51,14 @@ test('native validation rejects altered metrics, missing aggregates, seed order 
 
 test('cohort matching compares initial journeys instead of package-dependent completion counts', async () => {
   const changed = structuredClone((await computed()).comparison);
-  const growth = changed.cases.find(c => c.kind === 'supported_growth')!;
-  const passenger = growth.individual_results[0].passengers[0] as {get_to_stop_time: number};
+  const retained = changed.cases.flatMap(c=>c.individual_results).find(r=>r.inputs.retention==='full-selected-run')!;
+  const passenger = retained.passengers[0] as {get_to_stop_time: number};
   passenger.get_to_stop_time++;
   assert.throws(() => checkedB11Comparison(changed, request), /cohorts/);
+  const compact=structuredClone((await computed()).comparison);
+  const growth=compact.cases.find(c=>c.kind==='supported_growth')!;
+  growth.individual_results[0].inputs.cohort_signature='0'.repeat(64);
+  assert.throws(()=>checkedB11Comparison(compact,request),/cohorts/);
 });
 
 test('package decisions read native metrics and keep in-progress riders separate', async () => {
@@ -101,7 +105,7 @@ function recordingStore(failReplay = false) {
     calls.push({sql, values: structuredClone(values)});
     if (sql.startsWith('SELECT job_id')) return {rows: [{job_id: 'owned'}], rowCount: 1};
     if (sql.startsWith('INSERT INTO c_comparisons')) saved.set(values[0], structuredClone(values[1]));
-    if (sql.startsWith('INSERT INTO c_b11_run_metrics')) native.set(values[0], [...(native.get(values[0]) ?? []), {run_id: values[1], summary: structuredClone(values[2])}]);
+    if (sql.startsWith('INSERT INTO c_b11_run_metrics')) for(let i=0;i<values.length;i+=3)native.set(values[i], [...(native.get(values[i]) ?? []), {run_id: values[i+1], summary: structuredClone(values[i+2])}]);
     if (sql.startsWith('INSERT INTO c_b11_replays')) {
       if (failReplay) throw Error('Injected replay write failure');
       replay.set(values[0], structuredClone(values[2]));

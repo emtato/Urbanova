@@ -95,6 +95,34 @@
       "meaning": "Each stop's dwell is drawn uniformly from this range. Scheduled link times may already include some dwell, so this can double count.",
       "source_ids": [],
       "defined_in": "backend/simulation/runner.py (run_simulation)"
+    },
+    "entry_schedule_s": {
+      "value": [],
+      "unit": "elapsed seconds",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Dated GTFS entries for baseline service; an empty list selects an alternative regular timetable.",
+      "defined_in": "backend/simulation/inputs.py"
+    },
+    "clearance_s": {
+      "value": 0,
+      "unit": "seconds",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Optional later service for the measured cohort; zero preserves the original cutoff.",
+      "defined_in": "backend/simulation/inputs.py"
+    },
+    "max_corridor_delay_s": {
+      "value": 0,
+      "status": "assumed",
+      "unit": "seconds/corridor",
+      "meaning": "Explicit operational assumption; not an observed service measure."
+    },
+    "warmup_duration_s": {
+      "value": 0,
+      "status": "assumed",
+      "unit": "seconds",
+      "meaning": "Explicit operational assumption; not an observed service measure."
     }
   }
 }

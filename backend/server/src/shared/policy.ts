@@ -8,5 +8,7 @@ export const PolicySchema=z.strictObject({
   cost_per_hour:range,lane_capital:range,lane_operating:range,
   price_year:z.int().min(2000).max(2100),earliest_phase:z.string().min(1),
   availability:z.strictObject({lane:z.string().min(1),extra_service:z.string().min(1)}).optional(),
+  lane_travel_time_multiplier:z.number().finite().min(.01).max(1).optional(),
+  lane_link_ids:z.array(z.string().min(1)).min(1).optional(),
   source_ids:z.array(z.string().min(1)).max(100),assumption_label:z.string().min(1).max(2000),
 });

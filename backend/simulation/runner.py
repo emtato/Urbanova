@@ -216,10 +216,13 @@ def run_simulation(
     travel_variation_share = inputs.link_travel_time_variation_share
     if not isfinite(travel_variation_share) or not 0 <= travel_variation_share < 1:
         raise ValueError("Travel-time variation must be finite and between zero (inclusive) and one (exclusive)")
+    if any(not isfinite(value) or value<0 for value in (inputs.clearance_s,inputs.warmup_duration_s,inputs.max_corridor_delay_s)):
+        raise ValueError('Warm-up, clearance and corridor delay must be finite and nonnegative')
+    end_time += inputs.clearance_s
 
     # Keep active cars for updates, all cars for results, and every action for replay.
     duration_s = end_time - start_time
-    entry_end_s = min(inputs.rush_hour_duration_s, duration_s)
+    entry_end_s = min(inputs.rush_hour_duration_s+inputs.clearance_s, duration_s)
     streetcars: list[Streetcar] = []
     active_streetcars: dict[str, Streetcar] = {}
     planned_departure_s: dict[str, float] = {}
@@ -516,6 +519,9 @@ def run_simulation(
 
     # Package the inputs, final state, activity history, and summary metrics as JSON-ready saved-run data.
     saved_inputs = asdict(inputs)
+    saved_inputs['end_time_s']=end_time
+    saved_inputs['analysis_window_elapsed_s']=[0,inputs.rush_hour_duration_s]
+    saved_inputs['warmup_passenger_ids']=[p.id for p in passengers.values() if p.get_to_stop_time<0]
     for stop in saved_inputs["stops"]:
         stop["waiting_passenger_ids"] = list(stop["waiting_passenger_ids"])
     run_data = {

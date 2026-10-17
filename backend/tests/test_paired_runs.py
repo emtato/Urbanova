@@ -46,6 +46,19 @@ def without_runtime(batch):
     return result
 
 
+def test_streamed_retention_preserves_native_statistics(inputs,three_passengers):
+    full=paired_runs.run_repeated_simulations(inputs,run_count=3,seeds=[7,8,9])
+    seen=[]
+    def retain(run):
+        seen.append(run['inputs']['seed'])
+        return {**run,'passengers':[],'sim_log':[],'streetcars':[]}
+    compact=paired_runs.run_repeated_simulations(inputs,run_count=3,seeds=[7,8,9],result_transform=retain)
+    assert seen==[7,8,9]
+    assert compact['overall_results']['metrics']==full['overall_results']['metrics']
+    assert all(not run['passengers'] for run in compact['individual_results'])
+    assert full['individual_results'][0]['passengers']
+
+
 def test_twenty_real_runs_are_independent_and_keep_original_results(inputs, three_passengers):
     inputs.stops[0].waiting_passenger_ids.append("old-state")
     original = deepcopy(inputs)

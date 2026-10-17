@@ -1,0 +1,37 @@
+{
+  "format_version": "baseline-consistency-v1",
+  "seed": 42,
+  "growth_tuned": false,
+  "schedule": {
+    "status": "schedule_consistency_only",
+    "source_ids": [
+      "ttc-gtfs"
+    ],
+    "scheduled_link_sum_s": 904.0,
+    "completed_vehicles": 19,
+    "model_mean_segment_s": 1086.2631578947369,
+    "mean_residual_s": 182.26315789473688,
+    "caveat": "Link schedule times may already include dwell; bounded stop dwell adds time. Passenger-dependent dwell is intentionally omitted by the simulation owner. This is a residual, not an observed accuracy estimate."
+  },
+  "demand": {
+    "status": "not_calibrated",
+    "route_weekday_boardings": 32100,
+    "source_ids": [
+      "ttc-505-observed-boardings"
+    ],
+    "modeled_segment_boarding_events": 1555,
+    "segment_observation": null,
+    "residual": null,
+    "caveat": "Whole-route, both-direction, all-day November 2025 boardings cannot validate a westbound two-hour segment. Modeled event total also includes warm-up and clearance."
+  },
+  "held_out_headways": {
+    "status": "unavailable",
+    "residual": null,
+    "caveat": "No held-out weekday vehicle observations were supplied; GTFS is scheduled service."
+  },
+  "conservation_valid": true,
+  "limitations": [
+    "No stop-level demand or incoming-occupancy calibration.",
+    "No growth-case tuning."
+  ]
+}

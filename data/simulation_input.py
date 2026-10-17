@@ -53,6 +53,11 @@ def load_simulation_input(path: Path = DEFAULT_PATH, *, overrides: dict | None =
         raise ValueError("Incoming load range must be ordered and within streetcar capacity")
     if not 0 <= result.stop_dwell_range_s[0] <= result.stop_dwell_range_s[1]:
         raise ValueError("Stop dwell range must be ordered nonnegative seconds")
+    for value in (result.max_corridor_delay_s,result.warmup_duration_s,result.clearance_s):
+        if not math.isfinite(value) or value < 0:
+            raise ValueError('Operation times must be finite and nonnegative')
+    if any(not math.isfinite(t) or t<0 or t>=result.rush_hour_duration_s for t in result.entry_schedule_s) or list(result.entry_schedule_s)!=sorted(set(result.entry_schedule_s)):
+        raise ValueError('GTFS entries must be unique, increasing elapsed times inside the arrival window')
     housing = [*result.existing_residences, *result.developments]
     if len({item.id for item in housing}) != len(housing):
         raise ValueError("Existing and new housing IDs must be unique")

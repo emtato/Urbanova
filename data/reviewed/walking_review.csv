@@ -1,0 +1,10 @@
+development_id,stop_id,walk_m,rank,entrance_checked,crossings_checked,barriers_checked,closures_checked,reviewed_by,reviewed_at,decision
+toronto-app-22-124214-ste-13-oz,ttc-stop-2131,192.44,1,,,,,,,pending
+toronto-app-22-124214-ste-13-oz,ttc-stop-2119,271.7,2,,,,,,,pending
+toronto-app-22-124214-ste-13-oz,ttc-stop-2123,402.43,3,,,,,,,pending
+toronto-app-26-122451-ste-13-oz,ttc-stop-2125,229.13,1,,,,,,,pending
+toronto-app-26-122451-ste-13-oz,ttc-stop-15873,333.54,2,,,,,,,pending
+toronto-app-26-122451-ste-13-oz,ttc-stop-2123,447.35,3,,,,,,,pending
+toronto-app-25-236949-ste-13-oz,ttc-stop-2127,269.63,1,,,,,,,pending
+toronto-app-25-236949-ste-13-oz,ttc-stop-15873,582.38,2,,,,,,,pending
+toronto-app-25-236949-ste-13-oz,ttc-stop-1756,733.06,3,,,,,,,pending

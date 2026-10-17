@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as z from 'zod';
 import { ApiError } from '../core/errors.js';
-import { defaultScenario } from '../services/bundle.js';
+import { defaultScenario,demoScenario } from '../services/bundle.js';
 import { applyPatch, parse, validateScenario } from '../services/validate.js';
 import { PatchSchema, QuestionSchema, ScenarioSchema, ParseAnswerSchema,PackageScreenSchema,PackagePreviewSchema } from '../shared/schemas.js';
 import { PolicySchema } from '../shared/policy.js';
@@ -14,12 +14,13 @@ import type { Store } from '../storage/store.js';
 export function scenariosRouter(store:Store,generate:Generate){
   const r=Router();
   r.get('/default',(_q,s)=>s.json(ScenarioSchema.parse(defaultScenario)));
+  r.get('/templates',(_q,s)=>s.json({format_version:'scenario-templates-v1',default:defaultScenario,demo:demoScenario,notice:'Demo years, budgets, occupancy and criterion are illustrative user-selected inputs, not project delivery forecasts or TTC standards.'}));
   r.post('/',async(q,s)=>{
-    const {scenario_id}=parse(z.strictObject({scenario_id:z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/)}),q.body);
-    const scenario=validateScenario({...structuredClone(defaultScenario),scenario_id});
+    const {scenario_id,template}=parse(z.strictObject({scenario_id:z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/),template:z.enum(['default','demo']).default('default')}),q.body);
+    const scenario=validateScenario({...structuredClone(template==='demo'?demoScenario:defaultScenario),scenario_id});
     await store.saveScenario(scenario);s.status(201).json(scenario);
   });
-  r.get('/:id',async(q,s)=>{const scenario=await store.scenario(String(q.params.id));if(!scenario)throw new ApiError(404,'Scenario not found.');s.json(ScenarioSchema.parse(scenario));});
+  r.get('/:id',async(q,s)=>{const query=parse(z.strictObject({version:z.coerce.number().int().positive().optional()}),q.query);const scenario=await store.scenario(String(q.params.id),query.version);if(!scenario)throw new ApiError(404,'Scenario not found.');s.json(ScenarioSchema.parse(scenario));});
   r.post('/:id/packages',async(q,s)=>{
     const input=parse(z.strictObject({version:z.int().positive(),policy:PolicySchema.optional()}),q.body);
     const scenario=await store.scenario(String(q.params.id));if(!scenario)throw new ApiError(404,'Scenario not found.');

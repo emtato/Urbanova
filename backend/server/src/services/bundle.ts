@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { ROOT } from '../config.js';
+import { ROOT,settings } from '../config.js';
 import { hash } from '../core/cache.js';
 import { FixtureComparisonSchema, type Comparison, type Scenario } from '../shared/schemas.js';
 const read = (path: string) => JSON.parse(readFileSync(resolve(ROOT,path),'utf8'));
@@ -10,11 +10,16 @@ export const fixture = FixtureComparisonSchema.parse(read('data/fixtures/sample_
 export const reviewed = read('data/reviewed/simulation_input.json');
 export const rawCorridor = read('data/reviewed/corridor.json');
 export const sourceManifest = read('data/reviewed/simulation_sources.json') as Comparison['sources'];
+const workplaceSources=read('data/reviewed/workplaces_sources.json');
+export const allSourceIds=[...new Set([...sourceManifest,...(Array.isArray(workplaceSources)?workplaceSources:workplaceSources.sources)].map((s:{source_id:string})=>s.source_id))];
+export const interventionCatalog=read('data/reviewed/interventions.json');
 const digest=(path:string)=>createHash('sha256').update(readFileSync(resolve(ROOT,path),'utf8').replaceAll('\r\n','\n')).digest('hex');
-const simulationFiles=['runner.py','metrics.py','commute.py','streetcars.py','inputs.py','paired_runs.py',...readdirSync(resolve(ROOT,'backend/simulation/objects')).filter(f=>f.endsWith('.py')).map(f=>'objects/'+f)];
+const simulationFiles=['runner.py','metrics.py','commute.py','streetcars.py','inputs.py','paired_runs.py',...readdirSync(resolve(ROOT,'backend/simulation/objects')).filter(f=>f.endsWith('.py')).sort().map(f=>'objects/'+f)];
 export const simulationModelVersion='b11-'+hash([...simulationFiles.map(f=>[f,digest('backend/simulation/'+f)]),['adapter',digest('backend/integration/b11.py')],['packages',digest('backend/server/dist/backend/server/src/packages/materialize.js')],['feasibility',digest('backend/server/dist/backend/server/src/packages/feasibility.js')]]).slice(0,20);
-const commuteFiles=['workplaces_2021.json','line1_stations.json','workplaces_sources.json'];
-export const dataVersion = 'reviewed-'+hash({reviewed,rawCorridor,sourceManifest,commute:commuteFiles.map(f=>[f,digest('data/reviewed/'+f)])}).slice(0,20);
+const commuteFiles=['workplaces_2021.json','line1_stations.json','workplaces_sources.json','route_505.json'];
+export const dataVersion = 'reviewed-'+hash({reviewed,rawCorridor,sourceManifest,interventionCatalog,walking:['walking_access.json','walking_alternatives.geojson'].map(f=>digest('data/reviewed/'+f)),policies:[240,300,360].map(n=>digest(`data/reviewed/package_policy_${n}.json`)),commute:commuteFiles.map(f=>[f,digest('data/reviewed/'+f)])}).slice(0,20);
+export const workerTag='fp-'+hash({data_version:dataVersion,model_version:settings.modelVersion,simulation_model:simulationModelVersion}).slice(0,32);
+export const reviewedPhaseIds=['phase-1','phase-2'];
 export const defaultScenario: Scenario = {
   ...structuredClone(fixture.scenario), scenario_id:'505-westbound-planning', version:1,
   developments: reviewed.inputs.developments,
@@ -24,6 +29,9 @@ export const defaultScenario: Scenario = {
   interventions:[],intervention_availability:{},capital_budget_cad:0,annual_operating_budget_cad:0,fleet_allowance:0,
   planning_criterion:{...fixture.scenario.planning_criterion,meaning:'User-editable illustrative criterion initialized from contract defaults; not a TTC service standard.'},
 };
+export const demoScenario:Scenario={...structuredClone(defaultScenario),scenario_id:'505-westbound-demo',capital_budget_cad:8000000,annual_operating_budget_cad:6000000,fleet_allowance:20,
+  planning_criterion:{max_p95_wait_s:360,max_denied_share:.1,max_unresolved_passengers:0,meaning:'Illustrative user-selected demo criterion: p95 boarded wait <= 360 seconds, denied share <= 0.1, no stranded measured riders after the clearance cap. Not a TTC service standard.'},
+  phases:[{phase_id:'phase-1',year:2030,development_ids:[defaultScenario.developments[0].id],occupied_share:1},{phase_id:'phase-2',year:2035,development_ids:defaultScenario.developments.slice(1).map(d=>d.id),occupied_share:1}]};
 export const corridor: Comparison['corridor'] = {
   ...structuredClone(fixture.corridor),corridor_id:rawCorridor.corridor_id,
   stops:reviewed.inputs.stops.map((s:object)=>({...s,waiting_passenger_ids:[],serving_streetcar_id:null})),

@@ -74,7 +74,7 @@ def housing_addresses(rows, selection, *, refresh=False):
     return records, sources
 
 
-def walking_graph(corridor, *, refresh=False):
+def walking_graph(corridor, *, refresh=False, max_walk_m=500, limit=2):
     """Merge small OSM tiles; split a tile if OSM rejects its node count."""
     stops = corridor["stops"]
     west, east = min(stop["lon"] for stop in stops)-.007, max(stop["lon"] for stop in stops)+.007
@@ -133,7 +133,7 @@ def walking_graph(corridor, *, refresh=False):
         node, connector = nearest(stop["lon"], stop["lat"])
         if connector > 75:
             raise ValueError("Stop exceeds the network snap limit")
-        distances, routes = nx.single_source_dijkstra(graph, node, weight="walk_m", cutoff=600)
+        distances, routes = nx.single_source_dijkstra(graph, node, weight="walk_m", cutoff=max_walk_m)
         paths[stop["stop_id"]] = (connector, distances, routes)
 
     def access(lon, lat, entity_id):
@@ -146,7 +146,7 @@ def walking_graph(corridor, *, refresh=False):
             if node not in distances:
                 continue
             length = connector + stop_connector + distances[node]
-            if length > 500:
+            if length > max_walk_m:
                 continue
             route = list(reversed(routes[node]))
             coords = [(lon, lat)]
@@ -161,7 +161,7 @@ def walking_graph(corridor, *, refresh=False):
                 coords.append((graph.nodes[node]["x"], graph.nodes[node]["y"]))
             coords.append((stop["lon"], stop["lat"]))
             options.append({"type": "Feature", "properties": {"entity_id": entity_id, "stop_id": stop["stop_id"], "walk_m": round(length, 2), "address_connector_m": round(connector, 2), "stop_connector_m": round(stop_connector, 2), "manual_review": "pending", "method": "OSM network plus estimated address/stop connectors"}, "geometry": mapping(LineString(coords))})
-        return sorted(options, key=lambda option: option["properties"]["walk_m"])[:2]
+        return sorted(options, key=lambda option: option["properties"]["walk_m"])[:limit]
     return access, sources
 
 
@@ -350,6 +350,8 @@ def build(*, refresh=False, expand_buildings=True):
         "seed": dict(unit="integer", status="internal", source_ids=[], meaning="Reproducible random seed; not real-world data."),
     }
     apply_model_assumptions(bundle, selection)
+    bundle['inputs']['entry_schedule_s']=entries
+    bundle['field_metadata']['entry_schedule_s'].update(status='sourced',source_ids=['ttc-gtfs'])
     write_json(REVIEWED / "registered_rental_input.json", bundle)
     write_json(REVIEWED / "simulation_input.json", bundle)
     write_json(REVIEWED / "simulation_sources.json", sources)

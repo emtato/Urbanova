@@ -27,9 +27,22 @@ def streetcar_entry_times(inputs: SimulationInput, start_offset_s: float = 0.0) 
     if not isfinite(inputs.headway_randomness_s) or not 0 <= inputs.headway_randomness_s < inputs.headway_s:
         raise ValueError("Headway randomness must be finite, nonnegative and smaller than headway")
 
+    entry_end=inputs.rush_hour_duration_s+inputs.clearance_s
+    if inputs.entry_schedule_s:
+        time_s=float(start_offset_s)
+        while time_s<0:
+            yield time_s
+            time_s+=inputs.headway_s
+        for time_s in inputs.entry_schedule_s:
+            yield time_s
+        time_s=inputs.entry_schedule_s[-1]+inputs.headway_s
+        while inputs.clearance_s and time_s<entry_end:
+            yield time_s
+            time_s+=inputs.headway_s
+        return
     time_s = float(start_offset_s)
     entry_idx = 0
-    while time_s < inputs.rush_hour_duration_s:
+    while time_s < entry_end:
         yield time_s
         # B2: Keyed entry randomness so other draws cannot alter departure schedule
         if inputs.headway_randomness_s > 0:

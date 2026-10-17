@@ -134,6 +134,9 @@ class SimulationInput:
     incoming_load_range: tuple[int, int] = (12, 24)  # Riders already aboard each car entering at Broadview & Dundas (uniform, inclusive).
     stop_dwell_range_s: tuple[int, int] = (15, 30)  # Dwell seconds at each non-terminus stop (uniform, inclusive).
     max_corridor_delay_s: float = 0.0  # B7: Maximum common corridor delay across all links (seconds, e.g. 60.0); 0 = disabled.
+    entry_schedule_s: tuple[float, ...] = ()  # Sourced entries inside the measured window; empty selects regular service.
+    warmup_duration_s: int = 0  # Use the owner's B9 pre-window vehicle operation.
+    clearance_s: int = 0  # Extend service and observation past the measured arrival window.
     # NOTE (B6): B6 passenger-dependent dwell calculation (door time + boardings/alightings feedback)
     # is intentionally ignored/omitted per project plan; stop dwell remains bounded by stop_dwell_range_s.
 

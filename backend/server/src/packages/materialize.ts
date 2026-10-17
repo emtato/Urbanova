@@ -25,8 +25,8 @@ export function materialize(input:Scenario,policy:Policy|null,linkIds:string[],d
     const ids:string[]=[];
     for(const kind of [...(lane?['priority_lane' as const]:[]),...(extra?['extra_service' as const]:[])]){
       const interventionId=`${id}:${kind}`,isLane=kind==='priority_lane';ids.push(interventionId);
-      const value=isLane?policy.lane_cycle_s/policy.cycle_s:policy.service_headway_s;
-      scenario.interventions.push({id:interventionId,type:kind,link_ids:isLane?linkIds:[],headway_s:isLane?null:policy.service_headway_s,
+      const value=isLane?(policy.lane_travel_time_multiplier??policy.lane_cycle_s/policy.cycle_s):policy.service_headway_s;
+      scenario.interventions.push({id:interventionId,type:kind,link_ids:isLane?(policy.lane_link_ids??linkIds):[],headway_s:isLane?null:policy.service_headway_s,
         capital_cost:cost(isLane?policy.lane_capital:{low:0,central:0,high:0},'CAD'),
         operating_cost:cost(isLane?policy.lane_operating:Object.fromEntries((['low','central','high'] as const).map(k=>[k,representative.operating![k]-(lane?policy.lane_operating[k]:0)])) as Range,'CAD/year'),
         extra_vehicles:isLane?0:representative.extra_vehicles!,earliest_phase:phase,

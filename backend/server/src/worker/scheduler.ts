@@ -13,24 +13,29 @@ export function startScheduler(store:Store,options:{workerPath?:string;timeoutMs
     if(busy||stopping)return;busy=true;
     try{
       const job=await store.claim();if(!job)return;
+      let stage='version-check';
       try{
         const versions=job.payload.execution_versions;
         if(versions&&(versions.data_version!==dataVersion||versions.model_version!==settings.modelVersion||(versions.simulation_model&&versions.simulation_model!==simulationModelVersion)))throw Error('Stale execution versions; submit a new job.');
         const entry=options.workerPath??resolve(ROOT,'backend/server/dist/backend/server/src/worker/evaluate.js');
         if(!existsSync(entry))throw Error('Build the server before starting its worker.');
+        stage='evaluation';
         const result=await new Promise<any>((resolve,reject)=>{
           const worker=new Worker(entry,{workerData:job.payload});active=worker;
           let settled=false;
           const abort=()=>{killChild();void worker.terminate();};
-          const timeout=setTimeout(()=>{abort();reject(Error('Worker timeout'));},options.timeoutMs??Number(process.env.JOB_TIMEOUT_MS??600000));
+          const timeout=setTimeout(()=>{abort();reject(Error('Worker timeout'));},options.timeoutMs??settings.jobTimeoutMs);
           const heartbeat=setInterval(()=>{void store.renew(job).then(owned=>{if(!owned)abort();}).catch(abort);},30000);
           const done=()=>{clearTimeout(timeout);clearInterval(heartbeat);active=undefined;childPid=undefined;};
-          worker.on('message',message=>{if(settled)return;if(message.type==='child'){childPid=message.pid;return;}settled=true;done();if(message.ok)resolve(message.result);else reject(Error('Evaluation failed'));});
+          worker.on('message',message=>{if(settled)return;if(message.type==='child'){childPid=message.pid;return;}settled=true;done();if(message.ok)resolve(message.result);else reject(Error(message.error??'Evaluation failed'));});
           worker.once('error',error=>{if(settled)return;settled=true;killChild();done();reject(error);});
           worker.once('exit',()=>{if(settled)return;settled=true;killChild();done();reject(Error('Worker exited without a result'));});
         });
-        await store.finish(job,result);
-      }catch{await store.fail(job);}
+        // Keep the lease while large comparisons are being persisted, too.
+        const persistenceHeartbeat=setInterval(()=>{void store.renew(job).catch(()=>{});},30000);
+        stage='persistence';
+        try{await store.finish(job,result);}finally{clearInterval(persistenceHeartbeat);}
+      }catch(error){console.error('Job failed',JSON.stringify({job_id:job.job_id,stage,reason:stage==='persistence'?(error instanceof Error?error.name:'unknown'):(error instanceof Error?error.message:'unknown')}));await store.fail(job);}
     }catch{console.error('Job scheduler unavailable; retrying.');}finally{busy=false;}
   }
   const kick=()=>{if(!inFlight)inFlight=tick().finally(()=>{inFlight=undefined;});};

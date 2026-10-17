@@ -67,6 +67,6 @@ Keep Today first and give each custom simulation a consistent visual identity ac
 - Users can rename simulations inside either picker. Deleting a simulation through the run workspace removes the local saved copy too.
 - A fresh simulation form starts without proposed housing selected, matching the baseline housing configuration. The map no longer automatically starts the old package comparison when opened.
 - Saved batches map to a single result configuration. Backend package categories are not offered as user-authored scenarios in the inspector.
-- Corridor and time-window compatibility are checked. The current saved-batch API does not supply model/data version identifiers, so historical version compatibility remains unverified and is disclosed in the result explanation. Adding that API metadata remains follow-up work.
+- Corridor and time-window compatibility are checked. New configured-batch responses now include optional `provenance` with model/data/orchestrator versions, source IDs, configuration ID and a server recording timestamp. Older batches without it remain unverified. Lane D still needs to consume this metadata when checking historical version compatibility; the backend addition alone does not make the inspector enforce it.
 
 The central rule is simple: **compare the saved configurations the user actually ran, against a clearly defined Today baseline.**

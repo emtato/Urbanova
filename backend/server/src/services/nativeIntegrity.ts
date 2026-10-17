@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import { invariant } from '../core/errors.js';
 import type { NativeBatch, NativeCaseResult } from '../shared/nativeResults.js';
 
@@ -59,7 +60,14 @@ export function checkNativeCase(result: NativeCaseResult): void {
 /** Initial journeys, excluding incoming loads; final boarding outcomes may differ. */
 export function nativeCohorts(result: NativeCaseResult): string {
   return JSON.stringify(result.individual_results.map(run => {
-    const incoming = new Set(run.sim_log.flatMap((value: any) => value.action === 'generate' ? value.passenger_ids : []));
+    const incoming = new Set([...(run.inputs.warmup_passenger_ids as string[]??[]),...run.sim_log.flatMap((value: any) => value.action === 'generate' ? value.passenger_ids : [])]);
+    if(typeof run.inputs.cohort_signature==='string'&&/^[a-f0-9]{64}$/.test(run.inputs.cohort_signature)){
+      if(run.inputs.retention!=='summary-only'){
+        const journeys=run.passengers.filter((p:any)=>!incoming.has(p.id)).map((p:any)=>[p.id,p.origin_stop_id,p.destination_stop_id,Math.trunc(p.get_to_stop_time*1000000),p.rider_group,p.development_id]).sort((a,b)=>String(a[0])<String(b[0])?-1:String(a[0])>String(b[0])?1:0);
+        invariant(createHash('sha256').update(JSON.stringify(journeys)).digest('hex')===run.inputs.cohort_signature,'Retained initial cohorts must match their signatures.');
+      }else invariant(run.passengers.length===0&&run.sim_log.length===0&&run.streetcars.length===0,'Summary-only retention must not contain partial archives.');
+      return run.inputs.cohort_signature;
+    }
     return run.passengers.filter((value: any) => !incoming.has(value.id)).map((value: any) => [
       value.id, value.origin_stop_id, value.destination_stop_id, value.get_to_stop_time, value.rider_group, value.development_id,
     ]).sort((a, b) => String(a[0]).localeCompare(String(b[0])));

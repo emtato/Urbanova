@@ -30,7 +30,8 @@ def assumption(key, value, unit, meaning, status="assumed", source_ids=None, low
 
 
 def build(plan):
-    baseline = load_simulation_input()
+    operations=plan.get('operations',{})
+    baseline = replace(load_simulation_input(),warmup_duration_s=operations.get('warmup_s',0),clearance_s=operations.get('clearance_s',0))
     sources = [{k: s[k] for k in ("source_id", "title", "url", "publisher", "retrieved_at", "version", "licence")}
                for s in plan["source_manifest"]]
     # Extra commute source files are part of the data digest even when their
@@ -65,7 +66,8 @@ def build(plan):
         "Scheduled link times may already include dwell; applying the model's dwell range can double-count part of journey time.",
         "Onboard riders and riders awaiting their first car at cutoff are in progress, excluded from unresolved counts. Physical queues are reported separately.",
         "Packages share generated corridor passenger cohorts and seeded model random streams. Identical effective inputs reuse B11 outputs.",
-        "Effective engine seeds are SHA256(draws_id, phase_id, demand_case, requested seed ID); recorded seed IDs retain the requested identifiers. Event-dependent streams can consume draws in different orders across packages.",
+        "Effective engine seeds are SHA256(draws_id, phase_id, demand_case, requested seed ID); recorded seed IDs retain the requested identifiers. Vehicle/link/stop draws are keyed independently of event order; baseline entries use the dated GTFS timetable.",
+        "Unselected runs retain native summaries/statistics and input/cohort references; passenger/event histories are retained for one selected base run only.",
         "Native result batches and summaries retain the simulator owner's definitions. Denied share uses riders who encountered a streetcar, counting each denied rider once.",
         "Per-run decision waits use the native overview's boarded-rider waits; stop summaries retain the native completed-trip waits. Do not mix those cohorts.",
         "Run-to-run standard deviation is variation between seeds, not a confidence interval. Replay uses the native sim_log events.",
@@ -75,7 +77,8 @@ def build(plan):
         scenario = plan["scenario"]
         phase_index = next(i for i,p in enumerate(scenario["phases"]) if p["phase_id"] == phase_id)
         active = {dev for p in scenario["phases"][:phase_index+1] for dev in p["development_ids"]}
-        devs = [d for d in scenario["developments"] if d["id"] in active]
+        occupancy = {dev:p["occupied_share"] for p in scenario["phases"][:phase_index+1] for dev in p["development_ids"]}
+        devs = [{**d,"occupied_share":d["occupied_share"]*occupancy[d["id"]]} for d in scenario["developments"] if d["id"] in active]
         values = {"developments":devs, "trips_per_resident_in_window":baseline.trips_per_resident_in_window*factors[demand]}
         stream = json.dumps([plan["random"]["draws_id"], phase_id, demand, seed_id], separators=(",", ":"))
         values["seed"] = int.from_bytes(hashlib.sha256(stream.encode()).digest()[:4], "big") % 2147483647
@@ -92,23 +95,43 @@ def build(plan):
             inputs = replace(inputs, developments=())
         return inputs, cohort
 
-    def execute(inputs, cohorts, seeds):
+    def compact_result(result):
+        incoming = set(result['inputs'].get('warmup_passenger_ids',[])) | {pid for event in result['sim_log'] if event['action']=='generate' for pid in event['passenger_ids']}
+        journeys = sorted((p['id'],p['origin_stop_id'],p['destination_stop_id'],int(p['get_to_stop_time']*1_000_000),p['rider_group'],p['development_id']) for p in result['passengers'] if p['id'] not in incoming)
+        signature=hashlib.sha256(json.dumps(journeys,separators=(',',':')).encode()).hexdigest()
+        result['inputs']['cohort_signature']=signature
+        result['inputs']['retention']='full-selected-run'
+        keys=('seed','headway_s','link_travel_times_s','streetcar_capacity','start_time_s','end_time_s','warmup_duration_s','clearance_s','max_corridor_delay_s','entry_schedule_s','analysis_window_elapsed_s','cohort_signature')
+        compact_inputs={key:result['inputs'][key] for key in keys}
+        compact_inputs.update(retention='summary-only',data_version=plan['data_version'],model_version=plan['model_version'])
+        return dict(inputs=compact_inputs,streetcars=[],passengers=[],sim_log=[],summary=result['summary'])
+
+    def execute(inputs, cohorts, seeds, capture=False):
         # Avoid changing B11's incoming-load behaviour: passing passengers=...
         # disables it. Inject only its generation function, then restore it.
         key = json.dumps([asdict(inputs), seeds], sort_keys=True, default=list)
-        if key in simulation_cache:
-            return simulation_cache[key]
+        if key in simulation_cache and not capture:
+            return key, *simulation_cache[key]
         original = runner.generate_passengers
         runner.generate_passengers = lambda run_inputs: copy.deepcopy(cohorts[run_inputs.seed])
+        outputs=[]
+        retained=False
+        def retain(result):
+            nonlocal retained
+            outputs.append(analyze(result))
+            compact=compact_result(result)
+            if capture and not retained:
+                retained=True
+                return result
+            return compact
         try:
-            batch = run_repeated_simulations(inputs, run_count=len(seeds), seeds=seeds)
+            batch = run_repeated_simulations(inputs, run_count=len(seeds), seeds=seeds,result_transform=retain)
         finally:
             runner.generate_passengers = original
-        simulation_cache[key] = batch
-        return batch
+        return key,batch,outputs
 
     def analyze(result):
-        incoming = {pid for event in result["sim_log"] if event["action"] == "generate"
+        incoming = set(result['inputs'].get('warmup_passenger_ids',[])) | {pid for event in result["sim_log"] if event["action"] == "generate"
                     for pid in event["streetcar"]["onboard_passenger_ids"]}
         samples = {}
         for p in result["passengers"]:
@@ -150,21 +173,33 @@ def build(plan):
                             lane = next((i for i in selected if i["type"] == "priority_lane"), None)
                             extra = next((i for i in selected if i["type"] == "extra_service"), None)
                             multiplier = lane["effect"]["central"] if lane else 1
-                            inputs = replace(inputs, link_travel_times_s=tuple(t*multiplier for t in inputs.link_travel_times_s), headway_s=extra["headway_s"] if extra else (plan["policy"]["baseline_headway_s"] if plan.get("policy") else inputs.headway_s))
-                    batch = execute(inputs, cohorts, engine_seeds)
-                    outputs = [analyze(result) for result in batch["individual_results"]]
+                            inputs = replace(inputs, link_travel_times_s=tuple(t*multiplier if lane and plan["corridor"]["links"][i]["link_id"] in lane["link_ids"] else t for i,t in enumerate(inputs.link_travel_times_s)), headway_s=extra["headway_s"] if extra else (plan["policy"]["baseline_headway_s"] if plan.get("policy") else inputs.headway_s))
+                        if abs(inputs.headway_s-baseline.headway_s)>1e-6:
+                            inputs=replace(inputs,entry_schedule_s=())
+                    capture = variant == 'base' and kind != 'current' and demand == scenario['demand_case'] and phase_id == scenario['phases'][0]['phase_id'] and package_id == packages[-1]['package_id'] and plan.get('retain_replay',False) and native_replay is None
+                    cache_key,batch,outputs = execute(inputs, cohorts, engine_seeds, capture=capture)
+                    compact_runs=[]
+                    selected_run=None
                     for seed_id, result, output in zip(plan["random"]["seed_ids"], batch["individual_results"], outputs):
                         run_id = f"{case_id}:seed-{seed_id}"
                         runs.append(dict(run_id=run_id,scenario_version=scenario["version"],package=package_id,
                                          model_version=plan["model_version"],data_version=plan["data_version"],seed_ids=[seed_id],
                                          status="completed",diagnostics=output["contract"]["diagnostics"]))
                         native_metrics.append(dict(run_id=run_id,summary=output["native"]))
-                        capture = variant == "base" and kind != "current" and demand == scenario["demand_case"] and phase_id == scenario["phases"][0]["phase_id"] and package_id == packages[-1]["package_id"] and plan.get("retain_replay",False)
+                        compact_runs.append(result if result['inputs'].get('retention')=='summary-only' else compact_result(result))
                         if capture and native_replay is None:
+                            selected_run=result
                             native_replay = dict(format_version="b11-events-v1",comparison_id="pending",run_id=run_id,
                                                  scenario_id=scenario["scenario_id"],model_version=plan["model_version"],data_version=plan["data_version"],
-                                                 source_ids=[s["source_id"] for s in sources],horizon_s=inputs.end_time_s-inputs.start_time_s,
+                                                 source_ids=[s["source_id"] for s in sources],horizon_s=inputs.end_time_s-inputs.start_time_s+inputs.clearance_s,
                                                  stops=plan["corridor"]["stops"],events=result["sim_log"],passengers=result["passengers"])
+                    compact_batch={**batch,'individual_results':compact_runs}
+                    simulation_cache[cache_key]=(compact_batch,outputs)
+                    if selected_run is not None:
+                        retained=list(compact_runs);retained[0]=selected_run
+                        batch={**batch,'individual_results':retained}
+                    else:
+                        batch=compact_batch
                     stop_results = []
                     for index, stop in enumerate(outputs[0]["contract"]["stop_results"]):
                         rows = [o["contract"]["stop_results"][index] for o in outputs]
@@ -196,6 +231,9 @@ def build(plan):
         assumptions.extend([assumption("incoming_load",sum(baseline.incoming_load_range)/2,"passengers/vehicle","B11 uniform incoming-load assumption; not measured.",low=baseline.incoming_load_range[0],high=baseline.incoming_load_range[1]),assumption("dwell",sum(baseline.stop_dwell_range_s)/2,"seconds/stop","B11 dwell assumption; scheduled link times may already include dwell.",low=baseline.stop_dwell_range_s[0],high=baseline.stop_dwell_range_s[1])])
         corr = copy.deepcopy(plan["corridor"])
         corr["incoming_load"] = assumptions[-2]
+        for key,unit in (("warmup_duration_s","seconds"),("clearance_s","seconds")):
+            assumptions.append(assumption(key,getattr(baseline,key),unit,"Explicit operational assumption; warm-up and post-window service are not observed weekday demand."))
+        assumptions.append(assumption("max_corridor_delay_s",baseline.max_corridor_delay_s,"seconds/corridor","Upper bound on one shared corridor delay divided across links; the simulation owner's B7 rule."))
         for key,value,unit in (("headway_randomness_s",baseline.headway_randomness_s,"seconds"),("link_travel_time_variation_share",baseline.link_travel_time_variation_share,"fraction"),("baseline_headway_s",plan["policy"]["baseline_headway_s"] if plan.get("policy") else baseline.headway_s,"seconds"),("parallel_route_inner_band",baseline.parallel_route_bands[0],"fraction"),("parallel_route_outer_band",baseline.parallel_route_bands[1],"fraction")):
             assumptions.append(assumption(key,value,unit,"Explicit model setting; not an observed service measurement."))
         excluded = [f"{s['package_id']} / {s['phase_id']}: {'; '.join(s['reasons'])}" for s in spec["screen"] if not s["feasible"]]
@@ -215,6 +253,8 @@ def run_batch(request: dict) -> dict:
     baseline = load_simulation_input()
     input_fields = {field.name for field in fields(SimulationInput)}
     overrides = {key: value for key, value in request.items() if key in input_fields and value is not None}
+    if ('headway_s' in overrides and abs(overrides['headway_s']-baseline.headway_s)>1e-6) or overrides.get('headway_randomness_s',baseline.headway_randomness_s)>0:
+        overrides['entry_schedule_s']=()
     if "developments" not in overrides and "development_ids" in request and request["development_ids"] is not None:
         dev_ids = list(request["development_ids"])
         known = {dev.id for dev in baseline.developments}

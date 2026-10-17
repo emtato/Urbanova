@@ -19,6 +19,7 @@ else
 fi
 [[ -f .env ]] || cp backend/.env.example .env
 "$venv_python" -m pip install -r backend/requirements.txt
+(cd backend/server && npm ci && npm run build)
 (cd frontend && npm ci)
 mkdir -p data/cache data/raw
 "$venv_python" -m backend.scripts.check_db --init

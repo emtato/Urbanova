@@ -5,6 +5,7 @@ export interface Policy {
   peak_hours:number;service_days:number;cost_per_hour:Range;lane_capital:Range;lane_operating:Range;
   price_year:number;earliest_phase:string;source_ids:string[];assumption_label:string;
   availability?:{lane:string;extra_service:string};
+  lane_travel_time_multiplier?:number;lane_link_ids?:string[];
 }
 export interface Screen {
   package_id:string;phase_id:string;feasible:boolean;reasons:string[];

@@ -15,6 +15,8 @@ Confirm-Exit
 if (-not (Test-Path .env)) { Copy-Item backend/.env.example .env }
 & $venvPython -m pip install -r backend/requirements.txt
 Confirm-Exit
+Push-Location backend/server
+try { npm ci; Confirm-Exit; npm run build; Confirm-Exit } finally { Pop-Location }
 Push-Location frontend
 try { npm ci; Confirm-Exit } finally { Pop-Location }
 New-Item -ItemType Directory -Force data/cache,data/raw | Out-Null

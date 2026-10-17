@@ -27,6 +27,7 @@ export type NativeReplay=z.infer<typeof NativeReplaySchema>;
 export const NativeMetricsSchema=z.strictObject({format_version:z.literal('b11-metrics-v1'),comparison_id:z.string(),scenario_id:z.string(),source_ids:z.array(z.string()),model_version:z.string(),data_version:z.string(),runs:z.array(z.strictObject({run_id:z.string(),summary:z.record(z.string(),z.unknown())}))});
 const finite = z.number().finite();
 export const PatchSchema = z.strictObject({
+  phases:z.array(z.strictObject({phase_id:z.enum(['phase-1','phase-2']),year:z.int().min(2026).max(2100),development_ids:z.array(z.string().min(1)),occupied_share:z.number().finite().min(0).max(1)})).min(1).max(2).optional(),
   demand_case: z.enum(['low','central','high']).optional(),
   capital_budget_cad: finite.min(0).max(1e9).optional(),
   annual_operating_budget_cad: finite.min(0).max(1e9).optional(),
@@ -38,10 +39,11 @@ export const PatchSchema = z.strictObject({
 export type ScenarioPatch = z.infer<typeof PatchSchema>;
 // Preserve the live-tested model schema. Criterion edits use the same validated
 // form boundary, while natural-language parsing stays within this smaller set.
-export const ParseAnswerSchema = z.strictObject({kind:z.enum(['patch','unsupported','missing_observation']),patch:PatchSchema.omit({planning_criterion:true}),answer:z.string().max(2000)});
+export const ParseAnswerSchema = z.strictObject({kind:z.enum(['patch','unsupported','missing_observation']),patch:PatchSchema.omit({planning_criterion:true,phases:true}),answer:z.string().max(2000)});
 export const RandomSchema = z.strictObject({seed_ids:z.array(z.int().min(0).max(2147483647)).min(1).max(100).refine(ids=>new Set(ids).size===ids.length,'Seed IDs must be unique'), draws_id:z.string().min(1).max(100)});
 export const DemandFactorsSchema=z.strictObject({low:z.number().finite().min(0).max(1),central:z.literal(1),high:z.number().finite().min(1).max(3)});
-export const JobRequestSchema = z.strictObject({scenario_id:z.string().min(1),version:z.int().positive(),random:RandomSchema,retain_replay:z.boolean().default(false),policy:PolicySchema.optional(),evaluator:z.enum(['b11','fixture']).default('b11'),demand_factors:DemandFactorsSchema.default({low:.8,central:1,high:1.2})});
+export const OperationsSchema=z.strictObject({warmup_s:z.int().min(0).max(3600).default(0),clearance_s:z.int().min(0).max(7200).default(0)});
+export const JobRequestSchema = z.strictObject({scenario_id:z.string().min(1),version:z.int().positive(),random:RandomSchema,retain_replay:z.boolean().default(false),policy:PolicySchema.optional(),evaluator:z.enum(['b11','fixture']).default('b11'),demand_factors:DemandFactorsSchema.default({low:.8,central:1,high:1.2}),operations:OperationsSchema.default({warmup_s:0,clearance_s:0})});
 export const QuestionSchema = z.strictObject({question:z.string().min(1).max(4000)});
 const MoneyRange=z.strictObject({low:finite.nonnegative(),central:finite.nonnegative(),high:finite.nonnegative()});
 export const PackageScreenSchema=z.array(z.strictObject({package_id:z.string(),phase_id:z.string(),feasible:z.boolean(),reasons:z.array(z.string()),vehicles:z.int().nonnegative().nullable(),extra_vehicles:z.int().nonnegative().nullable(),capital:MoneyRange.nullable(),operating:MoneyRange.nullable()}));

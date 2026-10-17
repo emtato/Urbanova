@@ -1,4 +1,4 @@
-import { fixture, reviewed } from '../services/bundle.js';
+import { fixture, reviewed,dataVersion,simulationModelVersion,allSourceIds } from '../services/bundle.js';
 import { ComparisonSchema, NativeBatchSchema, RunSimulationRequestSchema, type Comparison, type Scenario } from '../shared/schemas.js';
 import type { NativeBatch } from '../shared/nativeResults.js';
 import { invariant } from '../core/errors.js';
@@ -9,11 +9,12 @@ import { evaluationPlan,checkedB11Comparison,type B11Adapter } from './plan.js';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { parentPort } from 'node:worker_threads';
+import { parentPort,isMainThread,Worker } from 'node:worker_threads';
 import { createGunzip } from 'node:zlib';
-import { ROOT } from '../config.js';
+import { ROOT,settings } from '../config.js';
+import {ApiError} from '../core/errors.js';
 import type { EvaluationResult } from '../storage/store.js';
-export interface EvaluationRequest {scenario:Scenario;random:{seed_ids:number[];draws_id:string};retain_replay:boolean;policy:Policy|null;evaluator?:'b11'|'fixture';demand_factors?:{low:number;central:number;high:number}}
+export interface EvaluationRequest {scenario:Scenario;random:{seed_ids:number[];draws_id:string};retain_replay:boolean;policy:Policy|null;evaluator?:'b11'|'fixture';demand_factors?:{low:number;central:number;high:number};operations?:{warmup_s:number;clearance_s:number}}
 // Live results retain native batches and simulator-owned definitions (3.0.0).
 // Explicit fixture mode retains the historical 2.0.0 contract.
 export async function evaluate(request:EvaluationRequest,adapter?:B11Adapter):Promise<EvaluationResult> {
@@ -54,8 +55,26 @@ export async function runSimulationBatch(input:unknown):Promise<NativeBatch> {
   invariant(dwell[0]<=dwell[1],'stop_dwell_range_s must be ordered.');
   const bands=request.parallel_route_bands??defaults.parallel_route_bands;
   invariant(bands[0]<=bands[1],'parallel_route_bands must be ordered.');
+  if(isMainThread)return runBatchWorker(request);
   const raw=await runPython(request);
-  return checkNativeBatch(NativeBatchSchema.parse(raw));
+  const batch=checkNativeBatch(NativeBatchSchema.parse(raw));
+  return {...batch,provenance:{format_version:'simulation-provenance-v1',configuration_id:batch.id,model_version:simulationModelVersion,data_version:dataVersion,orchestrator_version:settings.modelVersion,source_ids:allSourceIds,recorded_at:new Date().toISOString()}};
+}
+
+let batchBusy=false;
+function runBatchWorker(request:unknown):Promise<NativeBatch>{
+  if(batchBusy)throw new ApiError(429,'A configured simulation is already running; retry after it completes.');
+  batchBusy=true;
+  return new Promise((accept,reject)=>{
+    const worker=new Worker(resolve(ROOT,'backend/server/dist/backend/server/src/worker/simulation.js'),{workerData:request});
+    let childPid:number|undefined,settled=false;
+    const cleanup=()=>{clearTimeout(timer);batchBusy=false;};
+    const abort=()=>{if(childPid)try{process.kill(childPid);}catch{}void worker.terminate();};
+    const fail=()=>{if(settled)return;settled=true;abort();cleanup();reject(new ApiError(503,'Simulation unavailable; retry after checking worker logs.'));};
+    const timer=setTimeout(fail,settings.jobTimeoutMs);
+    worker.on('message',message=>{if(settled)return;if(message.type==='child'){childPid=message.pid;return;}if(!message.ok){fail();return;}settled=true;cleanup();accept(message.result);});
+    worker.once('error',fail);worker.once('exit',()=>{if(!settled)fail();});
+  });
 }
 
 function runPython(plan:unknown):Promise<any>{

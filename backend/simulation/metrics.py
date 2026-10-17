@@ -363,7 +363,8 @@ def analyze_simulation(
             incoming_passenger_ids.update(entry["streetcar"]["onboard_passenger_ids"])
 
     incoming_passengers = [p for p in passengers if p["id"] in incoming_passenger_ids]
-    corridor_passengers_all = [p for p in passengers if p["id"] not in incoming_passenger_ids]
+    warmup_ids=set(inputs.get('warmup_passenger_ids',[]))
+    corridor_passengers_all = [p for p in passengers if p["id"] not in incoming_passenger_ids and p['id'] not in warmup_ids]
     # Active corridor passengers have reached their origin stop by the reporting horizon.
     corridor_passengers = [p for p in corridor_passengers_all if p["status"] != "scheduled"]
     scheduled_not_yet_arrived = [p for p in corridor_passengers_all if p["status"] == "scheduled"]

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { memoryStore } from './support.js';
-import { defaultScenario } from '../src/services/bundle.js';
+import { defaultScenario,dataVersion,simulationModelVersion } from '../src/services/bundle.js';
 import { ComparisonSchema,CorridorSchema } from '../src/shared/schemas.js';
 import { startScheduler } from '../src/worker/scheduler.js';
 
@@ -38,10 +38,19 @@ test('enqueue, worker thread, polling, frozen fixture, cache and stale edit',asy
 
 test('runSimulation, getSimulations and deleteSimulation run single situation, persist batches and delete by id',async()=>{
   const store=memoryStore(),app=createApp(store,async()=>null);
-  const first=await request(app).post('/api/run/simulation').send({
+  let completed=false;
+  const pending=request(app).post('/api/run/simulation').send({
     run_count:2,seed:11,development_ids:[defaultScenario.developments[0].id],headway_randomness_s:5,
-  }).expect(200);
+  }).expect(200).then(response=>{completed=true;return response;});
+  await new Promise(resolve=>setTimeout(resolve,100));
+  await request(app).get('/health').expect(200);
+  assert.equal(completed,false,'Health remains responsive during worker computation');
+  const first=await pending;
   assert.equal(typeof first.body.id,'string');
+  assert.equal(first.body.provenance.model_version,simulationModelVersion);
+  assert.equal(first.body.provenance.data_version,dataVersion);
+  assert.equal(first.body.provenance.configuration_id,first.body.id);
+  assert.ok(first.body.provenance.source_ids.length>0);
   assert.equal(first.body.overall_results.run_count,2);
   assert.deepEqual(first.body.overall_results.seeds,[11,12]);
   assert.equal(first.body.individual_results.length,2);
