@@ -14,7 +14,7 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 | Where extra service runs | **The whole 505 route** (Broadview Station ↔ Dundas West Station) | Added cars enter from the route's ends, so extra service has no partial coverage; its cost uses the full-route cycle. |
 | Where streetcar priority applies | **The whole modelled segment**, Broadview & Dundas → TMU, all 8 links (agreed) | Three reasons. (1) **Simpler to implement:** one saving share applied to every link, and the effect shows fully in the simulation. (2) **No data on which links are most congested:** we only have scheduled times, not observed delay by link, so any choice of partial links would be unsupported. (3) **A partial-coverage option can be added later if time allows**, for example as a cheaper alternative, ideally once observed delay data exists. |
 | Service days | Weekdays in a year, minus statutory holidays | Counted from the GTFS calendar pattern; derived, not observed. |
-| Price year | CAD at one common year | Lane C requires one `price_year`; older costs are inflated to it with the Bank of Canada CPI and labelled. |
+| Price year | **CAD 2025** | Lane C requires one `price_year`. 2025 is the latest full CPI year and the TTC budget's own index year. Older costs are inflated with Statistics Canada's annual CPI (Table 18-10-0005-01, Canada, all-items) and labelled. |
 
 ## Outputs
 1. **`data/reviewed/interventions.json`**: the reviewed A10 data. Every value has `unit`, `status` (`sourced`, `derived`, `transferred`, `assumed` or `user_selected`), `source_ids`, a low/central/high range where uncertain, and a one-line `meaning`.
@@ -34,7 +34,7 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 | `cost_per_hour` | Operating cost of one streetcar for one hour (driver, energy, maintenance) | TTC published operating statistics or budget: cost per vehicle-hour, streetcar mode if available, else system-wide and labelled | sourced or transferred |
 | `lane_capital` | One-time cost to build priority on the modelled segment (paint, signs, signal changes, curb work) | King Street Transit Priority Corridor and RapidTO costs scaled to the segment's length (about 2.5 km). A similar project's budget is not a quote | transferred |
 | `lane_operating` | Annual enforcement and upkeep | Same sources; if no figure exists, a wide labelled range | transferred or assumed |
-| `price_year` | Year of the CAD figures | Common year after CPI adjustment | derived |
+| `price_year` | Year of the CAD figures | 2025, after CPI adjustment | derived |
 | `earliest_phase` | First phase an upgrade can be in place | `phase-1`, the only phase Lane C defines today | user_selected |
 | `availability` | Optional per-option phase | Omitted unless the team sets different dates for lane and extra service | user_selected |
 | `source_ids`, `assumption_label` | Provenance and one-sentence caveat | Collected from the rows above | — |
