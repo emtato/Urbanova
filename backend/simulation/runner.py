@@ -257,6 +257,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         stop_id: str | None = None,
         passenger_ids: list[str] | tuple[str, ...] = (),
         onboard_override: list[str] | None = None,
+        waiting_override: int | None = None,
     ) -> None:
         car_copy = deepcopy(streetcar) if streetcar is not None else None
         if car_copy is not None and onboard_override is not None:
@@ -268,6 +269,8 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         existing_cnt = sum(1 for pid in pids if passengers[pid].rider_group == "existing")
         new_cnt = sum(1 for pid in pids if passengers[pid].rider_group == "new")
         queues = current_stop_queues()
+        if resolved_stop_id is not None and waiting_override is not None:
+            queues[resolved_stop_id] = waiting_override
         sim_log.append(
             SimLog(
                 time_s=time_s,
@@ -292,6 +295,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     ) -> None:
         stop_id = streetcar.current_stop_id
         pre_onboard_ids = list(streetcar.onboard_passenger_ids)
+        pre_waiting_count = len(stops_by_id[stop_id].waiting_passenger_ids) if stop_id is not None else 0
         events = handle_stop_passengers(
             inputs,
             streetcar,
@@ -311,6 +315,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
                 stop_id=stop_id,
                 passenger_ids=events["alighted"],
                 onboard_override=after_alight_ids,
+                waiting_override=pre_waiting_count,
             )
         if events["boarded"]:
             record(
@@ -364,7 +369,14 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         stop = stops_by_id[streetcar.current_stop_id]
         serve_and_log_stop_passengers(streetcar, time_s, check_denials=True)
         if stop.serving_streetcar_id == streetcar.id:
-            stop.serving_streetcar_id = None
+            stop.serving_streetcar_id = next(
+                (
+                    car.id
+                    for car in active_streetcars.values()
+                    if car.id != streetcar.id and car.status == "at_stop" and car.current_stop_id == stop.id
+                ),
+                None,
+            )
         planned_departure_s.pop(streetcar.id, None)
         depart_streetcar(inputs, streetcar, time_s)
 
