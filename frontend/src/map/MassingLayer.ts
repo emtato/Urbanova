@@ -344,6 +344,7 @@ export function setupCorridorMapLayers(
         'text-size': 11,
         'text-offset': [0, 1.4],
         'text-anchor': 'top',
+        'text-font': ['Noto Sans Regular'],
         'text-optional': true,
       },
       paint: {

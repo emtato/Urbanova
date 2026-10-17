@@ -25,28 +25,39 @@ export interface CorridorMapProps {
   className?: string
 }
 
-// Bulletproof self-contained dark raster style (zero external font/shader dependencies)
+// 100% Free, NO-API-KEY Esri World Dark Gray Canvas with official MapLibre demo glyphs
 const DARK_RASTER_STYLE: StyleSpecification = {
   version: 8,
+  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
   sources: {
-    'carto-dark-base': {
+    'esri-dark-base': {
       type: 'raster',
       tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
       ],
       tileSize: 256,
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: 'Esri, © OpenStreetMap contributors, and the GIS user community',
+    },
+    'esri-dark-reference': {
+      type: 'raster',
+      tiles: [
+        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+      ],
+      tileSize: 256,
     },
   },
   layers: [
     {
-      id: 'carto-dark-tiles',
+      id: 'esri-dark-base-tiles',
       type: 'raster',
-      source: 'carto-dark-base',
+      source: 'esri-dark-base',
+      minzoom: 0,
+      maxzoom: 20,
+    },
+    {
+      id: 'esri-dark-reference-tiles',
+      type: 'raster',
+      source: 'esri-dark-reference',
       minzoom: 0,
       maxzoom: 20,
     },
