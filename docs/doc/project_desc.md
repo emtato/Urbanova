@@ -85,7 +85,7 @@ The backend produces timestamped activity records and results for the frontend t
 
 **Study area: TTC 505 Dundas, westbound, Broadview → TMU Station at Yonge/Dundas.**
 
-The reviewed corridor contains nine stops and three selected proposals: 239 Dundas Street East, 500 Dundas Street East and 761 Dundas Street East. Proposed unit counts and locations are available; net-added housing, occupancy and demand inputs still need evidence or explicit assumptions.
+The reviewed corridor contains nine stops and three selected proposals: 239 Dundas Street East, 500 Dundas Street East and 761 Dundas Street East. A [simulation data handoff](../simulation-data.md) now supplies the input dataclasses with a partial registered-rental baseline, adopted development-revision counts, household/travel context and explicit occupancy/demand assumptions. This is not complete catchment coverage or observed stop-level demand; the 761 replacement count and walking field review remain unresolved.
 
 The intended prototype centres on an adjustable transit simulation along this corridor, connected to a bounded neighbourhood scene, proposal toggles and date/time shadow exploration. Two occupancy phases, demand ranges and repeated simulation runs remain transit goals. Comparing alternative routes is a future improvement beyond the initial single-corridor model. A focused, connected demonstration takes priority over expanding geographic coverage.
 

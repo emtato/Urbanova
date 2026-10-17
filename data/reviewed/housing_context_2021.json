@@ -1,0 +1,72 @@
+[
+  {
+    "neighbourhood": "Yonge-Bay Corridor",
+    "occupied_private_households_2021": 7460,
+    "residents_per_occupied_unit_2021": 1.7,
+    "census_sample": "25%",
+    "source_ids": [
+      "census-neighbourhoods-2021",
+      "neighbourhood-boundaries"
+    ]
+  },
+  {
+    "neighbourhood": "Downtown Yonge East",
+    "occupied_private_households_2021": 11055,
+    "residents_per_occupied_unit_2021": 1.6,
+    "census_sample": "25%",
+    "source_ids": [
+      "census-neighbourhoods-2021",
+      "neighbourhood-boundaries"
+    ]
+  },
+  {
+    "neighbourhood": "Moss Park",
+    "occupied_private_households_2021": 13290,
+    "residents_per_occupied_unit_2021": 1.6,
+    "census_sample": "25%",
+    "source_ids": [
+      "census-neighbourhoods-2021",
+      "neighbourhood-boundaries"
+    ]
+  },
+  {
+    "neighbourhood": "Regent Park",
+    "occupied_private_households_2021": 6110,
+    "residents_per_occupied_unit_2021": 2.1,
+    "census_sample": "25%",
+    "source_ids": [
+      "census-neighbourhoods-2021",
+      "neighbourhood-boundaries"
+    ]
+  },
+  {
+    "neighbourhood": "Cabbagetown-South St.James Town",
+    "occupied_private_households_2021": 6200,
+    "residents_per_occupied_unit_2021": 1.8,
+    "census_sample": "25%",
+    "source_ids": [
+      "census-neighbourhoods-2021",
+      "neighbourhood-boundaries"
+    ]
+  },
+  {
+    "neighbourhood": "South Riverdale",
+    "occupied_private_households_2021": 12705,
+    "residents_per_occupied_unit_2021": 2.2,
+    "census_sample": "25%",
+    "source_ids": [
+      "census-neighbourhoods-2021",
+      "neighbourhood-boundaries"
+    ]
+  },
+  {
+    "neighbourhood": "North Riverdale",
+    "occupied_private_households_2021": 4900,
+    "residents_per_occupied_unit_2021": 2.3,
+    "census_sample": "25%",
+    "source_ids": [
+      "census-neighbourhoods-2021",
+      "neighbourhood-boundaries"
+    ]
+  }
+]

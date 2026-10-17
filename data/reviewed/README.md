@@ -2,6 +2,8 @@
 This directory contains compact, derived feasibility artifacts for TTC 505 westbound from Dundas/Broadview to TMU Station.
 It is not the frozen Comparison API contract or a calibrated simulation output.
 
+Simulation owner: start with simulation_input.json and [the loading guide](../../docs/simulation-data.md). The adapter in data/simulation_input.py constructs the existing SimulationInput dataclasses. It uses 58 registered rental buildings plus three proposals and labelled assumptions; this is not complete housing or observed stop-level demand.
+
 - corridor.json / corridor.geojson / stops.csv: dated GTFS corridor, schedule and geometry.
 - project_selection.json: explicit service-window, threshold and application-selection decisions.
 - development_shortlist.csv / developments.csv: five reviewed candidates and three selected proposals.
@@ -11,6 +13,10 @@ It is not the frozen Comparison API contract or a calibrated simulation output.
 - feasibility_report.json: machine-readable findings and missing observations.
 - route_505.json: the whole 505 route in both directions (stops, patterns, trips per hour) for reference; rebuild with python -m backend.scripts.export_route.
 - access_check.json: the latest local live Tiger Data/Gemini check; no credentials are included.
+- simulation_input.json / existing_residences.csv: current simulation inputs, field metadata and a partial registered-rental baseline.
+- simulation_sources.json: additional housing, census, travel-survey, planning, TTC and OSM evidence with checksums.
+- existing_housing_audit.json / housing_context_2021.json / travel_context_2022.json: inclusion decisions and demographic/travel context.
+- simulation_walking_routes.geojson: mapped access to up to two stops per included entity; every route still requires entrance/crossing/closure review.
 
 Rebuild with python -m backend.scripts.prove_feasibility. Raw GTFS, pipeline downloads and OSM source tiles remain in ignored data/raw and data/cache.
 The SVG map rebuilds with the command. The PNG is a static review preview; use the regenerated SVG after refreshing sources.
