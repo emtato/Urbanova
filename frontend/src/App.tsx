@@ -24,7 +24,7 @@ function App() {
       {comparison.fixture && <div className="fixture-banner" role="status">FIXTURE — synthetic demand, costs and results. Not a 505 forecast.</div>}
       <header>
         <p className="eyebrow">FutureProof · scenario experiment</p>
-        <h1>505 · Broadview to Jarvis</h1>
+        <h1>505 · Broadview to TMU Station</h1>
         <p>{comparison.corridor.direction} on Dundas East · {comparison.corridor.stops.length} stops · {comparison.corridor.peak_window.service_date}, 07:00–09:00 Toronto time</p>
         <p>Contract {comparison.contract_version} · proposed housing stays fixed across packages.</p>
       </header>

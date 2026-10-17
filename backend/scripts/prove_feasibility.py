@@ -35,7 +35,7 @@ def cached(url: str, path: Path, *, refresh: bool, adopt_existing: bool) -> Path
 def write_csv(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({key: json.dumps(value) if isinstance(value, (list, dict)) else value

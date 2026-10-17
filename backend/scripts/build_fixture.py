@@ -2,7 +2,7 @@
 
 All riders start waiting at t=0 and alight at the last stop. Capacity FOUR is a
 deliberately tiny test value, never a TTC capacity claim. There are five existing
-riders at Broadview and (growth only) five new riders at River; all alight at Jarvis.
+riders at Broadview and (growth only) five new riders at River; all alight at TMU Station.
 Current: cars at 0/60 s board 4/1 existing riders; mean wait 12 s, p95 60 s.
 The first westbound link takes 175 scheduled seconds in the reviewed snapshot.
 Growth: same cars; car 2 boards three new riders at t=235; two remain queued.
@@ -63,7 +63,7 @@ def build_fixture() -> dict:
         return dict(low=low, central=central, high=high, currency="CAD", price_year=2026,
                     scope=scope, unit=unit, status="assumed", source_ids=[])
 
-    scenario = dict(scenario_id="fixture-505-west", version=1, developments=developments,
+    scenario = dict(scenario_id="fixture-505-west-tmu", version=1, developments=developments,
                     phases=[dict(phase_id="phase-1", year=2030, development_ids=[item["dev_id"] for item in developments], occupied_share=.5)],
                     demand_case="central", interventions=[dict(id="fixture-extra-service", type="extra_service", link_ids=[], headway_s=30,
                     capital_cost=cost("CAD", 0, 0, 0, "Fixture assumes an existing spare vehicle; excludes vehicle purchase."),
@@ -105,7 +105,7 @@ def build_fixture() -> dict:
             denied = .2 if kind == "current" else (1+new_count)/(5+new_count)
             run_id = "fixture-run-" + kind + suffix
             run = dict(run_id=run_id, scenario_version=1, package=package, model_version="hand-fixture-v1",
-                       data_version="ttc-S1000542-505-west-pipeline-20261008", seed_ids=[0], status="completed",
+                       data_version="ttc-S1000542-505-west-tmu-pipeline-20261008", seed_ids=[0], status="completed",
                        diagnostics=dict(passengers_created=count, passengers_arrived=count-waiting, passengers_waiting=waiting,
                                         passengers_onboard=0, conservation=True, unresolved_passengers=waiting, runtime_s=0))
             cases.append(dict(case_id="fixture-"+kind+suffix, kind=kind, package_id=package, phase_id="phase-1", demand_case=demand_case,
@@ -166,7 +166,7 @@ def build_fixture() -> dict:
     source_fields = {"source_id", "title", "url", "publisher", "retrieved_at", "version", "licence"}
     sources = [{key: value for key, value in item.items() if key in source_fields}
                for item in json.loads((reviewed / "sources.json").read_text(encoding="utf-8"))]
-    return dict(contract_version="1.0.0", comparison_id="fixture-505-broadview-jarvis", fixture=True,
+    return dict(contract_version="1.0.0", comparison_id="fixture-505-broadview-tmu", fixture=True,
                 product_label="scenario experiment", scenario=scenario, corridor=corridor, cases=cases, packages=packages,
                 sensitivity=[dict(assumption_key="vehicle_capacity", case_id="fixture-growth", tested_values=[4, 5, 6],
                                   metric="unresolved_passengers", outcomes=[2, 0, 0], status="fixture",

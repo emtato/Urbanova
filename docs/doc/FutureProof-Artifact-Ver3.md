@@ -93,7 +93,7 @@ All four people have the Express backend (`npm run dev` in `backend/`), the fron
 
 ## Prove feasibility, freeze the contract
 
-Data now covers 505 westbound Dundas/Broadview to Jarvis (seven stops). Simulation variables and validation belong to the simulation owner; the synthetic contract fixture and frontend also use this westbound segment. Runtime uses FastAPI/Pydantic. See [contract 1.0.0](../contract.md) for executed checks and scope adjustments; the generic bus candidates below are retained as planning context. Four-laptop owner confirmation and walking field review remain separate.
+Data now covers 505 westbound Dundas/Broadview to TMU Station at Yonge/Dundas (nine stops). Simulation variables and validation belong to the simulation owner; the synthetic contract fixture and frontend also use this westbound segment. Runtime uses FastAPI/Pydantic. See [contract 1.0.0](../contract.md) for executed checks and scope adjustments; the generic bus candidates below are retained as planning context. Four-laptop owner confirmation and walking field review remain separate.
 
 All four together · Sat 00:30 → 02:30 · blocking ·
 

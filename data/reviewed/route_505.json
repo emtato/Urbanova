@@ -720,7 +720,7 @@
           "lon": -79.376993,
           "dist_from_start_m": 4129,
           "scheduled_from_start_s": 1530,
-          "corridor_stop_id": null
+          "corridor_stop_id": "ttc-stop-2117"
         },
         {
           "seq": 17,
@@ -730,7 +730,7 @@
           "lon": -79.380755,
           "dist_from_start_m": 4446,
           "scheduled_from_start_s": 1670,
-          "corridor_stop_id": null
+          "corridor_stop_id": "ttc-stop-2136"
         },
         {
           "seq": 18,

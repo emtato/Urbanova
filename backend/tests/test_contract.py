@@ -24,8 +24,8 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
     assert comparison.corridor.direction == "westbound"
     assert comparison.corridor.route_pattern == "505:1:shp-505-60"
     assert comparison.corridor.stops[0].gtfs_stop_id == "1756"
-    assert comparison.corridor.stops[-1].gtfs_stop_id == "2119"
-    assert len(comparison.corridor.stops) == 7
+    assert comparison.corridor.stops[-1].gtfs_stop_id == "2136"
+    assert len(comparison.corridor.stops) == 9
     assert [case.per_run_mean_wait_s[0] for case in comparison.cases[:3]] == [12, 95.625, 111.5]
     assert [case.unresolved_passengers for case in comparison.cases[:3]] == [0, 2, 0]
     assert len(comparison.cases) == 9
@@ -83,7 +83,7 @@ def test_contract_rejects_broken_boundaries(sample, path, value):
 def test_replay_covers_two_cars_every_stop_and_preserves_denied_riders(sample):
     replay = Comparison.model_validate(sample).replay
     arrivals = [event for event in replay.events if event.kind == "arrive"]
-    assert len(arrivals) == 14
+    assert len(arrivals) == 18
     for car in replay.vehicle_capacity:
         assert [event.stop_id for event in arrivals if event.vehicle_id == car] == [stop["stop_id"] for stop in sample["corridor"]["stops"]]
     new_boards = [event for event in replay.events if event.kind == "board" and event.rider_group == "new"]

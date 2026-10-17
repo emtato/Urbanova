@@ -10,7 +10,7 @@ try {
   const html = renderToStaticMarkup(React.createElement(App))
   assert.match(html, /class="fixture-banner" role="status">FIXTURE/)
   assert.match(html, /Not a 505 forecast/)
-  assert.match(html, /505 · Broadview to Jarvis/)
+  assert.match(html, /505 · Broadview to TMU Station/)
   assert.match(html, /westbound/)
   assert.match(html, /id="replay-time"/)
   assert.match(html, /Assumptions behind the fixture/)

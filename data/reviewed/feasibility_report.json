@@ -7,11 +7,11 @@
     "reason": "A representative weekday AM peak for the initial scenario experiment; selected for reproducibility, not inferred from demand observations."
   },
   "corridor": {
-    "stop_count": 7,
+    "stop_count": 9,
     "trip_count": 17,
-    "length_m": 1973.88,
+    "length_m": 2513.03,
     "median_scheduled_headway_s": 360.0,
-    "median_scheduled_segment_time_s": 675
+    "median_scheduled_segment_time_s": 904
   },
   "developments": [
     {

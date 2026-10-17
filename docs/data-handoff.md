@@ -1,10 +1,10 @@
 # Data for the simulation owner
 
-Use **data/reviewed/** as the sourced input bundle for 505 **westbound, Dundas East/Broadview → Jarvis**. Simulation variables, demand conversion and the engine belong to the simulation teammate.
+Use **data/reviewed/** as the sourced input bundle for 505 **westbound, Dundas East/Broadview → TMU Station**. Simulation variables, demand conversion and the engine belong to the simulation teammate.
 
 | File | Contents |
 | --- | --- |
-| corridor.json | Ordered stops, six links, route/shape IDs, service date/window and scheduled trips |
+| corridor.json | Ordered stops, eight links, route/shape IDs, service date/window and scheduled trips |
 | stops.csv | Stop IDs, zero-based sequence, coordinates and source IDs |
 | corridor.geojson | Corridor geometry for display |
 | developments.csv | Three selected proposals, proposed units, stages, dates, nearest stops and estimated walking metres |
