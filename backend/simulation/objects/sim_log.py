@@ -18,6 +18,6 @@ SimAction = Literal["generate", "arrive", "depart", "terminate"]
 class SimLog:
     """One action at a point in time, with the relevant state captured then."""
 
-    time_s: float  # Elapsed seconds from inputs.start_time_s, including fractions.
+    time_s: int  # Elapsed whole seconds from inputs.start_time_s.
     action: SimAction
     streetcar: Streetcar  # A copy, so later changes cannot rewrite this history.

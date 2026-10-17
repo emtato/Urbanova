@@ -77,7 +77,7 @@ def depart_streetcar(inputs: SimulationInput, streetcar: Streetcar, time_s: floa
 
 
 def arrive_streetcar(streetcar: Streetcar, time_s: float) -> None:
-    """Finish the current link; the runner supplies the scheduled arrival time."""
+    """Finish the current link once the runner's clock reaches its arrival time."""
     if (streetcar.status != "in_transit" or streetcar.next_stop_id is None
             or streetcar.expected_arrival_time_s is None):
         raise ValueError("A streetcar must be travelling toward a stop before arriving")
