@@ -79,7 +79,5 @@ Set that same value in Railway Variables and apply/redeploy; Google rejected gem
 Keys and database URLs remain backend-only and are excluded from the committed evidence.
 
 ## Phase 01 handoff
-Steps 1.5–1.16 are documented in [contract.md](contract.md). The existing synthetic fixture predates the westbound data change and its regeneration check needs reconciliation. Simulation variables and validation belong to the simulation teammate. Her sourced inputs are listed in [data-handoff.md](data-handoff.md); laptop confirmations and walking-review caveats remain explicit.
+Steps 1.5–1.16 are documented in [contract.md](contract.md). The synthetic fixture, replay and frontend now match the westbound data and pass the contract checks. Simulation variables and validation belong to the simulation teammate. Her sourced inputs are listed in [data-handoff.md](data-handoff.md); laptop confirmations and walking-review caveats remain explicit.
 The frozen API boundary is backend/schemas/Comparison, version 1.0.0. The reviewed corridor.json remains the data evidence rather than the API response shape.
-
-The separate [Lawrence East study](feasibility-lawrence-east.md) is preserved for reference; this handoff follows the confirmed 505 endpoints.

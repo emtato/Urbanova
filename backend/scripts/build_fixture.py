@@ -2,12 +2,13 @@
 
 All riders start waiting at t=0 and alight at the last stop. Capacity FOUR is a
 deliberately tiny test value, never a TTC capacity claim. There are five existing
-riders at Jarvis and (growth only) five new riders at Sherbourne.
+riders at Broadview and (growth only) five new riders at River; all alight at Jarvis.
 Current: cars at 0/60 s board 4/1 existing riders; mean wait 12 s, p95 60 s.
-Growth: same cars; car 2 boards three new riders at t=210; two remain queued.
-Completed wait = (60 + 3*210)/8 = 86.25 s; p95 = 210 s; denied once = 6/10.
-Supported growth: cars at 0/30/60; new riders board 3 at t=180 and 2 at t=210.
-All ten finish; mean wait = (30 + 3*180 + 2*210)/10 = 99 s, p95 = 210 s.
+The first westbound link takes 175 scheduled seconds in the reviewed snapshot.
+Growth: same cars; car 2 boards three new riders at t=235; two remain queued.
+Completed wait = (60 + 3*235)/8 = 95.625 s; p95 = 235 s; denied once = 6/10.
+Supported growth: cars at 0/30/60; new riders board 3 at t=205 and 2 at t=235.
+All ten finish; mean wait = (30 + 3*205 + 2*235)/10 = 111.5 s, p95 = 235 s.
 The larger completed-rider mean illustrates censoring when unresolved riders
 are dropped, not a claim that more service increases passenger waits.
 Real stop coordinates/link medians are reused solely to exercise the contract.
@@ -31,17 +32,20 @@ def build_fixture() -> dict:
     reviewed = ROOT_DIR / "data/reviewed"
     raw = json.loads((reviewed / "corridor.json").read_text(encoding="utf-8"))
     ids = [stop["stop_id"] for stop in raw["stops"]]
-    incoming = assumption("incoming_load", "passengers/vehicle", "Fixture cars enter empty; actual Jarvis occupancy is unknown.", 0, 0, 0, 0, 300)
+    first_link_s = raw["links"][0]["scheduled_time_s"]
+    first_supported_board_s = first_link_s + 30
+    last_board_s = first_link_s + 60
+    incoming = assumption("incoming_load", "passengers/vehicle", "Fixture cars enter empty; actual Broadview occupancy is unknown.", 0, 0, 0, 0, 300)
     capacity = assumption("vehicle_capacity", "passengers/vehicle", "FOUR places for hand arithmetic only; not a TTC streetcar capacity.", 4, 4, 6, 1, 300)
     headway = assumption("baseline_headway", "s", "Synthetic two-car dispatch separation; not the observed or scheduled 505 headway.", 60, 60, 60, 1, 1800)
     dwell = assumption("dwell", "s/stop", "Zero-dwell arithmetic fixture, not a calibrated boarding model.", 0, 0, 0, 0, 300)
     berth = assumption("berths", "vehicles/stop", "One berth per stop; fixture arrivals never overlap at a stop.", 1, 1, 1, 1, 4)
     occupied = assumption("occupied_share", "share", "Illustrative future occupied share; no observed completion dates.", .25, .5, .75, 0, 1)
     new_arrivals = assumption("new_arrivals", "passengers/window", "Synthetic new-rider counts for low/central/high demand; not derived from proposed units.", 3, 5, 7, 0, 20)
-    existing_arrivals = assumption("existing_arrivals", "passengers/window", "Five existing riders at Jarvis, waiting from zero; no observed ridership claim.", 5, 5, 5, 0, 20)
+    existing_arrivals = assumption("existing_arrivals", "passengers/window", "Five existing riders at Broadview, waiting from zero; no observed ridership claim.", 5, 5, 5, 0, 20)
     effect = assumption("extra_service_headway", "s", "Fixture dispatches 0/30/60 instead of 0/60; no fleet-cycle feasibility claim.", 30, 30, 60, 1, 1800)
-    corridor = dict(corridor_id=raw["corridor_id"], route_pattern="505:0:shp-505-09", mode="streetcar",
-                    direction="eastbound", crs="EPSG:4326", metric_crs="EPSG:26917",
+    corridor = dict(corridor_id=raw["corridor_id"], route_pattern=f"{raw['route_id']}:{raw['direction_id']}:{raw['shape_id']}", mode="streetcar",
+                    direction=raw["direction"], crs="EPSG:4326", metric_crs="EPSG:26917",
                     peak_window=dict(start_s=25200, end_s=32400, timezone="America/Toronto", service_date=raw["service_date"]),
                     stops=raw["stops"],
                     links=[dict(link_id=item["link_id"], from_stop=item["from_stop"], to_stop=item["to_stop"],
@@ -59,7 +63,7 @@ def build_fixture() -> dict:
         return dict(low=low, central=central, high=high, currency="CAD", price_year=2026,
                     scope=scope, unit=unit, status="assumed", source_ids=[])
 
-    scenario = dict(scenario_id="fixture-505", version=1, developments=developments,
+    scenario = dict(scenario_id="fixture-505-west", version=1, developments=developments,
                     phases=[dict(phase_id="phase-1", year=2030, development_ids=[item["dev_id"] for item in developments], occupied_share=.5)],
                     demand_case="central", interventions=[dict(id="fixture-extra-service", type="extra_service", link_ids=[], headway_s=30,
                     capital_cost=cost("CAD", 0, 0, 0, "Fixture assumes an existing spare vehicle; excludes vehicle purchase."),
@@ -78,9 +82,9 @@ def build_fixture() -> dict:
                 new = index == 1 and group == "new" and kind != "current"
                 passengers = 5 if existing else new_count if new else 0
                 completed = min(3, passengers) if new and kind == "growth" else passengers
-                new_mean = (min(3, new_count)*180 + max(new_count-3, 0)*210)/new_count
-                mean = (6 if kind == "supported_growth" else 12) if existing else (new_mean if kind == "supported_growth" else 210) if new else None
-                p95 = (30 if kind == "supported_growth" else 60) if existing else (180 if kind == "supported_growth" and new_count <= 3 else 210) if new else None
+                new_mean = (min(3, new_count)*first_supported_board_s + max(new_count-3, 0)*last_board_s)/new_count
+                mean = (6 if kind == "supported_growth" else 12) if existing else (new_mean if kind == "supported_growth" else last_board_s) if new else None
+                p95 = (30 if kind == "supported_growth" else 60) if existing else (first_supported_board_s if kind == "supported_growth" and new_count <= 3 else last_board_s) if new else None
                 results.append(dict(stop_id=stop, rider_group=group, passengers=passengers, completed_passengers=completed,
                                     mean_wait_s=mean, p95_wait_s=p95, denied_at_least_once_share=.2 if existing else 1 if new else None,
                                     remaining_queue=max(new_count-3, 0) if new and kind == "growth" else 0, headway_cv=0))
@@ -94,14 +98,14 @@ def build_fixture() -> dict:
             waiting = max(new_count-3, 0) if kind == "growth" else 0
             waits = [0]*4 + [30 if kind == "supported_growth" else 60]
             if kind == "growth":
-                waits += [210]*min(3, new_count)
+                waits += [last_board_s]*min(3, new_count)
             elif kind == "supported_growth":
-                waits += [180]*min(3, new_count) + [210]*max(new_count-3, 0)
+                waits += [first_supported_board_s]*min(3, new_count) + [last_board_s]*max(new_count-3, 0)
             mean, p95 = sum(waits)/len(waits), sorted(waits)[ceil(.95*len(waits))-1]
             denied = .2 if kind == "current" else (1+new_count)/(5+new_count)
             run_id = "fixture-run-" + kind + suffix
             run = dict(run_id=run_id, scenario_version=1, package=package, model_version="hand-fixture-v1",
-                       data_version="ttc-S1000542-pipeline-20261008", seed_ids=[0], status="completed",
+                       data_version="ttc-S1000542-505-west-pipeline-20261008", seed_ids=[0], status="completed",
                        diagnostics=dict(passengers_created=count, passengers_arrived=count-waiting, passengers_waiting=waiting,
                                         passengers_onboard=0, conservation=True, unresolved_passengers=waiting, runtime_s=0))
             cases.append(dict(case_id="fixture-"+kind+suffix, kind=kind, package_id=package, phase_id="phase-1", demand_case=demand_case,
@@ -162,7 +166,7 @@ def build_fixture() -> dict:
     source_fields = {"source_id", "title", "url", "publisher", "retrieved_at", "version", "licence"}
     sources = [{key: value for key, value in item.items() if key in source_fields}
                for item in json.loads((reviewed / "sources.json").read_text(encoding="utf-8"))]
-    return dict(contract_version="1.0.0", comparison_id="fixture-505-jarvis-broadview", fixture=True,
+    return dict(contract_version="1.0.0", comparison_id="fixture-505-broadview-jarvis", fixture=True,
                 product_label="scenario experiment", scenario=scenario, corridor=corridor, cases=cases, packages=packages,
                 sensitivity=[dict(assumption_key="vehicle_capacity", case_id="fixture-growth", tested_values=[4, 5, 6],
                                   metric="unresolved_passengers", outcomes=[2, 0, 0], status="fixture",

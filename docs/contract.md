@@ -1,6 +1,6 @@
 # Phase 01 contract, version 1.0.0
 
-Simulation variables and the simulator are owned by the simulation teammate. The sourced data now covers **505 westbound, Dundas East/Broadview to Jarvis**; see [data-handoff.md](data-handoff.md). The existing synthetic contract fixture below predates that direction change and remains an integration example, not simulation input. Its regeneration check currently fails against the updated source bundle; Phase 01 is not fully green until that handoff is reconciled.
+Simulation variables and the simulator are owned by the simulation teammate. The sourced data now covers **505 westbound, Dundas East/Broadview to Jarvis**; see [data-handoff.md](data-handoff.md). The synthetic contract fixture, frontend and source bundle now consistently use that westbound segment. Contract validation passes; simulator variables and hand-case validation remain owned by the simulation teammate.
 
 The active backend is FastAPI. Its authoritative runtime models are **Pydantic modules in backend/schemas/**, replacing the archived Express/Zod instructions in the version 3 planning document. The generated JSON Schema is data/contracts/comparison.schema.json. Matching, hand-maintained TypeScript interfaces are frontend/src/lib/types.ts. No second backend or validation library is needed.
 
@@ -54,17 +54,17 @@ CaseResult's per-run arrays align with its runs list; run_count is their common 
 
 The sample stream includes two streetcars visiting **every one of the seven stops**, using the six sourced schedule-link medians and zero fixture dwell. Events are chronological, with stable authored ordering at equal timestamps. Each car dispatches once, arrives at a stop, alights before boarding, records any capacity denial, then departs. Movement events have count=0 and rider_group=null. Passenger events identify existing or new riders; load_after is the vehicle's total after that event. A denial never removes riders from a queue.
 
-ReplayStream includes run_id, vehicle capacities, a reporting horizon and queues present at t=0. This first stream contract supports empty incoming vehicles and those initial queues; a future stream with new arrivals during replay or incoming passengers must add explicit initialization/arrival semantics in a versioned contract change. It must not silently reuse dispatch as a passenger-arrival event. The validator checks capacity, group loads, stop order, initial/final accounting and consistency with run diagnostics. The supplied short stream finishes both vehicles at Broadview, leaving two new riders waiting at Sherbourne.
+ReplayStream includes run_id, vehicle capacities, a reporting horizon and queues present at t=0. This first stream contract supports empty incoming vehicles and those initial queues; a future stream with new arrivals during replay or incoming passengers must add explicit initialization/arrival semantics in a versioned contract change. It must not silently reuse dispatch as a passenger-arrival event. The validator checks capacity, group loads, stop order, initial/final accounting and consistency with run diagnostics. The supplied short stream finishes both vehicles at Jarvis, leaving two new riders waiting at River.
 
 ## Fixture hand calculation
 
-The three central-demand cases are authored in backend/scripts/build_fixture.py, with the arithmetic in its docstring. Five existing riders start at Jarvis, five new riders at Sherbourne, and everyone alights at Broadview. Vehicles have **four places for testing**, not an asserted streetcar capacity. Two baseline dispatches occur at 0 and 60 s; the supported package dispatches three cars at 0, 30 and 60 s. Every passenger waits from t=0. Sherbourne is 150 scheduled seconds after Jarvis.
+The three central-demand cases are authored in backend/scripts/build_fixture.py, with the arithmetic in its docstring. Five existing riders start at Broadview, five new riders at River, and everyone alights at Jarvis. Vehicles have **four places for testing**, not an asserted streetcar capacity. Two baseline dispatches occur at 0 and 60 s; the supported package dispatches three cars at 0, 30 and 60 s. Every passenger waits from t=0. River is 175 scheduled seconds after Broadview.
 
 | Central case | Created | Arrived | Queued | Completed mean wait | P95 | Denied once |
 | --- | --- | --- | --- | --- | --- | --- |
 | Current | 5 | 5 | 0 | 12 s | 60 s | 1/5 |
-| Growth | 10 | 8 | 2 | 86.25 s | 210 s | 6/10 |
-| Supported growth | 10 | 10 | 0 | 99 s | 210 s | 6/10 |
+| Growth | 10 | 8 | 2 | 95.625 s | 235 s | 6/10 |
+| Supported growth | 10 | 10 | 0 | 111.5 s | 235 s | 6/10 |
 
 Low demand uses three new riders; high uses seven, keeping the five existing riders. All nine case results and both packages' three demand evaluations are populated. The high-demand supported package fails the illustrative denied-share criterion even though it clears its queues. A capacity sensitivity entry is labelled fixture and holds the central passenger inputs fixed.
 

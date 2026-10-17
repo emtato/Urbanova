@@ -29,6 +29,6 @@ Her definitions in backend/simulation/inputs.py remain authoritative. This hando
 | streetcar_capacity | Not supplied by GTFS; source the vehicle specification or label the owner's assumption. |
 | trips_per_resident_in_window, headway_randomness_s, commuter_distribution, seed | Simulation-owner choices; no measured values are invented here. |
 
-Do not use **data/fixtures/** or frontend/src/lib/sampleComparison.ts as real simulation inputs: those contain synthetic integration examples, including invented capacity, service and costs. The existing fixture still reflects the earlier eastbound snapshot and needs a separate contract/UI reconciliation.
+Do not use **data/fixtures/** or frontend/src/lib/sampleComparison.ts as real simulation inputs: those contain synthetic integration examples, including invented capacity, service and costs. The fixture now follows the same westbound segment, but its invented demand, capacity, service and costs remain integration examples rather than simulation inputs.
 
 Rebuild source-derived evidence with python -m backend.scripts.prove_feasibility. Check the data independently with python -m pytest backend/tests/data -q. Raw source downloads stay ignored under data/raw and data/cache.

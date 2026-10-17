@@ -3,11 +3,11 @@ import type { Comparison } from "./types"
 
 export const sampleComparison = {
   "contract_version": "1.0.0",
-  "comparison_id": "fixture-505-jarvis-broadview",
+  "comparison_id": "fixture-505-broadview-jarvis",
   "fixture": true,
   "product_label": "scenario experiment",
   "scenario": {
-    "scenario_id": "fixture-505",
+    "scenario_id": "fixture-505-west",
     "version": 1,
     "developments": [
       {
@@ -22,8 +22,8 @@ export const sampleComparison = {
         "footprint_status": "unavailable",
         "access": [
           {
-            "stop_id": "ttc-stop-2130",
-            "walk_m": 156.73,
+            "stop_id": "ttc-stop-2119",
+            "walk_m": 271.7,
             "status": "estimated",
             "source_ids": [
               "toronto-development-pipeline",
@@ -52,8 +52,8 @@ export const sampleComparison = {
         "footprint_status": "unavailable",
         "access": [
           {
-            "stop_id": "ttc-stop-15872",
-            "walk_m": 334.84,
+            "stop_id": "ttc-stop-2125",
+            "walk_m": 229.13,
             "status": "estimated",
             "source_ids": [
               "toronto-development-pipeline",
@@ -82,8 +82,8 @@ export const sampleComparison = {
         "footprint_status": "unavailable",
         "access": [
           {
-            "stop_id": "ttc-stop-2126",
-            "walk_m": 267.98,
+            "stop_id": "ttc-stop-2127",
+            "walk_m": 269.63,
             "status": "estimated",
             "source_ids": [
               "toronto-development-pipeline",
@@ -175,10 +175,10 @@ export const sampleComparison = {
     }
   },
   "corridor": {
-    "corridor_id": "ttc-505-east-jarvis-broadview",
-    "route_pattern": "505:0:shp-505-09",
+    "corridor_id": "ttc-505-west-broadview-jarvis",
+    "route_pattern": "505:1:shp-505-60",
     "mode": "streetcar",
-    "direction": "eastbound",
+    "direction": "westbound",
     "crs": "EPSG:4326",
     "metric_crs": "EPSG:26917",
     "peak_window": {
@@ -189,78 +189,78 @@ export const sampleComparison = {
     },
     "stops": [
       {
-        "stop_id": "ttc-stop-2118",
-        "gtfs_stop_id": "2118",
-        "name": "Dundas St East at Jarvis St",
+        "stop_id": "ttc-stop-1756",
+        "gtfs_stop_id": "1756",
+        "name": "Broadview Ave at Dundas St East",
         "seq": 0,
-        "lon": -79.374706,
-        "lat": 43.656947,
+        "lon": -79.351506,
+        "lat": 43.6626,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "stop_id": "ttc-stop-2130",
-        "gtfs_stop_id": "2130",
-        "name": "Dundas St East at Sherbourne St",
+        "stop_id": "ttc-stop-2127",
+        "gtfs_stop_id": "2127",
+        "name": "Dundas St East at River St",
         "seq": 1,
-        "lon": -79.371303,
-        "lat": 43.65822,
+        "lon": -79.358,
+        "lat": 43.661284,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "stop_id": "ttc-stop-2122",
-        "gtfs_stop_id": "2122",
-        "name": "Dundas St East at Ontario St",
+        "stop_id": "ttc-stop-15873",
+        "gtfs_stop_id": "15873",
+        "name": "Dundas St East at Regent Park Blvd",
         "seq": 2,
-        "lon": -79.368653,
-        "lat": 43.658752,
+        "lon": -79.361739,
+        "lat": 43.66045,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "stop_id": "ttc-stop-2124",
-        "gtfs_stop_id": "2124",
+        "stop_id": "ttc-stop-2125",
+        "gtfs_stop_id": "2125",
         "name": "Dundas St East at Parliament St",
         "seq": 3,
-        "lon": -79.366291,
-        "lat": 43.659283,
+        "lon": -79.365882,
+        "lat": 43.65951,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "stop_id": "ttc-stop-15872",
-        "gtfs_stop_id": "15872",
-        "name": "Dundas St East at Regent Park Blvd",
+        "stop_id": "ttc-stop-2123",
+        "gtfs_stop_id": "2123",
+        "name": "Dundas St East at Ontario St",
         "seq": 4,
-        "lon": -79.361966,
-        "lat": 43.660247,
+        "lon": -79.368357,
+        "lat": 43.658961,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "stop_id": "ttc-stop-2126",
-        "gtfs_stop_id": "2126",
-        "name": "Dundas St East at River St",
+        "stop_id": "ttc-stop-2131",
+        "gtfs_stop_id": "2131",
+        "name": "Dundas St East at Sherbourne St",
         "seq": 5,
-        "lon": -79.358272,
-        "lat": 43.661097,
+        "lon": -79.370878,
+        "lat": 43.658406,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "stop_id": "ttc-stop-2115",
-        "gtfs_stop_id": "2115",
-        "name": "Dundas St East at Broadview Ave",
+        "stop_id": "ttc-stop-2119",
+        "gtfs_stop_id": "2119",
+        "name": "Dundas St East at Jarvis St",
         "seq": 6,
-        "lon": -79.351814,
-        "lat": 43.662249,
+        "lon": -79.374377,
+        "lat": 43.657162,
         "source_ids": [
           "ttc-gtfs"
         ]
@@ -268,79 +268,79 @@ export const sampleComparison = {
     ],
     "links": [
       {
-        "link_id": "ttc-505-east-link-1",
-        "from_stop": "ttc-stop-2118",
-        "to_stop": "ttc-stop-2130",
-        "length_m": 329.76,
-        "base_time_s": 150,
+        "link_id": "ttc-505-west-broadview-jarvis-link-1",
+        "from_stop": "ttc-stop-1756",
+        "to_stop": "ttc-stop-2127",
+        "length_m": 551.76,
+        "base_time_s": 175,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "link_id": "ttc-505-east-link-2",
-        "from_stop": "ttc-stop-2130",
-        "to_stop": "ttc-stop-2122",
-        "length_m": 222.32,
-        "base_time_s": 100,
+        "link_id": "ttc-505-west-broadview-jarvis-link-2",
+        "from_stop": "ttc-stop-2127",
+        "to_stop": "ttc-stop-15873",
+        "length_m": 315.45,
+        "base_time_s": 90,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "link_id": "ttc-505-east-link-3",
-        "from_stop": "ttc-stop-2122",
-        "to_stop": "ttc-stop-2124",
-        "length_m": 201.42,
-        "base_time_s": 91,
+        "link_id": "ttc-505-west-broadview-jarvis-link-3",
+        "from_stop": "ttc-stop-15873",
+        "to_stop": "ttc-stop-2125",
+        "length_m": 350.06,
+        "base_time_s": 104,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "link_id": "ttc-505-east-link-4",
-        "from_stop": "ttc-stop-2124",
-        "to_stop": "ttc-stop-15872",
-        "length_m": 364.93,
-        "base_time_s": 130,
+        "link_id": "ttc-505-west-broadview-jarvis-link-4",
+        "from_stop": "ttc-stop-2125",
+        "to_stop": "ttc-stop-2123",
+        "length_m": 209.84,
+        "base_time_s": 85,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "link_id": "ttc-505-east-link-5",
-        "from_stop": "ttc-stop-15872",
-        "to_stop": "ttc-stop-2126",
-        "length_m": 312.67,
-        "base_time_s": 106,
+        "link_id": "ttc-505-west-broadview-jarvis-link-5",
+        "from_stop": "ttc-stop-2123",
+        "to_stop": "ttc-stop-2131",
+        "length_m": 213.47,
+        "base_time_s": 85,
         "source_ids": [
           "ttc-gtfs"
         ]
       },
       {
-        "link_id": "ttc-505-east-link-6",
-        "from_stop": "ttc-stop-2126",
-        "to_stop": "ttc-stop-2115",
-        "length_m": 539.44,
-        "base_time_s": 183,
+        "link_id": "ttc-505-west-broadview-jarvis-link-6",
+        "from_stop": "ttc-stop-2131",
+        "to_stop": "ttc-stop-2119",
+        "length_m": 333.3,
+        "base_time_s": 136,
         "source_ids": [
           "ttc-gtfs"
         ]
       }
     ],
     "berths_per_stop": {
-      "ttc-stop-2118": 1,
-      "ttc-stop-2130": 1,
-      "ttc-stop-2122": 1,
-      "ttc-stop-2124": 1,
-      "ttc-stop-15872": 1,
-      "ttc-stop-2126": 1,
-      "ttc-stop-2115": 1
+      "ttc-stop-1756": 1,
+      "ttc-stop-2127": 1,
+      "ttc-stop-15873": 1,
+      "ttc-stop-2125": 1,
+      "ttc-stop-2123": 1,
+      "ttc-stop-2131": 1,
+      "ttc-stop-2119": 1
     },
     "incoming_load": {
       "key": "incoming_load",
       "unit": "passengers/vehicle",
-      "meaning": "Fixture cars enter empty; actual Jarvis occupancy is unknown.",
+      "meaning": "Fixture cars enter empty; actual Broadview occupancy is unknown.",
       "low": 0,
       "central": 0,
       "high": 0,
@@ -364,7 +364,7 @@ export const sampleComparison = {
       "demand_case": "central",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -375,7 +375,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -386,7 +386,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -397,7 +397,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -408,7 +408,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -419,7 +419,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -430,7 +430,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -441,7 +441,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -452,7 +452,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -463,7 +463,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -474,7 +474,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -485,7 +485,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -496,7 +496,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -507,7 +507,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -524,7 +524,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "baseline",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -563,7 +563,7 @@ export const sampleComparison = {
       "demand_case": "central",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -574,7 +574,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -585,7 +585,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -596,18 +596,18 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 5,
           "completed_passengers": 3,
-          "mean_wait_s": 210,
-          "p95_wait_s": 210,
+          "mean_wait_s": 235,
+          "p95_wait_s": 235,
           "denied_at_least_once_share": 1,
           "remaining_queue": 2,
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -618,7 +618,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -629,7 +629,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -640,7 +640,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -651,7 +651,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -662,7 +662,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -673,7 +673,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -684,7 +684,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -695,7 +695,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -706,7 +706,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -723,7 +723,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "baseline",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -740,10 +740,10 @@ export const sampleComparison = {
         }
       ],
       "per_run_mean_wait_s": [
-        86.25
+        95.625
       ],
       "per_run_p95_wait_s": [
-        210
+        235
       ],
       "per_run_denied_share": [
         0.6
@@ -762,7 +762,7 @@ export const sampleComparison = {
       "demand_case": "central",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -773,7 +773,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -784,7 +784,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -795,18 +795,18 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 5,
           "completed_passengers": 5,
-          "mean_wait_s": 192.0,
-          "p95_wait_s": 210,
+          "mean_wait_s": 217.0,
+          "p95_wait_s": 235,
           "denied_at_least_once_share": 1,
           "remaining_queue": 0,
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -817,7 +817,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -828,7 +828,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -839,7 +839,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -850,7 +850,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -861,7 +861,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -872,7 +872,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -883,7 +883,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -894,7 +894,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -905,7 +905,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -922,7 +922,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "extra-service",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -939,10 +939,10 @@ export const sampleComparison = {
         }
       ],
       "per_run_mean_wait_s": [
-        99.0
+        111.5
       ],
       "per_run_p95_wait_s": [
-        210
+        235
       ],
       "per_run_denied_share": [
         0.6
@@ -961,7 +961,7 @@ export const sampleComparison = {
       "demand_case": "low",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -972,7 +972,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -983,7 +983,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -994,7 +994,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1005,7 +1005,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1016,7 +1016,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1027,7 +1027,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1038,7 +1038,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1049,7 +1049,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1060,7 +1060,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1071,7 +1071,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1082,7 +1082,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1093,7 +1093,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1104,7 +1104,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1121,7 +1121,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "baseline",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -1160,7 +1160,7 @@ export const sampleComparison = {
       "demand_case": "low",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -1171,7 +1171,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1182,7 +1182,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1193,18 +1193,18 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 3,
           "completed_passengers": 3,
-          "mean_wait_s": 210,
-          "p95_wait_s": 210,
+          "mean_wait_s": 235,
+          "p95_wait_s": 235,
           "denied_at_least_once_share": 1,
           "remaining_queue": 0,
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1215,7 +1215,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1226,7 +1226,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1237,7 +1237,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1248,7 +1248,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1259,7 +1259,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1270,7 +1270,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1281,7 +1281,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1292,7 +1292,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1303,7 +1303,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1320,7 +1320,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "baseline",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -1337,10 +1337,10 @@ export const sampleComparison = {
         }
       ],
       "per_run_mean_wait_s": [
-        86.25
+        95.625
       ],
       "per_run_p95_wait_s": [
-        210
+        235
       ],
       "per_run_denied_share": [
         0.5
@@ -1359,7 +1359,7 @@ export const sampleComparison = {
       "demand_case": "low",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -1370,7 +1370,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1381,7 +1381,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1392,18 +1392,18 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 3,
           "completed_passengers": 3,
-          "mean_wait_s": 180.0,
-          "p95_wait_s": 180,
+          "mean_wait_s": 205.0,
+          "p95_wait_s": 205,
           "denied_at_least_once_share": 1,
           "remaining_queue": 0,
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1414,7 +1414,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1425,7 +1425,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1436,7 +1436,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1447,7 +1447,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1458,7 +1458,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1469,7 +1469,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1480,7 +1480,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1491,7 +1491,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1502,7 +1502,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1519,7 +1519,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "extra-service",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -1536,10 +1536,10 @@ export const sampleComparison = {
         }
       ],
       "per_run_mean_wait_s": [
-        71.25
+        80.625
       ],
       "per_run_p95_wait_s": [
-        180
+        205
       ],
       "per_run_denied_share": [
         0.5
@@ -1558,7 +1558,7 @@ export const sampleComparison = {
       "demand_case": "high",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -1569,7 +1569,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1580,7 +1580,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1591,7 +1591,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1602,7 +1602,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1613,7 +1613,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1624,7 +1624,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1635,7 +1635,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1646,7 +1646,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1657,7 +1657,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1668,7 +1668,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1679,7 +1679,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1690,7 +1690,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1701,7 +1701,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1718,7 +1718,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "baseline",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -1757,7 +1757,7 @@ export const sampleComparison = {
       "demand_case": "high",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -1768,7 +1768,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1779,7 +1779,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1790,18 +1790,18 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 7,
           "completed_passengers": 3,
-          "mean_wait_s": 210,
-          "p95_wait_s": 210,
+          "mean_wait_s": 235,
+          "p95_wait_s": 235,
           "denied_at_least_once_share": 1,
           "remaining_queue": 4,
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1812,7 +1812,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1823,7 +1823,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1834,7 +1834,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1845,7 +1845,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1856,7 +1856,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1867,7 +1867,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1878,7 +1878,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1889,7 +1889,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1900,7 +1900,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1917,7 +1917,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "baseline",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -1934,10 +1934,10 @@ export const sampleComparison = {
         }
       ],
       "per_run_mean_wait_s": [
-        86.25
+        95.625
       ],
       "per_run_p95_wait_s": [
-        210
+        235
       ],
       "per_run_denied_share": [
         0.6666666666666666
@@ -1956,7 +1956,7 @@ export const sampleComparison = {
       "demand_case": "high",
       "stops": [
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "existing",
           "passengers": 5,
           "completed_passengers": 5,
@@ -1967,7 +1967,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2118",
+          "stop_id": "ttc-stop-1756",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1978,7 +1978,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -1989,18 +1989,18 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2130",
+          "stop_id": "ttc-stop-2127",
           "rider_group": "new",
           "passengers": 7,
           "completed_passengers": 7,
-          "mean_wait_s": 197.14285714285714,
-          "p95_wait_s": 210,
+          "mean_wait_s": 222.14285714285714,
+          "p95_wait_s": 235,
           "denied_at_least_once_share": 1,
           "remaining_queue": 0,
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2011,7 +2011,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2122",
+          "stop_id": "ttc-stop-15873",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2022,7 +2022,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2033,7 +2033,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2124",
+          "stop_id": "ttc-stop-2125",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2044,7 +2044,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2055,7 +2055,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-15872",
+          "stop_id": "ttc-stop-2123",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2066,7 +2066,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2077,7 +2077,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2126",
+          "stop_id": "ttc-stop-2131",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2088,7 +2088,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "existing",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2099,7 +2099,7 @@ export const sampleComparison = {
           "headway_cv": 0
         },
         {
-          "stop_id": "ttc-stop-2115",
+          "stop_id": "ttc-stop-2119",
           "rider_group": "new",
           "passengers": 0,
           "completed_passengers": 0,
@@ -2116,7 +2116,7 @@ export const sampleComparison = {
           "scenario_version": 1,
           "package": "extra-service",
           "model_version": "hand-fixture-v1",
-          "data_version": "ttc-S1000542-pipeline-20261008",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
           "seed_ids": [
             0
           ],
@@ -2133,10 +2133,10 @@ export const sampleComparison = {
         }
       ],
       "per_run_mean_wait_s": [
-        117.5
+        132.08333333333334
       ],
       "per_run_p95_wait_s": [
-        210
+        235
       ],
       "per_run_denied_share": [
         0.6666666666666666
@@ -2267,7 +2267,7 @@ export const sampleComparison = {
     {
       "key": "incoming_load",
       "unit": "passengers/vehicle",
-      "meaning": "Fixture cars enter empty; actual Jarvis occupancy is unknown.",
+      "meaning": "Fixture cars enter empty; actual Broadview occupancy is unknown.",
       "low": 0,
       "central": 0,
       "high": 0,
@@ -2379,7 +2379,7 @@ export const sampleComparison = {
     {
       "key": "existing_arrivals",
       "unit": "passengers/window",
-      "meaning": "Five existing riders at Jarvis, waiting from zero; no observed ridership claim.",
+      "meaning": "Five existing riders at Broadview, waiting from zero; no observed ridership claim.",
       "low": 5,
       "central": 5,
       "high": 5,
@@ -2399,7 +2399,7 @@ export const sampleComparison = {
       "publisher": "Toronto Transit Commission / City of Toronto",
       "version": "S1000542",
       "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:36:33.015052+00:00"
+      "retrieved_at": "2026-10-17T07:16:38.249018+00:00"
     },
     {
       "source_id": "toronto-development-pipeline",
@@ -2408,7 +2408,7 @@ export const sampleComparison = {
       "publisher": "City of Toronto / City Planning",
       "version": "2026-10-08T07:24:47.445084",
       "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:36:34.968042+00:00"
+      "retrieved_at": "2026-10-17T07:16:38.486930+00:00"
     },
     {
       "source_id": "toronto-address-796104",
@@ -2417,7 +2417,7 @@ export const sampleComparison = {
       "publisher": "City of Toronto",
       "version": "retrieved snapshot",
       "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:16.078288+00:00"
+      "retrieved_at": "2026-10-17T07:16:46.963362+00:00"
     },
     {
       "source_id": "toronto-address-30009862",
@@ -2426,7 +2426,7 @@ export const sampleComparison = {
       "publisher": "City of Toronto",
       "version": "retrieved snapshot",
       "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:20.211229+00:00"
+      "retrieved_at": "2026-10-17T07:16:47.596485+00:00"
     },
     {
       "source_id": "toronto-address-7667205",
@@ -2435,7 +2435,7 @@ export const sampleComparison = {
       "publisher": "City of Toronto",
       "version": "retrieved snapshot",
       "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:21.663662+00:00"
+      "retrieved_at": "2026-10-17T07:16:48.209778+00:00"
     },
     {
       "source_id": "toronto-address-7650832",
@@ -2444,7 +2444,7 @@ export const sampleComparison = {
       "publisher": "City of Toronto",
       "version": "retrieved snapshot",
       "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:22.462487+00:00"
+      "retrieved_at": "2026-10-17T07:16:48.780402+00:00"
     },
     {
       "source_id": "toronto-address-796099",
@@ -2453,7 +2453,7 @@ export const sampleComparison = {
       "publisher": "City of Toronto",
       "version": "retrieved snapshot",
       "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:23.357595+00:00"
+      "retrieved_at": "2026-10-17T07:16:49.313870+00:00"
     },
     {
       "source_id": "osm-walk-239",
@@ -2462,7 +2462,7 @@ export const sampleComparison = {
       "publisher": "OpenStreetMap contributors",
       "version": "retrieved snapshot",
       "licence": "https://www.openstreetmap.org/copyright",
-      "retrieved_at": "2026-10-17T06:49:48.203776+00:00"
+      "retrieved_at": "2026-10-17T07:16:50.822391+00:00"
     },
     {
       "source_id": "osm-walk-500",
@@ -2471,7 +2471,7 @@ export const sampleComparison = {
       "publisher": "OpenStreetMap contributors",
       "version": "retrieved snapshot",
       "licence": "https://www.openstreetmap.org/copyright",
-      "retrieved_at": "2026-10-17T06:52:29.237546+00:00"
+      "retrieved_at": "2026-10-17T07:16:52.140645+00:00"
     },
     {
       "source_id": "osm-walk-761",
@@ -2480,7 +2480,7 @@ export const sampleComparison = {
       "publisher": "OpenStreetMap contributors",
       "version": "retrieved snapshot",
       "licence": "https://www.openstreetmap.org/copyright",
-      "retrieved_at": "2026-10-17T06:52:31.884378+00:00"
+      "retrieved_at": "2026-10-17T07:16:53.004185+00:00"
     }
   ],
   "warnings": [
@@ -2493,19 +2493,19 @@ export const sampleComparison = {
   ],
   "replay": {
     "run_id": "fixture-run-growth",
-    "horizon_s": 820,
+    "horizon_s": 735,
     "vehicle_capacity": {
       "fixture-car-1": 4,
       "fixture-car-2": 4
     },
     "initial_queues": [
       {
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "rider_group": "existing",
         "count": 5
       },
       {
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "rider_group": "new",
         "count": 5
       }
@@ -2516,7 +2516,7 @@ export const sampleComparison = {
         "t_s": 0,
         "kind": "dispatch",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 0,
         "load_after": 0,
         "rider_group": null
@@ -2526,7 +2526,7 @@ export const sampleComparison = {
         "t_s": 0,
         "kind": "arrive",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 0,
         "load_after": 0,
         "rider_group": null
@@ -2536,7 +2536,7 @@ export const sampleComparison = {
         "t_s": 0,
         "kind": "board",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 4,
         "load_after": 4,
         "rider_group": "existing"
@@ -2546,7 +2546,7 @@ export const sampleComparison = {
         "t_s": 0,
         "kind": "deny",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 1,
         "load_after": 4,
         "rider_group": "existing"
@@ -2556,7 +2556,7 @@ export const sampleComparison = {
         "t_s": 0,
         "kind": "depart",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 0,
         "load_after": 4,
         "rider_group": null
@@ -2566,7 +2566,7 @@ export const sampleComparison = {
         "t_s": 60,
         "kind": "dispatch",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 0,
         "load_after": 0,
         "rider_group": null
@@ -2576,7 +2576,7 @@ export const sampleComparison = {
         "t_s": 60,
         "kind": "arrive",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 0,
         "load_after": 0,
         "rider_group": null
@@ -2586,7 +2586,7 @@ export const sampleComparison = {
         "t_s": 60,
         "kind": "board",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 1,
         "load_after": 1,
         "rider_group": "existing"
@@ -2596,307 +2596,307 @@ export const sampleComparison = {
         "t_s": 60,
         "kind": "depart",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2118",
+        "stop_id": "ttc-stop-1756",
         "count": 0,
         "load_after": 1,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 150,
+        "t_s": 175,
         "kind": "arrive",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 150,
+        "t_s": 175,
         "kind": "deny",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "count": 5,
         "load_after": 4,
         "rider_group": "new"
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 150,
+        "t_s": 175,
         "kind": "depart",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 210,
+        "t_s": 235,
         "kind": "arrive",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "count": 0,
         "load_after": 1,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 210,
+        "t_s": 235,
         "kind": "board",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "count": 3,
         "load_after": 4,
         "rider_group": "new"
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 210,
+        "t_s": 235,
         "kind": "deny",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "count": 2,
         "load_after": 4,
         "rider_group": "new"
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 210,
+        "t_s": 235,
         "kind": "depart",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2130",
+        "stop_id": "ttc-stop-2127",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 250,
+        "t_s": 265,
         "kind": "arrive",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2122",
+        "stop_id": "ttc-stop-15873",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 250,
+        "t_s": 265,
         "kind": "depart",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2122",
+        "stop_id": "ttc-stop-15873",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 310,
+        "t_s": 325,
         "kind": "arrive",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2122",
+        "stop_id": "ttc-stop-15873",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 310,
+        "t_s": 325,
         "kind": "depart",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2122",
+        "stop_id": "ttc-stop-15873",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 341,
+        "t_s": 369,
         "kind": "arrive",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2124",
+        "stop_id": "ttc-stop-2125",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 341,
+        "t_s": 369,
         "kind": "depart",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2124",
+        "stop_id": "ttc-stop-2125",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 401,
+        "t_s": 429,
         "kind": "arrive",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2124",
+        "stop_id": "ttc-stop-2125",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 401,
+        "t_s": 429,
         "kind": "depart",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2124",
+        "stop_id": "ttc-stop-2125",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 471,
+        "t_s": 454,
         "kind": "arrive",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-15872",
+        "stop_id": "ttc-stop-2123",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 471,
+        "t_s": 454,
         "kind": "depart",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-15872",
+        "stop_id": "ttc-stop-2123",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 531,
+        "t_s": 514,
         "kind": "arrive",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-15872",
+        "stop_id": "ttc-stop-2123",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 531,
+        "t_s": 514,
         "kind": "depart",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-15872",
+        "stop_id": "ttc-stop-2123",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 577,
+        "t_s": 539,
         "kind": "arrive",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2126",
+        "stop_id": "ttc-stop-2131",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 577,
+        "t_s": 539,
         "kind": "depart",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2126",
+        "stop_id": "ttc-stop-2131",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 637,
+        "t_s": 599,
         "kind": "arrive",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2126",
+        "stop_id": "ttc-stop-2131",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 637,
+        "t_s": 599,
         "kind": "depart",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2126",
+        "stop_id": "ttc-stop-2131",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 760,
+        "t_s": 675,
         "kind": "arrive",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2115",
+        "stop_id": "ttc-stop-2119",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 760,
+        "t_s": 675,
         "kind": "alight",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2115",
+        "stop_id": "ttc-stop-2119",
         "count": 4,
         "load_after": 0,
         "rider_group": "existing"
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 760,
+        "t_s": 675,
         "kind": "depart",
         "vehicle_id": "fixture-car-1",
-        "stop_id": "ttc-stop-2115",
+        "stop_id": "ttc-stop-2119",
         "count": 0,
         "load_after": 0,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 820,
+        "t_s": 735,
         "kind": "arrive",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2115",
+        "stop_id": "ttc-stop-2119",
         "count": 0,
         "load_after": 4,
         "rider_group": null
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 820,
+        "t_s": 735,
         "kind": "alight",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2115",
+        "stop_id": "ttc-stop-2119",
         "count": 1,
         "load_after": 3,
         "rider_group": "existing"
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 820,
+        "t_s": 735,
         "kind": "alight",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2115",
+        "stop_id": "ttc-stop-2119",
         "count": 3,
         "load_after": 0,
         "rider_group": "new"
       },
       {
         "run_id": "fixture-run-growth",
-        "t_s": 820,
+        "t_s": 735,
         "kind": "depart",
         "vehicle_id": "fixture-car-2",
-        "stop_id": "ttc-stop-2115",
+        "stop_id": "ttc-stop-2119",
         "count": 0,
         "load_after": 0,
         "rider_group": null

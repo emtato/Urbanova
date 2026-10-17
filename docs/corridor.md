@@ -58,5 +58,3 @@ Direction and endpoints live in `data/reviewed/project_selection.json` → `corr
 - [Whole 505 route, both directions, for reference](../data/reviewed/route_505.json); rebuild with `python -m backend.scripts.export_route`
 - [Source URLs, versions, retrieval times and checksums](../data/reviewed/sources.json)
 - [Official TTC merged GTFS catalogue](https://open.toronto.ca/dataset/merged-gtfs-ttc-routes-and-schedules/)
-
-The separate [Lawrence East study](feasibility-lawrence-east.md) is preserved for reference; this handoff follows the confirmed 505 endpoints.

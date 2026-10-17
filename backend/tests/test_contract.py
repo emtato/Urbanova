@@ -21,8 +21,12 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
     check_contract()
     comparison = Comparison.model_validate(sample)
     assert comparison.corridor.mode == "streetcar"
+    assert comparison.corridor.direction == "westbound"
+    assert comparison.corridor.route_pattern == "505:1:shp-505-60"
+    assert comparison.corridor.stops[0].gtfs_stop_id == "1756"
+    assert comparison.corridor.stops[-1].gtfs_stop_id == "2119"
     assert len(comparison.corridor.stops) == 7
-    assert [case.per_run_mean_wait_s[0] for case in comparison.cases[:3]] == [12, 86.25, 99]
+    assert [case.per_run_mean_wait_s[0] for case in comparison.cases[:3]] == [12, 95.625, 111.5]
     assert [case.unresolved_passengers for case in comparison.cases[:3]] == [0, 2, 0]
     assert len(comparison.cases) == 9
     assert all({item.demand_case for item in package.evaluations} == {"low", "central", "high"} for package in comparison.packages)
@@ -83,7 +87,7 @@ def test_replay_covers_two_cars_every_stop_and_preserves_denied_riders(sample):
     for car in replay.vehicle_capacity:
         assert [event.stop_id for event in arrivals if event.vehicle_id == car] == [stop["stop_id"] for stop in sample["corridor"]["stops"]]
     new_boards = [event for event in replay.events if event.kind == "board" and event.rider_group == "new"]
-    assert [(event.t_s, event.count) for event in new_boards] == [(210, 3)]
+    assert [(event.t_s, event.count) for event in new_boards] == [(235, 3)]
     assert sum(event.count for event in replay.events if event.kind == "alight") == 8
 
 
