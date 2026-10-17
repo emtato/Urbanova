@@ -440,4 +440,165 @@ def test_b5_no_overtaking_rule_on_links():
         assert car1_s2["time_s"] <= car2_s2["time_s"]
 
 
+def test_b2_entity_keyed_matched_randomness_across_extra_service():
+    """B2: Adding extra service cars must not shift the random draws of existing cars."""
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Stop
+    from backend.simulation.runner import run_simulation
+
+    stops = (
+        Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
+        Stop(id="s1", name="Mid", sequence=1, latitude=LAT, longitude=lon_at(500)),
+        Stop(id="s2", name="End", sequence=2, latitude=LAT, longitude=lon_at(1000)),
+    )
+    # Baseline: 1 car (rush_hour_duration_s=15, headway_s=30 -> only car-1 enters at t=0)
+    baseline_inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(40.0, 40.0),
+        streetcar_capacity=10,
+        headway_s=30.0,
+        rush_hour_duration_s=15.0,
+        trips_per_resident_in_window=0,
+        start_time_s=0,
+        end_time_s=150,
+        stop_dwell_range_s=(15, 30),
+        link_travel_time_variation_share=0.2,
+        seed=123,
+    )
+    res_base = run_simulation(baseline_inputs, passengers={})
+
+    # Extra service: headway_s=10 -> car-1 at 0, car-2 at 10 (extra service)
+    extra_inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(40.0, 40.0),
+        streetcar_capacity=10,
+        headway_s=10.0,
+        rush_hour_duration_s=15.0,
+        trips_per_resident_in_window=0,
+        start_time_s=0,
+        end_time_s=150,
+        stop_dwell_range_s=(15, 30),
+        link_travel_time_variation_share=0.2,
+        seed=123,
+    )
+    res_extra = run_simulation(extra_inputs, passengers={})
+
+    # car-1 must experience the EXACT same departure and arrival times on link 1 in both runs
+    base_car1_depart = next(e for e in res_base["sim_log"] if e["action"] == "depart" and e["streetcar"]["id"] == "streetcar-1" and e["stop_id"] == "s0")
+    extra_car1_depart = next(e for e in res_extra["sim_log"] if e["action"] == "depart" and e["streetcar"]["id"] == "streetcar-1" and e["stop_id"] == "s0")
+    assert base_car1_depart["time_s"] == extra_car1_depart["time_s"]
+    assert base_car1_depart["streetcar"]["expected_arrival_time_s"] == extra_car1_depart["streetcar"]["expected_arrival_time_s"]
+
+
+def test_b7_shared_corridor_delay():
+    """B7: max_corridor_delay_s adds a common corridor delay term to links."""
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Stop
+    from backend.simulation.runner import run_simulation
+
+    stops = (
+        Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
+        Stop(id="s1", name="Mid", sequence=1, latitude=LAT, longitude=lon_at(500)),
+    )
+    # Without shared delay
+    no_delay_inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(50.0,),
+        streetcar_capacity=10,
+        headway_s=30.0,
+        rush_hour_duration_s=10.0,
+        trips_per_resident_in_window=0,
+        start_time_s=0,
+        end_time_s=100,
+        stop_dwell_range_s=(0, 0),
+        link_travel_time_variation_share=0.0,
+        max_corridor_delay_s=0.0,
+        seed=99,
+    )
+    res_no_delay = run_simulation(no_delay_inputs, passengers={})
+    no_delay_depart = next(e for e in res_no_delay["sim_log"] if e["action"] == "depart")
+    assert no_delay_depart["streetcar"]["expected_arrival_time_s"] == no_delay_depart["time_s"] + 50.0
+
+    # With up to 60s shared corridor delay
+    delay_inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(50.0,),
+        streetcar_capacity=10,
+        headway_s=30.0,
+        rush_hour_duration_s=10.0,
+        trips_per_resident_in_window=0,
+        start_time_s=0,
+        end_time_s=150,
+        stop_dwell_range_s=(0, 0),
+        link_travel_time_variation_share=0.0,
+        max_corridor_delay_s=60.0,
+        seed=99,
+    )
+    res_delay = run_simulation(delay_inputs, passengers={})
+    delay_depart = next(e for e in res_delay["sim_log"] if e["action"] == "depart")
+    # Expected arrival must be strictly greater than base (depart time + 50.0) and at most + 60.0
+    base_target = delay_depart["time_s"] + 50.0
+    assert base_target < delay_depart["streetcar"]["expected_arrival_time_s"] <= base_target + 60.0
+
+
+def test_b9_warmup_populates_corridor_and_preserves_zero_timestamp_contract():
+    """Verify that B9 warm-up populates streetcars on the corridor before start_time_s (t=0)
+    without outputting any negative timestamps to sim_log, reducing cold-start wait times."""
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Passenger, Stop
+    from backend.simulation.runner import run_simulation
+
+    stops = (
+        Stop(id="s0", name="Broadview", sequence=0, latitude=43.65, longitude=-79.36),
+        Stop(id="s1", name="Mid", sequence=1, latitude=43.65, longitude=-79.37),
+        Stop(id="s2", name="TMU", sequence=2, latitude=43.65, longitude=-79.38),
+    )
+    # 100s travel time per link (200s total to TMU), 60s headway.
+    inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(100.0, 100.0),
+        streetcar_capacity=10,
+        headway_s=60.0,
+        rush_hour_duration_s=300.0,
+        trips_per_resident_in_window=0,
+        start_time_s=0,
+        end_time_s=600,
+        stop_dwell_range_s=(0, 0),
+        seed=42,
+    )
+
+    passengers_cold = {
+        "p_cold": Passenger(id="p_cold", origin_stop_id="s1", destination_stop_id="s2", get_to_stop_time=0, rider_group="existing"),
+    }
+    passengers_warm = {
+        "p_warm": Passenger(id="p_warm", origin_stop_id="s1", destination_stop_id="s2", get_to_stop_time=0, rider_group="existing"),
+    }
+
+    # Cold start: no warm-up
+    res_cold = run_simulation(inputs, passengers=passengers_cold, warmup_duration_s=0.0)
+    p_cold = next(p for p in res_cold["passengers"] if p["id"] == "p_cold")
+    assert p_cold["boarding_time_s"] >= 100.0
+
+    # Warm start: 300s warm-up (sufficient to populate links before t=0)
+    res_warm = run_simulation(inputs, passengers=passengers_warm, warmup_duration_s=300.0)
+    p_warm = next(p for p in res_warm["passengers"] if p["id"] == "p_warm")
+    assert p_warm["boarding_time_s"] < p_cold["boarding_time_s"]
+
+    # Sim log contract: zero negative timestamps
+    assert all(e["time_s"] >= 0 for e in res_warm["sim_log"])
+    assert res_warm["summary"]["overview"]["conservation_valid"] is True
+
+
+
+
 

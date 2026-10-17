@@ -133,6 +133,7 @@ class SimulationInput:
     parallel_route_bands: tuple[float, float] = (0.40, 0.60)  # Fraction of the way to College/Queen: below the first -> all consider the 505; up to the second -> half.
     incoming_load_range: tuple[int, int] = (12, 24)  # Riders already aboard each car entering at Broadview & Dundas (uniform, inclusive).
     stop_dwell_range_s: tuple[int, int] = (15, 30)  # Dwell seconds at each non-terminus stop (uniform, inclusive).
+    max_corridor_delay_s: float = 0.0  # B7: Maximum common corridor delay across all links (seconds, e.g. 60.0); 0 = disabled.
     # NOTE (B6): B6 passenger-dependent dwell calculation (door time + boardings/alightings feedback)
     # is intentionally ignored/omitted per project plan; stop dwell remains bounded by stop_dwell_range_s.
 

@@ -131,8 +131,8 @@ def seed_incoming_passengers(
     inputs: SimulationInput,
     streetcar: Streetcar,
     passengers: dict[str, Passenger],
-    incoming_rng: Random,
-    time_s: float,
+    incoming_rng: Random | None = None,
+    time_s: float = 0.0,
 ) -> None:
     """Place `inputs.incoming_load_range` already-onboard riders onto a car entering at Broadview.
 
@@ -140,6 +140,8 @@ def seed_incoming_passengers(
     so each incoming rider gets a realistic downstream alighting stop (or `None` if
     riding past TMU).
     """
+    if incoming_rng is None:
+        incoming_rng = Random(f"{inputs.seed}:incoming:{streetcar.id}")
     entry_stop = inputs.stops[0]
     valid_stop_ids = {stop.id for stop in inputs.stops}
     low, high = inputs.incoming_load_range
@@ -175,19 +177,27 @@ def seed_incoming_passengers(
         streetcar.onboard_passenger_ids.append(passenger_id)
 
 
-def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | None = None) -> dict:
+def run_simulation(
+    inputs: SimulationInput,
+    passengers: dict[str, Passenger] | None = None,
+    warmup_duration_s: float | None = None,
+) -> dict:
     """Run streetcars and passengers and return their activity, final state, and summary metrics.
 
     start/end are service-day seconds; activity and vehicle times are elapsed
     from the start. Actions happen on whole-second ticks once their time is due.
     Entry stops at the earlier of the rush-window end or run end.
     Cars still travelling at run end stay in transit in the saved state.
+    B9 warm-up: warmup_duration_s runs streetcars before start_time_s so the
+    corridor is pre-populated with operating vehicles at t=0. Activity before
+    t=0 is not recorded into sim_log to preserve the non-negative event schema.
     """
     run_start_s = perf_counter()
 
     # Read the clock boundaries that control how long this simulation runs.
     start_time = inputs.start_time_s
     end_time = inputs.end_time_s
+    warmup_s = int(warmup_duration_s if warmup_duration_s is not None else getattr(inputs, "warmup_duration_s", 0.0))
 
     # Check that the supplied clock and route can support streetcar movement.
     if not isinstance(start_time, int) or not isinstance(end_time, int) or end_time <= start_time:
@@ -238,8 +248,8 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     next_passenger_idx = 0
 
     # Prepare the entry schedule so the clock knows when to introduce each car.
-    # streetcar_entry_times (from streetcars.py) yields float entry timestamps in seconds.
-    entry_times = streetcar_entry_times(inputs)
+    # For B9 warm-up, entry_times begin at -warmup_s.
+    entry_times = streetcar_entry_times(inputs, start_offset_s=-float(warmup_s))
     next_entry_s = next(entry_times, None)
 
     # Give link travel times, stop dwell times, and incoming Broadview loads repeatable random streams.
@@ -261,6 +271,8 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         onboard_override: list[str] | None = None,
         waiting_override: int | None = None,
     ) -> None:
+        if time_s < 0:
+            return  # B9: Activity during warm-up (before start_time_s) is not recorded into sim_log
         car_copy = deepcopy(streetcar) if streetcar is not None else None
         if car_copy is not None and onboard_override is not None:
             car_copy.onboard_passenger_ids = list(onboard_override)
@@ -371,7 +383,9 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             # NOTE (B6): Passenger-dependent dwell calculation (door time + boardings/alightings)
             # is intentionally ignored per project plan; stop dwell is sampled from stop_dwell_range_s.
             dwell_low_s, dwell_high_s = inputs.stop_dwell_range_s
-            planned_departure_s[streetcar.id] = time_s + dwell_rng.randint(dwell_low_s, dwell_high_s)
+            # B2: Entity-keyed dwell stream so event order changes cannot shift dwell times
+            car_dwell_rng = Random(f"{inputs.seed}:dwell:{streetcar.id}:{streetcar.current_stop_id}")
+            planned_departure_s[streetcar.id] = time_s + car_dwell_rng.randint(dwell_low_s, dwell_high_s)
 
     # Depart a non-terminus stop once its sampled dwell time has elapsed.
     def finish_dwell_and_depart(streetcar: Streetcar, time_s: int) -> None:
@@ -382,14 +396,31 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         planned_departure_s.pop(streetcar.id, None)
         depart_streetcar(inputs, streetcar, time_s)
 
-        # Sample this car's link duration once, then save that plan in its departure record.
+        # Base link duration from stop definition
+        base_duration_s = streetcar.expected_arrival_time_s - time_s
+
+        # B7: Shared corridor delay applied across all links (up to max_corridor_delay_s, e.g. 60s)
+        max_corridor_delay = getattr(inputs, "max_corridor_delay_s", 0.0)
+        if max_corridor_delay > 0:
+            shared_delay_rng = Random(f"{inputs.seed}:shared_corridor_delay")
+            corridor_delay_s = shared_delay_rng.uniform(0, max_corridor_delay)
+            link_delay_s = corridor_delay_s / len(inputs.link_travel_times_s)
+        else:
+            link_delay_s = 0.0
+
+        base_with_delay = base_duration_s + link_delay_s
+
+        # B2: Entity-keyed link noise draw so event order cannot shift draws across packages
         if travel_variation_share > 0:
-            base_duration_s = streetcar.expected_arrival_time_s - time_s
-            travel_duration_s = travel_rng.uniform(
-                base_duration_s * (1 - travel_variation_share),
-                base_duration_s * (1 + travel_variation_share),
+            link_noise_rng = Random(f"{inputs.seed}:link_noise:{streetcar.id}:{streetcar.previous_stop_id}:{streetcar.next_stop_id}")
+            travel_duration_s = link_noise_rng.uniform(
+                base_with_delay * (1 - travel_variation_share),
+                base_with_delay * (1 + travel_variation_share),
             )
-            streetcar.expected_arrival_time_s = time_s + travel_duration_s
+        else:
+            travel_duration_s = base_with_delay
+
+        streetcar.expected_arrival_time_s = time_s + travel_duration_s
 
         # B5 no-overtaking rule: a streetcar cannot arrive at the next stop earlier
         # than any preceding car travelling to that stop.
@@ -410,8 +441,8 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             next_car_id = stop_berth_queues[stop.id].popleft()
             begin_stop_service(active_streetcars[next_car_id], time_s)
 
-    # Advance one second at a time, including final arrivals at the reporting cutoff.
-    for time_s in range(start_time, end_time + 1):
+    # Advance one second at a time, including warm-up before start_time and final arrivals at the reporting cutoff.
+    for time_s in range(start_time - warmup_s, end_time + 1):
         elapsed_s = time_s - start_time
 
         # Enqueue scheduled passengers whose stop-arrival time (get_to_stop_time) has arrived.
@@ -458,8 +489,14 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         while elapsed_s < entry_end_s and next_entry_s is not None and elapsed_s >= next_entry_s:
             streetcar = generate_streetcar(inputs, f"streetcar-{len(streetcars) + 1}")
             if use_incoming_broadview_load:
-                # Seed 12-24 riders already onboard from north of Broadview & Dundas.
-                seed_incoming_passengers(inputs, streetcar, passengers, incoming_rng, elapsed_s)
+                # Seed 12-24 riders already onboard from north of Broadview & Dundas (B2 entity-keyed stream).
+                seed_incoming_passengers(
+                    inputs,
+                    streetcar,
+                    passengers,
+                    Random(f"{inputs.seed}:incoming:{streetcar.id}"),
+                    elapsed_s,
+                )
             streetcars.append(streetcar)
             active_streetcars[streetcar.id] = streetcar
             record(

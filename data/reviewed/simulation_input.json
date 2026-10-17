@@ -8002,7 +8002,8 @@
     "stop_dwell_range_s": [
       15,
       30
-    ]
+    ],
+    "max_corridor_delay_s": 0.0
   },
   "evidence": {
     "developments": [
@@ -8272,6 +8273,12 @@
       "source_ids": [],
       "meaning": "Each stop's dwell is drawn uniformly from this range. Scheduled link times may already include some dwell, so this can double count.",
       "defined_in": "backend/simulation/runner.py (run_simulation)"
+    },
+    "max_corridor_delay_s": {
+      "unit": "seconds, maximum common corridor delay",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Maximum common delay across corridor links (B7); 0 retains baseline travel times."
     }
   },
   "building_inventory": {

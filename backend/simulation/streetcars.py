@@ -13,8 +13,8 @@ from .inputs import SimulationInput
 from .objects import Passenger, Streetcar
 
 #3 following helpers supply entry times, generate (and return) streetcar or terminate it
-def streetcar_entry_times(inputs: SimulationInput) -> Iterator[float]:
-    """Yield entries in [0, rush_hour_duration_s), including the first at zero.
+def streetcar_entry_times(inputs: SimulationInput, start_offset_s: float = 0.0) -> Iterator[float]:
+    """Yield entries in [start_offset_s, rush_hour_duration_s), including the first at start_offset_s.
 
     Each following gap is headway_s plus a uniformly sampled variation bounded
     by headway_randomness_s. The same seed reproduces the same entry schedule.
@@ -27,16 +27,21 @@ def streetcar_entry_times(inputs: SimulationInput) -> Iterator[float]:
     if not isfinite(inputs.headway_randomness_s) or not 0 <= inputs.headway_randomness_s < inputs.headway_s:
         raise ValueError("Headway randomness must be finite, nonnegative and smaller than headway")
 
-    # Keep scheduling randomness independent of later passenger random choices.
-    rng = Random(inputs.seed)
-    time_s = 0.0
+    time_s = float(start_offset_s)
+    entry_idx = 0
     while time_s < inputs.rush_hour_duration_s:
         yield time_s
-        variation_s = rng.uniform(-inputs.headway_randomness_s, inputs.headway_randomness_s)
+        # B2: Keyed entry randomness so other draws cannot alter departure schedule
+        if inputs.headway_randomness_s > 0:
+            rng = Random(f"{inputs.seed}:entry:{entry_idx}")
+            variation_s = rng.uniform(-inputs.headway_randomness_s, inputs.headway_randomness_s)
+        else:
+            variation_s = 0.0
         next_time_s = time_s + inputs.headway_s + variation_s
         if next_time_s <= time_s:
             raise ValueError("The entry gap must advance simulation time")
         time_s = next_time_s
+        entry_idx += 1
 
 
 def generate_streetcar(inputs: SimulationInput, streetcar_id: str) -> Streetcar:

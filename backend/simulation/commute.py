@@ -23,6 +23,8 @@ Scenario assumptions (not observations):
   from home to a later stop <= 750 m from work (including stops past TMU), or to
   TMU for a Line 1 transfer; else outside this simplified model.
 - No travel-time comparison; Line 2, other routes and transfers are not modelled.
+- NOTE (B3): B3 pedestrian network graph routing is descheduled/ignored per project decision;
+  walking assignment uses straight-line distance x WALK_DETOUR_FACTOR with reviewed accessible_stop_ids.
 """
 
 from __future__ import annotations
