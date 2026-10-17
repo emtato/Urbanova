@@ -7,7 +7,7 @@
 # boarding/alighting dwell rules still need to be agreed upon separately.
 #
 # stops:
-#   All stops on the selected 505 Dundas segment between broadview and jarvis,
+#   All stops on the selected 505 Dundas segment between broadview and TMU,
 #   including the endpoints. For WESTBOUND travel, supply them in the order
 #   Broadview -> Jarvis, not Jarvis -> Broadview. Each Stop supplies its ID, name,
 #   latitude, longitude and zero-based sequence along that direction.
