@@ -26,6 +26,14 @@ Keep journeys that do not fit these options outside this simplified routing mode
 
 Because this reachability filter already screens out trips whose workplaces are not easily served by the 505 or Line 1, **do not also multiply generated trips by `transit_share`**. While some commuters with a feasible 505 route would choose another mode in reality, this model also omits multi-transfer trips (such as Line 2 or north–south surface bus connections) that would feed the 505. Treating all 750 m-feasible 505 trips as riders is an intentional prototype simplification rather than a calibrated mode-choice model. The 750 m cutoff itself is an assumed walking tolerance and does not compare total travel or waiting times.
 
+## Parallel streetcar catchment split (Dundas vs. College and Queen)
+
+Because the 500 m building inventory extends north toward the **506 College/Carlton** corridor (~580 m north of Dundas) and south toward the **501 Queen** corridor (~450 m south of Dundas), each building's north–south distance from the nearest 505 Dundas stop is expressed as a percentage of the distance to the adjacent corridor (`corridor_505_share` in `backend/simulation/commute.py`, where 50% is midway between Dundas and College or Dundas and Queen):
+
+- **`< 40%` of the way to College or Queen:** **100%** of generated commuters use the 505 filter.
+- **`40%–60%` of the way (midway buffer zone):** **50%** of generated commuters use the 505 filter, and the remaining **50%** are assumed to use the parallel 501 Queen or 506 College streetcar (ignored in this single-corridor simulation).
+- **`> 60%` of the way:** **0%** use the 505 (assumed to use the closer parallel streetcar, ignored).
+
 ## What the employment data supports
 
 The **2025 Toronto Employment Survey** reports 664,650 jobs in the City's official Downtown area out of 1,623,710 citywide: **40.9% inside Downtown and approximately 959,060 jobs (59.1%) elsewhere in Toronto**. These figures exclude surrounding municipalities and are not a count for a custom sample boundary.

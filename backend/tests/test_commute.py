@@ -183,3 +183,22 @@ def test_run_simulation_generates_passengers_via_commute_helper():
     assert all(p["origin_stop_id"] == "ttc-stop-2125" for p in result["passengers"])
     assert all(p["rider_group"] == "new" and p["development_id"] == "dev-500-dundas" for p in result["passengers"])
     assert any(p["status"] in ("arrived", "beyond_segment") for p in result["passengers"])
+
+
+def test_corridor_505_share_bands():
+    from backend.simulation.commute import (
+        DUNDAS_TO_COLLEGE_M,
+        DUNDAS_TO_QUEEN_M,
+        METRES_PER_DEG_LAT,
+        corridor_505_share,
+    )
+
+    # North toward College (580 m): <40% -> 1.0, 50% -> 0.5, >60% -> 0.0
+    assert corridor_505_share(LAT + (0.30 * DUNDAS_TO_COLLEGE_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 1.0
+    assert corridor_505_share(LAT + (0.50 * DUNDAS_TO_COLLEGE_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.5
+    assert corridor_505_share(LAT + (0.70 * DUNDAS_TO_COLLEGE_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.0
+
+    # South toward Queen (450 m): <40% -> 1.0, 50% -> 0.5, >60% -> 0.0
+    assert corridor_505_share(LAT - (0.30 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 1.0
+    assert corridor_505_share(LAT - (0.50 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.5
+    assert corridor_505_share(LAT - (0.70 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.0

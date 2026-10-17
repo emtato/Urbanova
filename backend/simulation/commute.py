@@ -49,6 +49,15 @@ WESTWARD_SHARE = 0.6
 TMU_STOP_ID = "ttc-stop-2136"
 TMU_STATION_ID = "ttc-line1-tmu-station"
 EARTH_RADIUS_M = 6_371_008.8
+METRES_PER_DEG_LAT = 111_132.0
+
+# Typical north-south spacing from 505 Dundas to adjacent east-west streetcar corridors:
+# - North to 506 College/Carlton: ~580 m
+# - South to 501 Queen: ~450 m
+DUNDAS_TO_COLLEGE_M = 580.0
+DUNDAS_TO_QUEEN_M = 450.0
+PARALLEL_FULL_SHARE_BAND = 0.40  # <40% of distance to College/Queen -> 100% use 505
+PARALLEL_HALF_SHARE_BAND = 0.60  # 40-60% -> 50% use 505, 50% use Queen/College (ignored); >60% -> 0%
 
 Mode = Literal["walk", "subway", "streetcar", "outside_model"]
 Exit = Literal["corridor_stop", "beyond_segment", "line1_transfer"]
@@ -60,6 +69,33 @@ def straight_line_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float
     dp, dl = p2 - p1, math.radians(lon2 - lon1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * EARTH_RADIUS_M * math.asin(math.sqrt(a))
+
+
+def corridor_505_share(
+    home_lat: float,
+    home_lon: float,
+    corridor_stops: Iterable[ object ] | None = None,
+) -> float:
+    """Return the fraction of a building's commuters assigned to the 505 vs. Queen/College.
+
+    Measures how far north (toward 506 College/Carlton, ~580 m) or south (toward
+    501 Queen, ~450 m) a building sits relative to the nearest 505 Dundas stop:
+    - < 40% of the way to College or Queen -> 1.0 (100% evaluated for 505)
+    - 40% to 60% of the way (midway buffer) -> 0.5 (50% evaluated for 505; 50% take Queen/College)
+    - > 60% of the way -> 0.0 (0% evaluated for 505; assumed to use Queen/College)
+    """
+    stops = list(corridor_stops) if corridor_stops is not None else _load_corridor_stops()
+    if not stops:
+        return 1.0
+    nearest_stop = min(stops, key=lambda s: abs(home_lon - s.longitude))
+    north_south_m = (home_lat - nearest_stop.latitude) * METRES_PER_DEG_LAT
+    span_m = DUNDAS_TO_COLLEGE_M if north_south_m >= 0 else DUNDAS_TO_QUEEN_M
+    fraction_to_parallel_route = abs(north_south_m) / span_m
+    if fraction_to_parallel_route < PARALLEL_FULL_SHARE_BAND:
+        return 1.0
+    if fraction_to_parallel_route <= PARALLEL_HALF_SHARE_BAND:
+        return 0.5
+    return 0.0
 
 
 @dataclass(frozen=True)

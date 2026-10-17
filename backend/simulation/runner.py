@@ -5,12 +5,15 @@ from dataclasses import asdict
 from math import isfinite
 from random import Random
 
-# commute.py helper:
+# commute.py helpers:
+#   corridor_505_share(home_lat, home_lon, corridor_stops)
+#   -> returns 1.0 if <40% of the way from Dundas to College/Queen, 0.5 if 40-60%,
+#      or 0.0 if >60% (where riders take 501 Queen or 506 College instead).
 #   sample_streetcar_trip(home_lat, home_lon, rng, *, accessible_stop_ids=None)
 #   -> returns StreetcarTrip(board_stop_id, alight_stop_id, exit, ...) if the
 #      commuter uses the westbound 505, or None if they walk, take Line 1, or
 #      travel outside this corridor model.
-from .commute import sample_streetcar_trip
+from .commute import corridor_505_share, sample_streetcar_trip
 from .inputs import SimulationInput
 from .objects import Passenger, SimLog, Streetcar
 from .objects.sim_log import SimAction
@@ -38,18 +41,20 @@ from .streetcars import (
 def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
     """Generate westbound 505 passengers from existing_residences and developments.
 
-    Uses `sample_streetcar_trip` (from backend/simulation/commute.py) for each
-    commuter trip generated in the rush-hour window:
-    - Takes building (latitude, longitude), a reproducible Random stream, and
-      the building's `accessible_stop_ids`.
-    - Samples a workplace from the City of Toronto 2021 Census heatmap (60% west
-      of home, 40% elsewhere) and checks the 750 m walking/subway/505 rules.
-    - Returns None if the commuter walks, takes the subway directly, or cannot
-      use the 505 (so we do NOT also multiply by `transit_share`).
-    - Returns a `StreetcarTrip` when they ride the westbound 505:
-        * `trip.board_stop_id` -> `Passenger.origin_stop_id`
-        * `trip.alight_stop_id` -> `Passenger.destination_stop_id`
-          (`None` means they stay on past TMU / `beyond_segment`).
+    1. Calls `corridor_505_share(lat, lon, inputs.stops)` (from commute.py) to
+       account for parallel streetcars (506 College to the north, 501 Queen to the south):
+       - < 40% of the way from Dundas to College/Queen -> 100% of commuters stay on 505
+       - 40% to 60% of the way -> 50% stay on 505, 50% take Queen/College (ignored)
+       - > 60% of the way -> 0% stay on 505 (all take Queen/College, ignored)
+    2. Calls `sample_streetcar_trip` (from commute.py) for each remaining commuter:
+       - Samples a workplace from the City of Toronto 2021 Census heatmap (60% west
+         of home, 40% elsewhere) and checks the 750 m walking/subway/505 rules.
+       - Returns None if the commuter walks, takes the subway directly, or cannot
+         use the 505 (so we do NOT also multiply by `transit_share`).
+       - Returns a `StreetcarTrip` when they ride the westbound 505:
+           * `trip.board_stop_id` -> `Passenger.origin_stop_id`
+           * `trip.alight_stop_id` -> `Passenger.destination_stop_id`
+             (`None` means they stay on past TMU / `beyond_segment`).
     """
     if not isfinite(inputs.trips_per_resident_in_window) or inputs.trips_per_resident_in_window < 0:
         raise ValueError("trips_per_resident_in_window must be finite and nonnegative")
@@ -78,8 +83,12 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
     ]
 
     for rider_group, dev_id, lat, lon, estimated_residents, accessible_stop_ids in housing_sources:
-        # Total commuter trips leaving this building during the rush-hour window.
-        num_commuters = round(estimated_residents * inputs.trips_per_resident_in_window)
+        # Scale by how close the building is to Dundas vs. College/Queen (1.0, 0.5, or 0.0).
+        route_share = corridor_505_share(lat, lon, inputs.stops)
+        if route_share <= 0:
+            continue
+        # Total commuter trips from this building that consider the 505 corridor.
+        num_commuters = round(estimated_residents * inputs.trips_per_resident_in_window * route_share)
         for _ in range(num_commuters):
             # Call commute.py helper: returns StreetcarTrip(board_stop_id, alight_stop_id, ...) or None.
             trip = sample_streetcar_trip(
