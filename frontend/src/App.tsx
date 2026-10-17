@@ -11,6 +11,8 @@ export function App() {
   const [selectedDev, setSelectedDev] = useState<Development | null>(null)
   const [usingFixture, setUsingFixtureState] = useState(isUsingFixture())
   const [activePhase] = useState<number>(2)
+  const [showDrawer, setShowDrawer] = useState(false)
+  const [showFixturePopup, setShowFixturePopup] = useState(true)
 
   useEffect(() => {
     loadData()
@@ -60,9 +62,6 @@ export function App() {
   const totalNewUnits = developments.reduce((sum, d) => sum + d.units, 0)
   const currentCase = comparison.cases.find((c) => c.kind === 'current')
   const growthCase = comparison.cases.find((c) => c.kind === 'growth')
-
-  const [showDrawer, setShowDrawer] = useState(false)
-  const [showFixturePopup, setShowFixturePopup] = useState(true)
 
   return (
     <div className="flex flex-col w-screen h-screen overflow-hidden bg-background text-foreground font-body">
