@@ -105,11 +105,14 @@ def test_download_cache_reuses_content_and_detects_tampering(tmp_path):
 def test_reviewed_evidence_has_sources_and_matching_geometries():
     reviewed = ROOT_DIR / "data/reviewed"
     bundle = json.loads((reviewed / "corridor.json").read_text())
+    selection = json.loads((reviewed / "project_selection.json").read_text())
     sources = {s["source_id"]: s for s in json.loads((reviewed / "sources.json").read_text())}
+    assert bundle["corridor_id"] == selection["corridor_id"]
+    assert bundle["direction_id"] == selection["corridor"]["direction_id"]
     assert len(bundle["stops"]) == 7
     assert len(bundle["links"]) == 6
-    assert bundle["stops"][0]["gtfs_stop_id"] == "2118"
-    assert bundle["stops"][-1]["gtfs_stop_id"] == "2115"
+    assert bundle["stops"][0]["gtfs_stop_id"] == selection["corridor"]["start_stop_id"]
+    assert bundle["stops"][-1]["gtfs_stop_id"] == selection["corridor"]["end_stop_id"]
     assert len({s["stop_id"] for s in bundle["stops"]}) == 7
     assert all(source["sha256"] and source["retrieved_at"] and source["licence"] for source in sources.values())
     with (reviewed / "developments.csv").open(newline="") as stream:
@@ -120,6 +123,19 @@ def test_reviewed_evidence_has_sources_and_matching_geometries():
         assert int(project["proposed_units"]) > 0
         assert 0 < float(project["straight_line_distance_m"]) <= float(project["walk_distance_m"]) <= 500
         assert all(source_id in sources for source_id in project["source_ids"].split(";"))
+
+
+def test_route_reference_contains_the_corridor_in_order():
+    reviewed = ROOT_DIR / "data/reviewed"
+    bundle = json.loads((reviewed / "corridor.json").read_text())
+    route = json.loads((reviewed / "route_505.json").read_text())
+    direction = next(d for d in route["directions"] if d["direction_id"] == bundle["direction_id"])
+    marked = [s["corridor_stop_id"] for s in direction["stops"] if s["corridor_stop_id"]]
+    assert marked == [s["stop_id"] for s in bundle["stops"]]
+    positions = [i for i, s in enumerate(direction["stops"]) if s["corridor_stop_id"]]
+    assert positions == list(range(positions[0], positions[0] + len(positions)))
+    start, end = direction["stops"][positions[0]], direction["stops"][positions[-1]]
+    assert abs((end["dist_from_start_m"] - start["dist_from_start_m"]) - bundle["summary"]["length_m"]) < 50
 
 
 def test_hand_calculated_streetcar_case_conserves_all_ten_riders():

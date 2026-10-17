@@ -58,9 +58,13 @@ def build(*, refresh: bool = False, adopt_existing: bool = False) -> dict:
     pipeline_resource = next(r for r in metadata["pipeline"]["resources"] if r["name"] == "Development Pipeline.csv")
     gtfs_path = cached(gtfs_resource["url"], raw / "ttc_gtfs.zip", refresh=refresh, adopt_existing=adopt_existing)
     pipeline_path = cached(pipeline_resource["url"], raw / "development_pipeline.csv", refresh=refresh, adopt_existing=adopt_existing)
+    route = selection["corridor"]
     corridor = extract_corridor(
         gtfs_path, service_date=date.fromisoformat(selection["service_date"]),
         start_time=selection["window"]["start"], end_time=selection["window"]["end"],
+        route_short_name=route["route_short_name"], direction_id=route["direction_id"],
+        start_stop_id=route["start_stop_id"], end_stop_id=route["end_stop_id"],
+        corridor_id=selection["corridor_id"], direction=route["direction"],
     )
     source_records.append(record_source(
         gtfs_path, source_id="ttc-gtfs", title=metadata["gtfs"]["title"],
@@ -134,6 +138,7 @@ def build(*, refresh: bool = False, adopt_existing: bool = False) -> dict:
         raise ValueError("Exactly three distinct applications must be selected")
     corridor["window_status"] = selection["window"]["status"]
     corridor["window_reason"] = selection["window"]["reason"]
+    corridor["direction_reason"] = route["reason"]
     write_json(reviewed / "corridor.json", corridor)
     write_json(reviewed / "corridor.geojson", {
         "type": "FeatureCollection", "features": [
@@ -155,7 +160,7 @@ def build(*, refresh: bool = False, adopt_existing: bool = False) -> dict:
         ],
         "missing_observations": [
             "Stop-level weekday passenger arrivals and destinations",
-            "Incoming streetcar occupancy at Jarvis",
+            "Incoming streetcar occupancy at " + corridor["stops"][0]["name"],
             "Observed dwell/boarding rates and travel-time variability",
             "Development occupancy dates and occupied shares",
             "Network walking distances and entrance/crossing review",

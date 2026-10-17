@@ -8,43 +8,43 @@
   },
   "corridor": {
     "stop_count": 7,
-    "trip_count": 15,
-    "length_m": 1970.54,
-    "median_scheduled_headway_s": 420.0,
-    "median_scheduled_segment_time_s": 760
+    "trip_count": 17,
+    "length_m": 1973.88,
+    "median_scheduled_headway_s": 360.0,
+    "median_scheduled_segment_time_s": 675
   },
   "developments": [
     {
       "address": "239 DUNDAS ST E",
       "proposed_units": 630,
       "stage": "Active",
-      "nearest_stop_id": "ttc-stop-2130",
-      "straight_line_distance_m": 124.2,
+      "nearest_stop_id": "ttc-stop-2119",
+      "straight_line_distance_m": 150.3,
       "walk_status": "network_estimate_manual_review_pending",
-      "walk_distance_m": 156.73
+      "walk_distance_m": 271.7
     },
     {
       "address": "500 DUNDAS ST E",
       "proposed_units": 413,
       "stage": "Under Review",
-      "nearest_stop_id": "ttc-stop-15872",
-      "straight_line_distance_m": 181.32,
+      "nearest_stop_id": "ttc-stop-2125",
+      "straight_line_distance_m": 149.92,
       "walk_status": "network_estimate_manual_review_pending",
-      "walk_distance_m": 334.84
+      "walk_distance_m": 229.13
     },
     {
       "address": "761 DUNDAS ST E",
       "proposed_units": 1197,
       "stage": "Under Review",
-      "nearest_stop_id": "ttc-stop-2126",
-      "straight_line_distance_m": 152.92,
+      "nearest_stop_id": "ttc-stop-2127",
+      "straight_line_distance_m": 129.47,
       "walk_status": "network_estimate_manual_review_pending",
-      "walk_distance_m": 267.98
+      "walk_distance_m": 269.63
     }
   ],
   "missing_observations": [
     "Stop-level weekday passenger arrivals and destinations",
-    "Incoming streetcar occupancy at Jarvis",
+    "Incoming streetcar occupancy at Broadview Ave at Dundas St East",
     "Observed dwell/boarding rates and travel-time variability",
     "Development occupancy dates and occupied shares",
     "Verified development entrances and manual walking-route/crossing review"

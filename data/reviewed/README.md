@@ -1,5 +1,5 @@
 # Reviewed Phase 01 evidence
-This directory contains compact, derived feasibility artifacts for TTC 505 eastbound from Jarvis to Dundas/Broadview.
+This directory contains compact, derived feasibility artifacts for TTC 505 westbound from Dundas/Broadview to Jarvis.
 It is not the frozen Comparison API contract or a calibrated simulation output.
 
 - corridor.json / corridor.geojson / stops.csv: dated GTFS corridor, schedule and geometry.
@@ -9,6 +9,7 @@ It is not the frozen Comparison API contract or a calibrated simulation output.
 - walking_access.json / walking_routes.geojson: estimated nearest-stop pedestrian paths and explicit connector lengths.
 - walking_routes.svg: reproducible desktop review map; walking_routes.png is the exported preview inspected during review.
 - feasibility_report.json: machine-readable findings and missing observations.
+- route_505.json: the whole 505 route in both directions (stops, patterns, trips per hour) for reference; rebuild with python -m backend.scripts.export_route.
 - access_check.json: the latest local live Tiger Data/Gemini check; no credentials are included.
 
 Rebuild with python -m backend.scripts.prove_feasibility. Raw GTFS, pipeline downloads and OSM source tiles remain in ignored data/raw and data/cache.

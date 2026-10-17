@@ -48,7 +48,9 @@ def _rows(archive: ZipFile, filename: str):
 def extract_corridor(feed_path: Path, *, service_date: date,
                      start_time: str = "07:00:00", end_time: str = "09:00:00",
                      route_short_name: str = "505", direction_id: str = "0",
-                     start_stop_id: str = "2118", end_stop_id: str = "2115") -> dict:
+                     start_stop_id: str = "2118", end_stop_id: str = "2115",
+                     corridor_id: str = "ttc-505-east-jarvis-broadview",
+                     direction: str = "eastbound") -> dict:
     start_s, end_s = seconds(start_time), seconds(end_time)
     if end_s <= start_s:
         raise ValueError("End of the analysis window must follow its start")
@@ -128,7 +130,7 @@ def extract_corridor(feed_path: Path, *, service_date: date,
                 durations.append(seconds(rows[index + 1]["arrival_time"]) - seconds(rows[index]["departure_time"]))
             clipped = substring(metric_line, offsets[index], offsets[index + 1])
             links.append({
-                "link_id": f"ttc-505-east-link-{index + 1}",
+                "link_id": f"{corridor_id}-link-{index + 1}",
                 "from_stop": left["stop_id"], "to_stop": right["stop_id"],
                 "length_m": round(clipped.length, 2),
                 "scheduled_time_s": median(durations),
@@ -151,9 +153,9 @@ def extract_corridor(feed_path: Path, *, service_date: date,
         headways = [b - a for a, b in zip(entry_times, entry_times[1:])]
         feed_info = list(_rows(archive, "feed_info.txt"))
     return {
-        "corridor_id": "ttc-505-east-jarvis-broadview", "route_id": route["route_id"],
+        "corridor_id": corridor_id, "route_id": route["route_id"],
         "route_short_name": route_short_name, "route_type": 0, "direction_id": direction_id,
-        "direction": "eastbound", "timezone": "America/Toronto",
+        "direction": direction, "timezone": "America/Toronto",
         "service_date": service_date.isoformat(), "window": {"start": start_time, "end": end_time},
         "window_status": "assumed", "gtfs_feed_info": feed_info,
         "active_service_ids": sorted(services), "shape_id": shape_id,

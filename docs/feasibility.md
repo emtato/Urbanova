@@ -5,13 +5,13 @@ Product label: **scenario experiment**. Schedules and proposed unit counts are s
 ## Evidence and status
 | Step | Status | Evidence |
 | --- | --- | --- |
-| 1.1 Corridor | Verified with an explicit window assumption | 505 eastbound Jarvis → Dundas/Broadview, seven consecutive stops; see corridor.md |
+| 1.1 Corridor | Verified with an explicit window assumption | 505 westbound Dundas/Broadview → Jarvis, seven consecutive stops; see corridor.md |
 | 1.2 GTFS and developments | Verified as feasibility evidence | Dated weekday service plus three distinct pipeline proposals and estimated pedestrian access |
 | 1.3 Tiger Data and Gemini | Passed live | data/reviewed/access_check.json records PostGIS and a schema-validated Gemini response |
 | 1.4 Tiny case | Passed | sim/tiny_case.py reproduces the hand calculation; tests check conservation, capacity and persistent denied riders |
 
 The analysis window is Friday 2026-10-16, 07:00–09:00 America/Toronto, chosen for reproducibility.
-The feed covers that day, and calendar exceptions are applied. There are 15 scheduled entries, a median 7-minute headway and a roughly 1.97 km segment.
+The feed covers that day, and calendar exceptions are applied. There are 17 scheduled westbound entries, a median 6-minute headway and a roughly 1.97 km segment.
 The user-confirmed endpoints yield seven stops, replacing the original generic 8–12-stop target.
 
 ## Residential development shortlist
@@ -20,15 +20,18 @@ Application received dates are separate from dataset update/retrieval dates.
 
 | Selected application | Address | Proposed units | Pipeline stage | Nearest modelled stop | Estimated walk |
 | --- | --- | --- | --- | --- | --- |
-| 22 124214 STE 13 OZ | 239 Dundas St E | 630 | Active | Sherbourne, 2130 | 157 m |
-| 26 122451 STE 13 OZ | 500 Dundas St E | 413 | Under Review | Regent Park Blvd, 15872 | 335 m |
-| 25 236949 STE 13 OZ | 761 Dundas St E | 1,197 | Under Review | River, 2126 | 268 m |
+| 22 124214 STE 13 OZ | 239 Dundas St E | 630 | Active | Jarvis, 2119 | 272 m |
+| 26 122451 STE 13 OZ | 500 Dundas St E | 413 | Under Review | Parliament, 2125 | 229 m |
+| 25 236949 STE 13 OZ | 761 Dundas St E | 1,197 | Under Review | River, 2127 | 270 m |
 
 Three spatially distinct sites are selected once each using their OZ application numbers; related site-plan applications are not counted again.
 The review keeps five candidates in development_shortlist.csv. 401 Dundas East (137 units) is a reserve candidate.
 218 Dundas East is held for reconciliation: its numeric unit field is 542, while its description says 522, and the address has multiple municipal address points.
 The selected 239 and 761 unit counts agree with their source descriptions; 500 uses the explicit numeric unit field.
 Pipeline stage "Active" is preserved as published and is not relabelled "Approved".
+
+**Open team decision: the third development.** Westbound, 239 Dundas St E's nearest stop is Jarvis, the last stop in the segment. Its riders board where the segment ends, so they add almost no crowding inside it.
+The alternative is Regent Park Phases 4–5 (22 136063 STE 13 OZ), next to Regent Park Blvd. Its pipeline record lists 3,432 proposed units; the application description says about 3,246, of which 1,270 are TCHC-owned rental, partly replacing existing homes. Its status is OMB Appeal, and the net-new count is not sourced.
 
 ## Walking access and its limits
 Official Toronto municipal address points locate the projects. Small OpenStreetMap tiles provide the pedestrian network.
@@ -44,7 +47,7 @@ Each route retains manual_review=pending. Full Lane A walking access to 2–3 al
 
 ## Missing observations
 - Stop-level weekday arrivals, destinations and rider-group demand.
-- Incoming streetcar occupancy at Jarvis.
+- Incoming streetcar occupancy at Broadview Ave at Dundas St East.
 - Observed dwell rates, capacity assumptions, boarding behaviour and travel-time variability.
 - Development occupancy dates, occupied shares and replacement/net-new housing counts.
 - Streetcar-specific intervention effects, costs, fleet constraints and operating-cycle assumptions.

@@ -2,15 +2,16 @@
   {
     "dev_id": "toronto-app-22-124214-ste-13-oz",
     "address": "239 DUNDAS ST E",
-    "stop_id": "ttc-stop-2130",
-    "walk_m": 156.73,
-    "network_m": 107.19,
+    "stop_id": "ttc-stop-2119",
+    "walk_m": 271.7,
+    "network_m": 226.64,
     "origin_connector_m": 38.14,
-    "stop_connector_m": 11.39,
+    "stop_connector_m": 6.91,
     "method": "OSM pedestrian shortest path plus straight-line address/stop connectors",
     "manual_review": "pending",
     "street_names": [
-      "footway"
+      "footway",
+      "Dundas Street East"
     ],
     "source_ids": [
       "toronto-development-pipeline",
@@ -22,17 +23,17 @@
   {
     "dev_id": "toronto-app-26-122451-ste-13-oz",
     "address": "500 DUNDAS ST E",
-    "stop_id": "ttc-stop-15872",
-    "walk_m": 334.84,
-    "network_m": 310.72,
+    "stop_id": "ttc-stop-2125",
+    "walk_m": 229.13,
+    "network_m": 206.82,
     "origin_connector_m": 18.15,
-    "stop_connector_m": 5.97,
+    "stop_connector_m": 4.16,
     "method": "OSM pedestrian shortest path plus straight-line address/stop connectors",
     "manual_review": "pending",
     "street_names": [
       "service",
-      "footway",
-      "Dundas Street East"
+      "Regent Street",
+      "footway"
     ],
     "source_ids": [
       "toronto-development-pipeline",
@@ -44,11 +45,11 @@
   {
     "dev_id": "toronto-app-25-236949-ste-13-oz",
     "address": "761 DUNDAS ST E",
-    "stop_id": "ttc-stop-2126",
-    "walk_m": 267.98,
-    "network_m": 227.34,
+    "stop_id": "ttc-stop-2127",
+    "walk_m": 269.63,
+    "network_m": 227.88,
     "origin_connector_m": 36.08,
-    "stop_connector_m": 4.55,
+    "stop_connector_m": 5.67,
     "method": "OSM pedestrian shortest path plus straight-line address/stop connectors",
     "manual_review": "pending",
     "street_names": [
