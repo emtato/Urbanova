@@ -7,11 +7,13 @@ import {
   toShortAddress,
 } from '../map/types'
 import { getDevelopmentPhase } from '../map/MassingLayer'
+import './StopPanel.css'
 
 export interface DevelopmentPanelProps {
   development: CorridorDevelopment | any
   stops: Array<CorridorStop | any>
   onClose: () => void
+  onViewBuilding?: () => void
   onSelectStop?: (stop: any) => void
   isMinimized?: boolean
   onToggleMinimize?: () => void
@@ -91,273 +93,57 @@ export const REVIEWED_METADATA: Record<string, SourcedDevelopmentMeta> = {
 }
 
 export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
-  development: rawDev,
-  stops: rawStops,
-  onClose,
-  onSelectStop,
-  isMinimized = false,
-  onToggleMinimize,
-  className = '',
+  development: rawDev, stops: rawStops, onClose, onSelectStop, onViewBuilding,
+  isMinimized = false, onToggleMinimize, className = '',
 }) => {
   const development = normalizeDevelopment(rawDev)
   const stops = rawStops.map(normalizeStop)
   const meta = REVIEWED_METADATA[development.dev_id]
   const phase = getDevelopmentPhase(development)
-  const stopMap = new Map<string, CorridorStop>(stops.map((s) => [s.stop_id, s]))
+  const stopMap = new Map(stops.map(stop => [stop.stop_id, stop]))
+  const title = development.name || toShortAddress(development.address)
+  const controls = <div className="transit-window-controls">
+    {onToggleMinimize && <button type="button" onClick={onToggleMinimize} aria-label={isMinimized ? 'Expand development details' : 'Minimize development panel'}>{isMinimized ? '▾' : '−'}</button>}
+    <button type="button" onClick={onClose} aria-label="Close development panel">✕</button>
+  </div>
+  if (isMinimized) return <div data-testid="development-panel" className={`liquid-glass transit-inspector-minimized ${className}`}><span>{title}</span>{controls}</div>
 
-  const lon = meta?.lon ?? development.footprint?.coordinates[0]?.[0]?.[0] ?? -79.365
-  const lat = meta?.lat ?? development.footprint?.coordinates[0]?.[0]?.[1] ?? 43.660
-
-  const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}`
-  const aicUrl = meta?.applicationUrl ?? 'http://app.toronto.ca/AIC/'
-
-  const isUnderReview = (development.stage ?? '').toLowerCase().includes('review')
-
-  if (isMinimized) {
-    return (
-      <div
-        data-testid="development-panel"
-        className={`liquid-glass rounded-full px-4 py-2 shadow-2xl animate-fade-rise flex items-center gap-3 border border-border/40 ${className}`}
-      >
-        <span
-          className={`w-2.5 h-2.5 rounded-full ${
-            phase === 1 ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]' : 'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
-          } animate-pulse shrink-0`}
-        />
-        <div className="flex items-baseline gap-1.5 min-w-0">
-          <span className="text-xs font-semibold text-foreground truncate">
-            {development.name || toShortAddress(development.address)}
-          </span>
-          <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-            ({development.units.toLocaleString()}u)
-          </span>
+  return <aside data-testid="development-panel" aria-label="Building details" className={`liquid-glass-panel map-glass-panel transit-inspector ${className}`}>
+    <header className="transit-inspector-header"><span className="transit-eyebrow" data-testid="phase-badge">Phase {phase} Proposal</span>{controls}</header>
+    <div className="transit-inspector-content">
+      <div className="transit-identity"><span className="transit-eyebrow">PROPOSED HOUSING</span><h2 data-testid="dev-address">{title}</h2>
+        <div className="transit-stop-summary-row"><div className="transit-stop-summary-text"><p>{development.address}</p><p data-testid="stage-badge">{development.stage || 'Planning status unavailable'}</p></div>
+          {onViewBuilding && <button type="button" className="transit-platform-button" onClick={onViewBuilding}>📍 View building in 3D</button>}
         </div>
-        <div className="flex items-center gap-1 border-l border-border/40 pl-2 shrink-0">
-          {onToggleMinimize && (
-            <button
-              type="button"
-              onClick={onToggleMinimize}
-              className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
-              title="Expand development details"
-              aria-label="Expand development details"
-            >
-              ▾
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
-            title="Close development panel"
-            aria-label="Close development panel"
-          >
-            ✕
+      </div>
+
+      <section className="transit-section" aria-label="Proposal overview"><h3>Proposal overview</h3><div className="building-stat-grid">
+        <div className="transit-metric inspector-stat-card"><span>Homes in model</span><strong data-testid="dev-units">{development.units.toLocaleString()}</strong><small>Housing configuration</small></div>
+        <div className="transit-metric inspector-stat-card"><span>Planning status</span><strong style={{ fontFamily: 'inherit', fontSize: 16 }}>{development.stage || '—'}</strong><small>Completion date not confirmed</small></div>
+      </div><p>Building massing is illustrative. Showing a proposal on the map does not change a saved simulation’s settings.</p></section>
+
+      <section className="transit-section" aria-label="Walking access"><h3>Walking access to stops</h3><div data-testid="access-stops-list" className="transit-development-list">
+        {(development.access ?? []).map(access => {
+          const stop = stopMap.get(access.stop_id)
+          return <button key={access.stop_id} type="button" className="inspector-stat-card building-stop-button" disabled={!stop || !onSelectStop} onClick={() => stop && onSelectStop?.(stop)}>
+            <span>{stop?.name || access.stop_id}<small>{stop ? `Stop #${stop.gtfs_stop_id} · Westbound` : 'Stop details unavailable'}</small></span>
+            <strong>{Math.round(access.walk_m)}m<small>~{(access.walk_m / 80).toFixed(1)} min</small></strong>
           </button>
-        </div>
-      </div>
-    )
-  }
+        })}
+        {!development.access?.length && <p>Walking connections are not available for this proposal.</p>}
+      </div><p>Walking distances and times are estimates; route review may be pending.</p></section>
 
-  return (
-    <div
-      data-testid="development-panel"
-      className={`liquid-glass-panel rounded-2xl p-6 shadow-2xl animate-fade-rise flex flex-col gap-4 text-foreground w-[360px] max-h-[calc(100vh-12rem)] overflow-y-auto ${className}`}
-    >
-      {/* Top Meta Bar: Phase & Planning Stage Badges + Close Button */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            data-testid="phase-badge"
-            className={`phase-pill phase-pill-${phase}`}
-          >
-            Phase {phase} Proposal
-          </span>
-          <span
-            data-testid="stage-badge"
-            className={`status-chip ${
-              isUnderReview ? 'status-chip-assumed' : 'status-chip-sourced'
-            }`}
-          >
-            {development.stage}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1 shrink-0">
-          {onToggleMinimize && (
-            <button
-              type="button"
-              onClick={onToggleMinimize}
-              aria-label="Minimize Development Panel"
-              className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-full hover:bg-white/10 text-xs font-bold leading-none cursor-pointer"
-              title="Minimize panel"
-            >
-              −
-            </button>
-          )}
-          <button
-            type="button"
-            data-testid="close-panel-btn"
-            onClick={onClose}
-            aria-label="Close Development Panel"
-            className="text-muted-foreground hover:text-foreground p-1 transition-colors rounded-full hover:bg-white/10 cursor-pointer"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Title & Application Info */}
-      <div>
-        <h2
-          data-testid="dev-address"
-          className="text-2xl font-normal tracking-tight text-foreground"
-          style={{ fontFamily: "'Instrument Serif', serif" }}
-        >
-          {development.name || toShortAddress(development.address)}
-        </h2>
-        <div className="text-xs text-muted-foreground mt-0.5 flex flex-col gap-0.5 font-mono">
-          <span className="text-foreground/90 font-medium">{development.address}</span>
-          <span>Ref: {development.pipeline_ref || 'City Application'}</span>
-          <span>Record Date: {development.record_date}</span>
-        </div>
-      </div>
-
-      {/* Key Metric Cards */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="liquid-glass rounded-xl p-3 flex flex-col justify-between">
-          <span className="text-[10px] tracking-wider uppercase text-muted-foreground font-medium">
-            PROPOSED HOMES
-          </span>
-          <div className="mt-1">
-            <span
-              data-testid="dev-units"
-              className="text-2xl font-mono font-semibold text-foreground"
-            >
-              {development.units.toLocaleString()}
-            </span>
-            <span className="text-xs text-muted-foreground ml-1">units</span>
-          </div>
-        </div>
-
-        <div className="liquid-glass rounded-xl p-3 flex flex-col justify-between">
-          <span className="text-[10px] tracking-wider uppercase text-muted-foreground font-medium">
-            OCCUPANCY TARGET
-          </span>
-          <div className="mt-1">
-            <span className="text-lg font-mono font-semibold text-amber-300">
-              {phase === 1 ? '2027' : '2030'}
-            </span>
-            <span className="text-xs text-muted-foreground ml-1">
-              ({phase === 1 ? 'P1' : 'P2'})
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Walking Access to Stops (School of Cities core accessibility contract) */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-          <span>WALKING ACCESS TO STOPS</span>
-          <span className="status-chip status-chip-sourced">OSMNX</span>
-        </div>
-
-        <div className="flex flex-col gap-1.5" data-testid="access-stops-list">
-          {(development.access ?? []).map((acc) => {
-            const stop = stopMap.get(acc.stop_id)
-            const walkMin = (acc.walk_m / 80).toFixed(1)
-
-            return (
-              <div
-                key={acc.stop_id}
-                className="liquid-glass rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs hover:border-white/20 transition-all cursor-pointer group"
-                onClick={() => stop && onSelectStop && onSelectStop(stop)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    stop && onSelectStop && onSelectStop(stop)
-                  }
-                }}
-              >
-                <div className="flex flex-col min-w-0">
-                  <span className="font-medium text-foreground truncate group-hover:text-cyan-300 transition-colors">
-                    {stop?.name || acc.stop_id}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">
-                    {stop ? `Stop #${stop.gtfs_stop_id} · Inbound` : acc.stop_id}
-                  </span>
-                </div>
-
-                <div className="text-right flex-shrink-0">
-                  <div className="font-mono font-semibold text-cyan-300">
-                    {Math.round(acc.walk_m)}m
-                  </div>
-                  <div className="text-[10px] text-muted-foreground font-mono">
-                    ~{walkMin} min
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Action Links: Street View + Official AIC Record */}
-      <div className="flex flex-col gap-2 pt-1 border-t border-border/30">
-        {/* Step 4.4 Street View Real Photo verification link */}
-        <a
-          href={streetViewUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="street-view-link"
-          className="liquid-glass rounded-xl px-3.5 py-2.5 text-xs text-foreground hover:scale-[1.02] transition-transform flex items-center justify-between font-medium group"
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-amber-400">📍</span>
-            <span>See this spot today (Street View)</span>
-          </div>
-          <span className="text-muted-foreground group-hover:text-foreground transition-colors text-[10px]">
-            ↗
-          </span>
-        </a>
-
-        {/* City of Toronto AIC official planning record link */}
-        <a
-          href={aicUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="aic-record-link"
-          className="liquid-glass rounded-xl px-3.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:scale-[1.02] transition-transform flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-2 truncate">
-            <span>🏛️</span>
-            <span className="truncate">City Planning Record (AIC)</span>
-          </div>
-          <span className="text-muted-foreground group-hover:text-foreground transition-colors text-[10px]">
-            ↗
-          </span>
-        </a>
-      </div>
-
-      {/* Review & Provenance Audit Note */}
-      {meta?.reviewNote && (
-        <div className="text-[11px] text-muted-foreground/80 bg-white/[0.02] rounded-xl p-2.5 border border-white/5">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">
-            Audit Review Note
-          </div>
-          <p className="italic font-mono leading-relaxed">
-            &ldquo;{meta.reviewNote}&rdquo;
-          </p>
-        </div>
-      )}
+      <section className="transit-section" aria-label="Planning record"><h3>Planning record</h3>
+        <a href={meta?.applicationUrl ?? 'http://app.toronto.ca/AIC/'} target="_blank" rel="noopener noreferrer" data-testid="aic-record-link" className="building-record-link"><span>City planning application</span><span aria-hidden="true">↗</span></a>
+        <details className="transit-method"><summary>Application details &amp; sources</summary><dl className="building-record-list">
+          <div><dt>Application reference</dt><dd>{development.pipeline_ref || 'Not available'}</dd></div>
+          <div><dt>Application received</dt><dd>{meta?.applicationReceived || 'Not available'}</dd></div>
+          <div><dt>Record updated</dt><dd>{development.record_date || meta?.datasetUpdatedAt || 'Not available'}</dd></div>
+          {meta?.reviewNote && <div><dt>Review note</dt><dd>{meta.reviewNote}</dd></div>}
+        </dl></details>
+      </section>
     </div>
-  )
+  </aside>
 }
+
+export default DevelopmentPanel

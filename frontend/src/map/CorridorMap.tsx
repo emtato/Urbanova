@@ -4,9 +4,10 @@ import mapboxgl, {
   type MapLayerMouseEvent,
 } from 'mapbox-gl'
 import { scheduleSolarUpdate } from './scheduleSolarUpdate'
+import { animateStreetView } from './animateStreetView'
+import { buildingStreetViewLocation } from './buildingStreetView'
 import type { Corridor } from '../lib/types'
 import {
-  type CorridorDevelopment,
   normalizeStop,
   normalizeDevelopment,
   toShortAddress,
@@ -36,6 +37,7 @@ export interface CorridorMapProps {
   developments: any[]
   selectedStopId?: string | null
   platformViewRequest?: { stopId: string; requestId: number } | null
+  buildingViewRequest?: { devId: string; requestId: number } | null
   selectedDevId?: string | null
   activePhase?: number
   visibleDevIds?: string[]
@@ -50,35 +52,12 @@ export interface CorridorMapProps {
 
 const MAPBOX_STANDARD_STYLE = 'mapbox://styles/mapbox/standard'
 
-const DEFAULT_DEVELOPMENTS: CorridorDevelopment[] = [
-  {
-    dev_id: 'toronto-app-22-124214-ste-13-oz',
-    address: '239 DUNDAS ST E',
-    name: '239 Dundas',
-    units: 630,
-    stage: 'Active',
-  },
-  {
-    dev_id: 'toronto-app-26-122451-ste-13-oz',
-    address: '500 DUNDAS ST E',
-    name: '500 Dundas',
-    units: 413,
-    stage: 'Under Review',
-  },
-  {
-    dev_id: 'toronto-app-25-236949-ste-13-oz',
-    address: '761 DUNDAS ST E',
-    name: '761 Dundas',
-    units: 1197,
-    stage: 'Under Review',
-  },
-]
-
 export const CorridorMap: FC<CorridorMapProps> = ({
   corridor,
   developments,
   selectedStopId,
   platformViewRequest,
+  buildingViewRequest,
   selectedDevId,
   activePhase = 2,
   visibleDevIds,
@@ -92,6 +71,9 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapboxMap | null>(null)
+  const platformTransitionRef = useRef(false)
+  const previousStopSelection = useRef<string | null | undefined>(undefined)
+  const initialStopHydrated = useRef(false)
   const [pitch, setPitch] = useState<number>(55)
   const is3D = pitch >= 5
   const [statusMessage, setStatusMessage] = useState<string>('Initializing Mapbox Standard 3D Scene...')
@@ -128,11 +110,11 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     SHADOW_SLOTS[0]
 
   // Development visibility state (powers the 3 development pill buttons)
-  const [localVisibleDevIds, setLocalVisibleDevIds] = useState<string[]>([
-    'toronto-app-22-124214-ste-13-oz',
-    'toronto-app-26-122451-ste-13-oz',
-    'toronto-app-25-236949-ste-13-oz',
-  ])
+  const [localVisibleDevIds, setLocalVisibleDevIds] = useState<string[]>(() =>
+    developments.map(dev => normalizeDevelopment(dev).dev_id))
+  useEffect(() => {
+    setLocalVisibleDevIds(developments.map(dev => normalizeDevelopment(dev).dev_id))
+  }, [developments])
   const currentVisibleDevIds = visibleDevIds ?? localVisibleDevIds
 
   const handleToggleDevelopment = (devId: string) => {
@@ -190,11 +172,19 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     const defaultCenter: [number, number] = [-79.364, 43.660]
 
     try {
+      const initialBounds = new mapboxgl.LngLatBounds()
+      for (const rawStop of latestMapInputs.current.corridor.stops) {
+        const stop = normalizeStop(rawStop)
+        initialBounds.extend([stop.lon, stop.lat])
+      }
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
         style: MAPBOX_STANDARD_STYLE,
         center: defaultCenter,
         zoom: 14.6,
+        // Establish the overview in the constructor, without a second load-time flight.
+        bounds: initialBounds.isEmpty() ? undefined : initialBounds,
+        fitBoundsOptions: { padding: { top: 90, bottom: 90, left: 100, right: 380 }, maxZoom: 15.6 },
         maxZoom: 24,
         maxPitch: 70,
         pitch: 55,
@@ -216,7 +206,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
       // Allow a near-horizontal gaze at street scale; keep wider views manageable.
       const updatePitchLimit = () => {
-        const limit = map.getZoom() >= 19 ? 85 : 70
+        const limit = platformTransitionRef.current || map.getZoom() >= 19 ? 85 : 70
         if (map.getMaxPitch() !== limit) map.setMaxPitch(limit)
       }
       map.on('zoom', updatePitchLimit)
@@ -255,7 +245,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
             localTime: currentSlot.local_time,
             activePhase: activePhase,
           })
-          fitToCorridor(map, corridor.stops)
         } catch (err) {
           console.error('Error adding corridor layers:', err)
           setStatusMessage(`Layer load issue: ${err instanceof Error ? err.message : String(err)}`)
@@ -320,13 +309,15 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     }
   }, [mapboxToken])
 
-  // React to development visibility or dataset changes
+  // Retain a dataset update until the style is ready, including saved-run switches.
   useEffect(() => {
-    if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      updateCorridorMapData(mapRef.current, corridor, developments)
-      updateDevelopmentsVisibility(mapRef.current, currentVisibleDevIds)
-    }
-  }, [corridor, developments, currentVisibleDevIds])
+    const map = mapRef.current
+    if (!map) return
+    return scheduleSolarUpdate(map, () => {
+      updateCorridorMapData(map, corridor, developments)
+      updateDevelopmentsVisibility(map, currentVisibleDevIds)
+    })
+  }, [corridor, developments, currentVisibleDevIds, mapboxToken])
 
   // React to selected development styling changes
   useEffect(() => {
@@ -360,7 +351,15 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
   // Center camera when selected stop changes
   useEffect(() => {
-    if (!mapRef.current || !selectedStopId) return
+    const previous = previousStopSelection.current
+    previousStopSelection.current = selectedStopId
+    if (!selectedStopId) return
+    // Hydrating the initial inspector must not compete with the corridor overview.
+    if (!initialStopHydrated.current) {
+      initialStopHydrated.current = true
+      return
+    }
+    if (previous === selectedStopId || !mapRef.current) return
     const stop = corridor.stops.find((s: any) => {
       const norm = normalizeStop(s)
       return norm.stop_id === selectedStopId
@@ -387,25 +386,23 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       normalizeStop(stop).stop_id === platformViewRequest.stopId)
     if (!rawStop) return
     const stop = normalizeStop(rawStop)
-    map.stop()
-    map.setMaxPitch(85)
-    // Reset camera padding so the inspector offset cannot raise the viewpoint.
-    map.jumpTo({
-      center: [stop.lon, stop.lat],
-      zoom: 22,
-      pitch: 85,
-      bearing: 270,
-      padding: { top: 0, bottom: 0, left: 0, right: 0 },
+    platformTransitionRef.current = true
+    return animateStreetView(map, [stop.lon, stop.lat], () => {
+      platformTransitionRef.current = false
     })
-    const camera = map.getFreeCameraOptions()
-    // Position the camera itself at the stop, 1.7 m above ground (eye level).
-    const groundElevation = map.queryTerrainElevation([stop.lon, stop.lat]) ?? 0
-    camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
-      [stop.lon, stop.lat], groundElevation + 1.7)
-    camera.setPitchBearing(85, 270)
-    map.setFreeCameraOptions(camera)
 
   }, [platformViewRequest, corridor.stops])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !buildingViewRequest) return
+    const development = developments.find(value => normalizeDevelopment(value).dev_id === buildingViewRequest.devId)
+    if (!development) return
+    platformTransitionRef.current = true
+    return animateStreetView(map, buildingStreetViewLocation(development), () => {
+      platformTransitionRef.current = false
+    }, 0)
+  }, [buildingViewRequest, developments])
 
   // Center camera when selected development changes
   useEffect(() => {
@@ -466,7 +463,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     }
   }
 
-  const displayDevs = developments && developments.length > 0 ? developments : DEFAULT_DEVELOPMENTS
+  const displayDevs = developments ?? []
 
   return (
     <div
@@ -662,7 +659,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
             </div>
           ) : (
             /* Expanded Sunlight & Shadows Card */
-            <div className="liquid-glass-panel rounded-2xl p-4 shadow-2xl flex flex-col gap-3.5 w-[360px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-22rem)] overflow-y-auto animate-fade-rise backdrop-blur-md border border-amber-500/30 pointer-events-auto select-none">
+            <div className="liquid-glass-panel map-glass-panel rounded-2xl p-4 shadow-2xl flex flex-col gap-3.5 w-[360px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-22rem)] overflow-y-auto animate-fade-rise backdrop-blur-md border border-amber-500/30 pointer-events-auto select-none">
               {/* Card Header */}
               <div className="flex items-center justify-between text-xs border-b border-border/30 pb-2">
                 <div className="flex items-center gap-2">

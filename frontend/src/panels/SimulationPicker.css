@@ -1,0 +1,20 @@
+.simulation-picker-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid rgba(180,210,230,.3); border-radius: 11px; padding: 8px 12px; background: rgba(42,66,84,.8); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); color: #e8f6ff; font-size: 11px; cursor: pointer; }
+.simulation-picker-trigger:disabled { opacity: .45; cursor: default; }
+.simulation-picker-popup { position: fixed; z-index: 200; max-height: min(380px, calc(100vh - 24px)); overflow-y: auto; border-radius: 16px; padding: 12px; border: 1px solid rgba(180,210,230,.3); background: linear-gradient(145deg,rgba(255,255,255,.05),transparent 45%),rgba(35,51,67,.98); color: #e8f6ff; box-shadow: 0 20px 45px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15); backdrop-filter: blur(20px); }
+.simulation-picker-heading { display: flex; justify-content: space-between; align-items: center; padding: 2px 3px 10px; font-size: 12px; }
+.simulation-picker-heading button { padding: 5px; cursor: pointer; }
+.simulation-picker-empty { padding: 22px 12px; border: 1px dashed rgba(180,210,230,.2); border-radius: 11px; font-size: 12px; text-align: center; }
+.simulation-picker-empty p { margin-top: 7px; opacity: .7; font-size: 11px; line-height: 1.6; }
+.simulation-picker-popup li { display: flex; align-items: flex-start; border-top: 1px solid rgba(180,210,230,.15); }
+.simulation-picker-option { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 5px; padding: 12px 8px; border-radius: 9px; text-align: left; cursor: pointer; }
+.simulation-picker-option:hover:not(:disabled), .simulation-picker-today:hover { background: rgba(85,139,163,.2); }
+.simulation-picker-option:disabled { opacity: .5; cursor: default; }
+.simulation-picker-option strong { font-size: 12px; overflow-wrap: anywhere; }
+.simulation-picker-option time, .simulation-picker-option small { font-size: 10px; opacity: .7; line-height: 1.5; }
+.simulation-picker-rename { font-size: 10px; padding: 12px 6px; color: #a5e5f5; cursor: pointer; }
+.simulation-picker-today { display: flex; flex-direction: column; gap: 5px; width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 10px; font-size: 12px; text-align: left; cursor: pointer; }
+.simulation-picker-today span { opacity: .6; font-size: 10px; }
+.simulation-picker-storage { padding: 12px 3px 0; font-size: 10px; opacity: .5; }
+.simulation-picker-popup form { padding: 10px; width: 100%; font-size: 11px; }
+.simulation-picker-popup input { width: 100%; background: #172c3d; padding: 9px; margin: 7px 0; border: 1px solid #68889c; border-radius: 8px; }
+.simulation-picker-popup form button { padding: 7px; color: #a5e5f5; cursor: pointer; }

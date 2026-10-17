@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { NoComparisonError, fetchComparison, fixtureComparison, isUsingFixture, runAnalysis } from '../lib/api'
+import { configurationSummary, mapComparison, setActiveSimulation, todayBaseline, useSimulationHistory } from '../lib/simulationHistory'
+import { SimulationPicker } from '../panels/SimulationPicker'
 import type { Comparison, Scenario } from '../lib/types'
 import {
   type CorridorStop,
@@ -8,6 +9,7 @@ import {
   normalizeDevelopment,
 } from '../map/types'
 import { CorridorMap } from '../map/CorridorMap'
+import { mapProposals } from '../map/proposals'
 import { DevelopmentPanel } from '../panels/DevelopmentPanel'
 import { StopPanel } from '../panels/StopPanel'
 import { ScenarioEditor } from '../panels/ScenarioEditor'
@@ -33,40 +35,33 @@ type ActiveTool =
   | null
 
 export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
-  const [comparison, setComparison] = useState<Comparison | null>(null)
-  const [loading, setLoading] = useState(true)
+  const saved = useSimulationHistory()
+  const loadedBatchId = useRef<string | null>(null)
+  const [comparison, setComparison] = useState<Comparison | null>(() => mapComparison(todayBaseline))
+  const loading = false
+  const [buildingViewRequest, setBuildingViewRequest] = useState<{ devId: string; requestId: number } | null>(null)
   const [platformViewRequest, setPlatformViewRequest] = useState<{ stopId: string; requestId: number } | null>(null)
   const [selectedStop, setSelectedStop] = useState<CorridorStop | null>(null)
+  const [visibleProposalIds, setVisibleProposalIds] = useState<string[]>([])
   const [selectedDev, setSelectedDev] = useState<CorridorDevelopment | null>(null)
-  const [usingFixture, setUsingFixtureState] = useState(isUsingFixture())
+  const usingFixture = false
   const [activePhase] = useState<number>(2)
   const [shadowsEnabled, setShadowsEnabled] = useState(true)
-  const [showDrawer, setShowDrawer] = useState(false)
   const [hideAllPopups] = useState(false)
   const [isStopMinimized, setIsStopMinimized] = useState(false)
   const [isDevMinimized, setIsDevMinimized] = useState(false)
   const [activeTool, setActiveTool] = useState<ActiveTool>(null)
   const [isToolMinimized, setIsToolMinimized] = useState(false)
   const [scenarioNotice, setScenarioNotice] = useState<string | null>(null)
-  // The map always opens at once. Live mode never starts a job on load: without a stored result it
-  // shows the labelled fixture, and a notice on the map offers to run a live comparison.
-  const [liveNotice, setLiveNotice] = useState<string | null>(null)
-  const [running, setRunning] = useState<{ stage: string; startedAt: number } | null>(null)
-  const [elapsedS, setElapsedS] = useState(0)
-  const runController = useRef<AbortController | null>(null)
-
-  useEffect(() => {
-    if (!running) return
-    const timer = setInterval(() => setElapsedS(Math.floor((Date.now() - running.startedAt) / 1000)), 1000)
-    return () => clearInterval(timer)
-  }, [running])
-  useEffect(() => () => runController.current?.abort(), [])
 
   // Preserve map data identity when only page controls change.
   const developments = useMemo(
     () => (comparison?.scenario?.developments ?? []).map(normalizeDevelopment),
     [comparison?.scenario?.developments],
   )
+
+  // Visual choices stay available even when a saved simulation includes no proposals.
+  const proposalOptions = useMemo(() => mapProposals(developments), [developments])
 
   const handleScenarioChange = (updated: Scenario) => {
     setComparison((prev) => {
@@ -87,53 +82,22 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   }
 
   useEffect(() => {
-    loadData()
-  }, [])
-
-  function applyComparison(data: Comparison) {
+    if (saved.loading) return
+    const selected = saved.history.find(value => value.id === saved.activeId)
+    const batch = selected?.batch ?? todayBaseline
+    if (loadedBatchId.current === batch.id) return
+    loadedBatchId.current = batch.id
+    const data = mapComparison(batch)
     setComparison(data)
-    setUsingFixtureState(data.fixture)
-    if (data.corridor.stops.length > 0) {
-      setSelectedStop(normalizeStop(data.corridor.stops[4])) // Default to Sumach / Regent Park
-    }
-  }
-
-  async function loadData() {
-    try {
-      setLoading(true)
-      setLiveNotice(null)
-      applyComparison(await fetchComparison())
-    } catch (err) {
-      // Fall back to the labelled fixture so the map still opens; the notice says why.
-      applyComparison(fixtureComparison())
-      setLiveNotice(err instanceof NoComparisonError
-        ? 'Showing labelled fixture data. No live comparison has been run in this browser yet.'
-        : `Showing labelled fixture data. Live result unavailable: ${err instanceof Error ? err.message : 'unknown error'}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function runLiveComparison() {
-    runController.current?.abort()
-    const controller = new AbortController()
-    runController.current = controller
-    setElapsedS(0)
-    setRunning({ stage: 'Starting', startedAt: Date.now() })
-    try {
-      applyComparison(await runAnalysis({}, {
-        signal: controller.signal,
-        onProgress: stage => setRunning(current => current ? { ...current, stage } : current),
-      }))
-      setLiveNotice(null)
-    } catch (err) {
-      setLiveNotice(controller.signal.aborted
-        ? 'Cancelled; still showing labelled fixture data. The server may still finish that job.'
-        : `Live comparison failed: ${err instanceof Error ? err.message : 'unknown error'}. Still showing labelled fixture data.`)
-    } finally {
-      if (runController.current === controller) { runController.current = null; setRunning(null) }
-    }
-  }
+    setBuildingViewRequest(null)
+    setPlatformViewRequest(null)
+    setVisibleProposalIds(data.scenario.developments.map(dev => dev.id))
+    setSelectedStop(previous => {
+      const retained = data.corridor.stops.find(value => normalizeStop(value).stop_id === previous?.stop_id)
+      return normalizeStop(retained ?? data.corridor.stops[4] ?? data.corridor.stops[0])
+    })
+    setSelectedDev(null)
+  }, [saved.activeId, saved.history, saved.loading])
 
   if (loading || !comparison) {
     return (
@@ -154,7 +118,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   }
 
   const stops = (comparison.corridor?.stops ?? []).map(normalizeStop)
-  const totalNewUnits = developments.reduce((sum, d) => sum + d.units, 0)
   const activeDemandCase = comparison.scenario?.demand_case ?? 'central'
   const currentCase =
     comparison.cases.find((c) => c.kind === 'current' && c.demand_case === activeDemandCase) ??
@@ -170,22 +133,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     <div
       className="flex flex-col w-screen h-screen overflow-hidden bg-background text-foreground font-body transition-colors duration-500"
     >
-      {/* Live-data notice: labels fixture data at every width and runs a live comparison without blocking the map */}
-      {(liveNotice || running) && (
-        <div role="status" aria-live="polite" className="map-live-notice">
-          {running ? <>
-            <span className="map-live-dot is-running" aria-hidden="true" />
-            <span>Running live comparison… {running.stage} · {Math.floor(elapsedS / 60)}:{String(elapsedS % 60).padStart(2, '0')}</span>
-            <button type="button" onClick={() => runController.current?.abort()}>Cancel</button>
-          </> : <>
-            <span className="map-live-dot" aria-hidden="true" />
-            <span>{liveNotice}</span>
-            <button type="button" onClick={() => void runLiveComparison()} title="Starts a full simulation job on the shared backend; it can take several minutes">Run live comparison</button>
-            <button type="button" aria-label="Dismiss notice" onClick={() => setLiveNotice(null)}>✕</button>
-          </>}
-        </div>
-      )}
-
       {/* Dynamic Scenario Change Notification */}
       {scenarioNotice && (
         <div
@@ -246,113 +193,21 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               505 Dundas Streetcar Corridor
             </h1>
             <p className="text-[11px] text-muted-foreground hidden md:block">
-              Housing Growth &amp; Transit Readiness · Broadview at Dundas to Yonge-Dundas
+              {saved.history.find(value => value.id === saved.activeId)?.name ?? 'Today baseline'} · {configurationSummary(saved.history.find(value => value.id === saved.activeId)?.batch ?? todayBaseline)}
             </p>
           </div>
 
-          {/* Right: Toggle Button for 3D Towers & Stats */}
-          <div className="flex items-center justify-end min-w-[140px]">
-            <button type="button" onClick={() => onNavigate?.('/analysis')} className="liquid-glass rounded-full px-3 py-1.5 text-xs mr-2">Run comparison</button>
+          {/* Right: Actions */}
+          <div className="flex items-center justify-end gap-2 min-w-[140px]">
+            <SimulationPicker label="Past sims" history={saved.history} loading={saved.loading} error={saved.error}
+              onToday={() => setActiveSimulation(null)} onSelect={simulation => setActiveSimulation(simulation.id)} />
             <button
               type="button"
-              onClick={() => setShowDrawer((prev) => !prev)}
-              className="liquid-glass rounded-full px-3.5 py-1.5 text-xs text-foreground/90 hover:text-foreground flex items-center gap-2 hover:scale-[1.02] transition-all cursor-pointer shadow-sm"
-              aria-expanded={showDrawer}
-              aria-label="Toggle corridor details and 3D towers"
+              onClick={() => onNavigate?.('/analysis')}
+              className="liquid-glass rounded-full px-3.5 py-1.5 text-xs text-foreground/90 hover:text-foreground flex items-center gap-1.5 hover:scale-[1.02] transition-all cursor-pointer shadow-sm"
             >
-              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
-              <span className="font-medium">
-                {showDrawer ? 'Hide Details' : '3D Towers & Data'}
-              </span>
-              <svg
-                className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-300 ${
-                  showDrawer ? 'rotate-180' : ''
-                }`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <span>Run simulation</span>
             </button>
-          </div>
-        </div>
-
-        {/* Animated Collapsible Drawer for 3D Towers & Corridor Data */}
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out border-t ${
-            showDrawer
-              ? 'max-h-40 opacity-100 border-border/30 bg-background/60 py-2.5'
-              : 'max-h-0 opacity-0 border-transparent py-0 pointer-events-none'
-          }`}
-        >
-          <div className="px-6 flex flex-col lg:flex-row items-center justify-between gap-4">
-            {/* 3D Towers Selector */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1 font-medium">
-                3D Towers:
-              </span>
-              {developments.map((dev) => {
-                const isSelected = selectedDev?.dev_id === dev.dev_id
-                const isP1 = dev.dev_id === 'toronto-app-22-124214-ste-13-oz'
-                return (
-                  <button
-                    key={dev.dev_id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedDev(dev)
-                      setSelectedStop(null)
-                      setIsDevMinimized(false)
-                    }}
-                    className={`liquid-glass rounded-full px-3.5 py-1.5 text-xs transition-all flex items-center gap-2 cursor-pointer ${
-                      isSelected
-                        ? isP1
-                          ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 shadow-lg scale-105 font-medium'
-                          : 'bg-amber-500/30 text-amber-200 border border-amber-400/60 shadow-lg scale-105 font-medium'
-                        : 'hover:scale-[1.02] text-foreground/90'
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        isP1
-                          ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
-                          : 'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
-                      }`}
-                    />
-                    <span>{dev.address.replace(' DUNDAS ST E', ' Dundas')}</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      ({dev.units.toLocaleString()}u)
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Corridor Metrics Pills */}
-            <div className="flex items-center gap-6 text-xs border-t lg:border-t-0 lg:border-l border-border/40 pt-2 lg:pt-0 lg:pl-6">
-              <div>
-                <div className="text-[10px] tracking-wider uppercase text-muted-foreground">
-                  Peak Window
-                </div>
-                <div className="font-mono font-medium text-foreground">07:00–09:00</div>
-              </div>
-              <div className="border-l border-border/40 pl-6">
-                <div className="text-[10px] tracking-wider uppercase text-muted-foreground">
-                  New Homes (P1+P2)
-                </div>
-                <div className="font-mono font-medium text-amber-300">
-                  {totalNewUnits.toLocaleString()} units
-                </div>
-              </div>
-              <div className="border-l border-border/40 pl-6">
-                <div className="text-[10px] tracking-wider uppercase text-muted-foreground">
-                  Corridor Reach
-                </div>
-                <div className="font-mono font-medium text-foreground">
-                  {comparison.corridor.stops.length} stops
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </header>
@@ -361,20 +216,28 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
       <main className="relative flex-1 min-h-0 w-full overflow-hidden">
         <CorridorMap
           corridor={comparison.corridor}
-          developments={developments}
+          developments={proposalOptions}
+          visibleDevIds={visibleProposalIds}
+          onToggleDevelopment={id => setVisibleProposalIds(previous => previous.includes(id)
+            ? previous.filter(value => value !== id) : [...previous, id])}
           selectedStopId={selectedStop?.stop_id}
           platformViewRequest={platformViewRequest}
+          buildingViewRequest={buildingViewRequest}
           selectedDevId={selectedDev?.dev_id}
           activePhase={activePhase}
           shadowsEnabled={shadowsEnabled}
           onToggleShadows={setShadowsEnabled}
           hideAllPopups={hideAllPopups}
           onSelectStop={(stop) => {
+                setBuildingViewRequest(null)
+                setPlatformViewRequest(null)
             setSelectedStop(normalizeStop(stop))
             setSelectedDev(null)
             setIsStopMinimized(false)
           }}
           onSelectDevelopment={(dev) => {
+            setBuildingViewRequest(null)
+            setPlatformViewRequest(null)
             setSelectedDev(normalizeDevelopment(dev))
             setSelectedStop(null)
             setIsDevMinimized(false)
@@ -473,11 +336,17 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           <div className="!absolute top-6 right-6 z-30">
             <DevelopmentPanel
               development={selectedDev}
+              onViewBuilding={() => {
+                setPlatformViewRequest(null)
+                setBuildingViewRequest(previous => ({ devId: selectedDev.dev_id, requestId: (previous?.requestId ?? 0) + 1 }))
+              }}
               stops={stops}
               isMinimized={isDevMinimized}
               onToggleMinimize={() => setIsDevMinimized((prev) => !prev)}
               onClose={() => setSelectedDev(null)}
               onSelectStop={(stop) => {
+                setBuildingViewRequest(null)
+                setPlatformViewRequest(null)
                 setSelectedStop(normalizeStop(stop))
                 setSelectedDev(null)
                 setIsStopMinimized(false)
@@ -491,20 +360,22 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           <div className="!absolute top-6 right-6 z-30">
             <StopPanel
               stop={selectedStop}
-              onViewPlatform={() => setPlatformViewRequest(previous => ({
-                stopId: selectedStop.stop_id,
-                requestId: (previous?.requestId ?? 0) + 1,
-              }))}
+              onViewPlatform={() => {
+                setBuildingViewRequest(null)
+                setPlatformViewRequest(previous => ({ stopId: selectedStop.stop_id, requestId: (previous?.requestId ?? 0) + 1 }))
+              }}
               stops={stops}
               developments={developments}
               currentCase={currentCase}
               growthCase={growthCase}
               supportedCase={supportedCase}
-              berths={comparison.corridor?.berths_per_stop?.[selectedStop.stop_id] ?? 1}
+              comparison={comparison}
               isMinimized={isStopMinimized}
               onToggleMinimize={() => setIsStopMinimized((prev) => !prev)}
               onClose={() => setSelectedStop(null)}
               onSelectDevelopment={(dev) => {
+                setBuildingViewRequest(null)
+                setPlatformViewRequest(null)
                 setSelectedDev(normalizeDevelopment(dev))
                 setSelectedStop(null)
                 setIsDevMinimized(false)
