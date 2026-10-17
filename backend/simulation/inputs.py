@@ -79,7 +79,8 @@
 #   For a 120 s link, 0.25 means a duration between 90 and 150 s. Use 0 for fixed times.
 #   This models combined road variability around the baseline; it is not extra
 #   positive delay added on top. The runner acts when its whole-second clock is due.
-#   TODO: Connect this input to travel-duration sampling in the movement helper.
+#   The runner samples this duration once per link departure; arrivals occur on
+#   the first whole-second tick that reaches the sampled expected arrival time.
 #
 # commuter_distribution (OPTIONAL; defaults to uniform arrivals):
 #   Shape of passenger arrivals over rush hour, often envisioned as a bell curve:
@@ -125,7 +126,7 @@ class SimulationInput:
     # Arrival weights over equal time bins; e.g. (1, 4, 6, 4, 1) for a bell-shaped peak.
     commuter_distribution: tuple[float, ...] = (1.0,)
     seed: int = 0  # Reproduce random choices when comparing scenarios.
-    link_travel_time_variation_share: float = 0.0  # User-selected: 0.25 means 90–150 s for a 120 s link; see TODO above.
+    link_travel_time_variation_share: float = 0.0  # User-selected: 0.25 means 90–150 s for a 120 s link; 0 keeps fixed times.
 
 
 # CURRENT DATA AUDIT — repository files checked on 2026-10-17 9AM.
@@ -175,7 +176,7 @@ class SimulationInput:
 #   Actual passages are needed; countdown predictions or timetable gaps are not
 #   measurements of real service variability. Collecting this is an optional task.
 # - link_travel_time_variation_share: user-selected relative variation; actual
-#   journey observations could guide it later. Sampling is not connected yet.
+#   journey observations could guide it later. Sampling is connected in runner.py.
 # - commuter_distribution: user-selected arrival shape until observations exist.
 # - start_time_s, end_time_s and rush_hour_duration_s: chosen analysis boundaries;
 #   the collected schedule covers the selected 07:00–09:00 window (7,200 seconds).

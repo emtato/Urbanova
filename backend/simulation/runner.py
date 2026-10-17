@@ -3,6 +3,7 @@
 from copy import deepcopy
 from dataclasses import asdict
 from math import isfinite
+from random import Random
 
 from .inputs import SimulationInput
 from .objects import SimLog, Streetcar
@@ -44,6 +45,9 @@ def run_simulation(inputs: SimulationInput) -> dict:
         raise ValueError("Supply one travel time per adjacent stop pair")
     if any(not isfinite(duration) or duration <= 0 for duration in inputs.link_travel_times_s):
         raise ValueError("Link travel times must be finite and positive")
+    travel_variation_share = inputs.link_travel_time_variation_share
+    if not isfinite(travel_variation_share) or not 0 <= travel_variation_share < 1:
+        raise ValueError("Travel-time variation must be finite and between zero (inclusive) and one (exclusive)")
 
     # Keep active cars for updates, all cars for results, and every action for replay.
     duration_s = end_time - start_time
@@ -55,6 +59,9 @@ def run_simulation(inputs: SimulationInput) -> dict:
     # Prepare the entry schedule so the clock knows when to introduce each car.
     entry_times = streetcar_entry_times(inputs) #from streetcars.py helper, returns list
     next_entry_s = next(entry_times, None)
+
+    # Give link travel times a repeatable random stream separate from entry timing.
+    travel_rng = Random(f"{inputs.seed}:link_travel_times")
 
     # Preserve each action's state in the shared history for saving and replaying the run.
     def record(time_s: int, action: SimAction, streetcar: Streetcar) -> None:
@@ -69,6 +76,15 @@ def run_simulation(inputs: SimulationInput) -> dict:
         else:
             # TODO: Add passenger handling and dwell before starting the next link.
             depart_streetcar(inputs, streetcar, time_s)
+
+            # Sample this car's link duration once, then save that plan in its departure record.
+            if travel_variation_share > 0:
+                base_duration_s = streetcar.expected_arrival_time_s - time_s
+                travel_duration_s = travel_rng.uniform(
+                    base_duration_s * (1 - travel_variation_share),
+                    base_duration_s * (1 + travel_variation_share),
+                )
+                streetcar.expected_arrival_time_s = time_s + travel_duration_s
             record(time_s, "depart", streetcar)
 
     # Advance one second at a time, including final arrivals at the reporting cutoff.
