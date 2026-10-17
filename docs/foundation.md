@@ -6,9 +6,9 @@ Python direct dependencies are pinned in requirements.txt; frontend installs use
 ## Run on each laptop
 1. Install Python 3.11, Node 24 LTS and Docker Desktop (Compose v2). On Apple Silicon the PostGIS image uses amd64 emulation.
 2. Pull this commit and run bash scripts/setup.sh, or scripts/setup.ps1 in PowerShell. Setup is repeatable and never overwrites an existing .env.
-3. Activate the venv as shown in README; run uvicorn backend.main:app --reload.
-4. Open http://localhost:8000/api/health and http://localhost:8000/api/health/db; both must report status ok.
-5. In a separate terminal run cd frontend then npm run dev; open http://localhost:5173. Vite proxies /api to port 8000.
+3. Activate the venv as shown in README; run uvicorn backend.main:app --reload --port 8010.
+4. Open http://localhost:8010/api/health and http://localhost:8010/api/health/db; both must report status ok.
+5. In a separate terminal run cd frontend then npm run dev; open http://localhost:5173. Vite proxies /api to port 8010.
 6. Run python -m scripts.check_db --init and python -m backend.worker --once. The database check executes SELECT postgis_version();.
 7. Record the actual results below. Do not mark another laptop as passing without its owner's confirmation.
 
@@ -35,4 +35,4 @@ Increment these constants when the model or dataset changes. No simulation resul
 - Review, commit and push the foundation changes to origin, then share the commit SHA with all owners.
 - Phase 01 still needs the corridor/direction/peak window, source data and model/schema decisions; those are outside Foundation.
 
-If port 8000 is occupied, stop the existing service before running the documented backend command; Vite proxies /api to port 8000.
+FutureProof uses port 8010 to avoid other local apps. Restart Vite after a proxy configuration change. In Command Prompt, run .venv\Scripts\python.exe -m uvicorn backend.main:app --reload --port 8010 from the repository root; no activation is needed.
