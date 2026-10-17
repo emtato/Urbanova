@@ -10,6 +10,7 @@ from copy import deepcopy
 from dataclasses import replace
 from statistics import mean, median, stdev
 from time import perf_counter
+from uuid import uuid4
 
 from .inputs import SimulationInput
 from .runner import run_simulation
@@ -62,8 +63,9 @@ def run_repeated_simulations(
     *,
     run_count: int = 20,
     seeds: Sequence[int] | None = None,
+    batch_id: str | None = None,
 ) -> dict:
-    """Return overall_results and an ordered array of untouched single-run dictionaries.
+    """Return id, overall_results and an ordered array of untouched single-run dictionaries.
 
     Default seeds are inputs.seed through inputs.seed + run_count - 1. Each run
     receives a deep copy, so neither the caller's state nor earlier results can
@@ -75,6 +77,9 @@ def run_repeated_simulations(
     standard deviation; it is null with fewer than two valid observations.
     Runtime uses an outer wall clock, including input copying and analysis.
     """
+    if batch_id is not None and (not isinstance(batch_id, str) or not batch_id.strip()):
+        raise ValueError("batch_id must be a non-empty string")
+    resolved_id = str(uuid4()) if batch_id is None else batch_id
     seed_ids = _resolve_seeds(inputs, run_count, seeds)
     batch_start = perf_counter()
     results = []
@@ -106,7 +111,7 @@ def run_repeated_simulations(
             "total_s": perf_counter() - batch_start,
         },
     }
-    return {"overall_results": overall, "individual_results": results}
+    return {"id": resolved_id, "overall_results": overall, "individual_results": results}
 
 
 def run_paired_comparisons(

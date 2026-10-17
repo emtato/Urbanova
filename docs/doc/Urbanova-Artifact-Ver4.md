@@ -322,26 +322,29 @@ Write the invariants before the clever parts. A simulator that loses passengers 
    sim/engine/events.py · state.py
 
    Event heap with stable tie-breaking; state for streetcars/vehicles, passenger loads inside individual vehicles, and FIFO stop queues.
-5. [ ] B5
+5. [x] B5
 
-   sim/engine/stop.py
+   sim/engine/stop.py · backend/simulation/runner.py
 
    Berth rule (one streetcar serves a stop at a time unless the corridor says otherwise), no-overtaking rule, alight then board up to capacity, the rest stay queued.
-6. [ ] B6
+
+6. [ ] B6 (Descheduled / Ignored)
 
    sim/engine/dwell.py
 
-   An explicit dwell rule from door time, boardings and alightings. This feedback makes a late streetcar later and lets the next one catch up.
+   *Team decision*: Passenger-dependent dwell calculation is descheduled; dwell duration is sampled uniformly from `stop_dwell_range_s` to maintain stability and prevent compounding feedback divergence.
+
 7. [ ] B7
 
    sim/engine/links.py
 
    Link time = base + shared corridor delay + link noise. Transit priority changes only the parameters of its listed links.
-8. [ ] B8
+
+8. [ ] B8 (Descheduled / Ignored)
 
    sim/engine/dispatch.py
 
-   Arrivals at the first modelled stop (Broadview) come from the GTFS schedule with their incoming load. Extra service is an alternative timetable. Faster link travel does not add trips by itself.
+   *Team decision*: Exact GTFS timetable departure enforcement is descheduled in favor of realistic frequency-based stochastic dispatch (`headway_s` + `headway_randomness_s`), capturing real-world variation and bunching.
 9. [ ] B9
 
    sim/engine/simulator.py

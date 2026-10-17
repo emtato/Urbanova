@@ -39,6 +39,7 @@ def three_passengers(monkeypatch):
 
 def without_runtime(batch):
     result = deepcopy(batch)
+    result.pop("id", None)
     result["overall_results"].pop("runtime")
     for run in result["individual_results"]:
         run["summary"]["contract"]["diagnostics"].pop("runtime_s")
@@ -50,7 +51,8 @@ def test_twenty_real_runs_are_independent_and_keep_original_results(inputs, thre
     original = deepcopy(inputs)
     batch = paired_runs.run_repeated_simulations(inputs)
     assert inputs == original
-    assert set(batch) == {"overall_results", "individual_results"}
+    assert set(batch) == {"id", "overall_results", "individual_results"}
+    assert isinstance(batch["id"], str) and batch["id"]
     assert len(batch["individual_results"]) == 20
     assert batch["overall_results"]["seeds"] == list(range(7, 27))
     assert batch["overall_results"]["all_runs_conservation_valid"] is True
@@ -72,6 +74,7 @@ def test_seeded_batches_reproduce_outcomes_but_vary_between_seeds(inputs, three_
     varied = replace(inputs, headway_randomness_s=5)
     first = paired_runs.run_repeated_simulations(varied, run_count=3, seeds=[13, 2, 19])
     second = paired_runs.run_repeated_simulations(varied, run_count=3, seeds=[13, 2, 19])
+    assert first["id"] != second["id"]
     assert without_runtime(first) == without_runtime(second)
     assert [run["inputs"]["seed"] for run in first["individual_results"]] == [13, 2, 19]
     assert first["overall_results"]["metrics"]["mean_wait_s"]["stddev"] > 0

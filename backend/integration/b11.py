@@ -207,9 +207,33 @@ def build(plan):
                 package_screen=plan["base"]["screen"],notice="Computed from B11 using shared sampled corridor cohorts and requested seeds. Incoming loads and other model assumptions remain explicit.")
 
 
+def run_batch(request: dict) -> dict:
+    """Run one configured simulation situation for run_count trials and return its native batch."""
+    from dataclasses import fields
+    from backend.simulation.inputs import SimulationInput
+
+    baseline = load_simulation_input()
+    input_fields = {field.name for field in fields(SimulationInput)}
+    overrides = {key: value for key, value in request.items() if key in input_fields and value is not None}
+    if "developments" not in overrides and "development_ids" in request and request["development_ids"] is not None:
+        dev_ids = list(request["development_ids"])
+        known = {dev.id for dev in baseline.developments}
+        unknown = [dev_id for dev_id in dev_ids if dev_id not in known]
+        if unknown:
+            raise ValueError(f"Unknown development_ids: {unknown}")
+        selected = set(dev_ids)
+        overrides["developments"] = [asdict(dev) for dev in baseline.developments if dev.id in selected]
+    inputs = load_simulation_input(overrides=overrides)
+    run_count = request.get("run_count", 1)
+    seeds = request.get("seeds")
+    batch_id = request.get("id")
+    return run_repeated_simulations(inputs, run_count=run_count, seeds=seeds, batch_id=batch_id)
+
+
 if __name__ == "__main__":
     try:
-        result = build(json.load(sys.stdin))
+        payload = json.load(sys.stdin)
+        result = build(payload) if isinstance(payload, dict) and "source_manifest" in payload else run_batch(payload)
         if "--gzip" in sys.argv:
             with gzip.open(sys.stdout.buffer, "wt", encoding="utf-8", compresslevel=1) as output:
                 json.dump(result,output,allow_nan=False,separators=(",", ":"))

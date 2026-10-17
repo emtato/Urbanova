@@ -1,5 +1,6 @@
 """Run one simulation using the supplied scenario inputs."""
 
+from collections import deque
 from copy import deepcopy
 from dataclasses import asdict
 from math import isfinite
@@ -221,6 +222,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     for stop in inputs.stops:
         stop.waiting_passenger_ids.clear()
         stop.serving_streetcar_id = None
+    stop_berth_queues: dict[str, deque[str]] = {stop.id: deque() for stop in inputs.stops}
     if passengers is None:
         passengers = generate_passengers(inputs)
     else:
@@ -345,6 +347,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             )
 
     # Serve passengers upon reaching a stop; terminate at TMU or schedule the stop dwell (inputs.stop_dwell_range_s).
+    # B5 berth rule: only one streetcar occupies and serves a stop berth at a time.
     def begin_stop_service(streetcar: Streetcar, time_s: int) -> None:
         stop = stops_by_id[streetcar.current_stop_id]
         stop.serving_streetcar_id = streetcar.id
@@ -360,7 +363,13 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             terminate_streetcar(inputs, streetcar)
             record(time_s, "terminate", streetcar, stop_id=stop.id)
             active_streetcars.pop(streetcar.id)
+            # Berth rule: admit the next queued streetcar waiting for the terminus berth.
+            if stop_berth_queues[stop.id]:
+                next_car_id = stop_berth_queues[stop.id].popleft()
+                begin_stop_service(active_streetcars[next_car_id], time_s)
         else:
+            # NOTE (B6): Passenger-dependent dwell calculation (door time + boardings/alightings)
+            # is intentionally ignored per project plan; stop dwell is sampled from stop_dwell_range_s.
             dwell_low_s, dwell_high_s = inputs.stop_dwell_range_s
             planned_departure_s[streetcar.id] = time_s + dwell_rng.randint(dwell_low_s, dwell_high_s)
 
@@ -369,14 +378,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         stop = stops_by_id[streetcar.current_stop_id]
         serve_and_log_stop_passengers(streetcar, time_s, check_denials=True)
         if stop.serving_streetcar_id == streetcar.id:
-            stop.serving_streetcar_id = next(
-                (
-                    car.id
-                    for car in active_streetcars.values()
-                    if car.id != streetcar.id and car.status == "at_stop" and car.current_stop_id == stop.id
-                ),
-                None,
-            )
+            stop.serving_streetcar_id = None
         planned_departure_s.pop(streetcar.id, None)
         depart_streetcar(inputs, streetcar, time_s)
 
@@ -388,7 +390,25 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
                 base_duration_s * (1 + travel_variation_share),
             )
             streetcar.expected_arrival_time_s = time_s + travel_duration_s
+
+        # B5 no-overtaking rule: a streetcar cannot arrive at the next stop earlier
+        # than any preceding car travelling to that stop.
+        for other in active_streetcars.values():
+            if (
+                other.id != streetcar.id
+                and other.status == "in_transit"
+                and other.next_stop_id == streetcar.next_stop_id
+                and other.expected_arrival_time_s is not None
+                and streetcar.expected_arrival_time_s < other.expected_arrival_time_s
+            ):
+                streetcar.expected_arrival_time_s = other.expected_arrival_time_s
+
         record(time_s, "depart", streetcar, stop_id=stop.id)
+
+        # B5 berth rule: if another streetcar was waiting for this stop's berth, admit it now.
+        if stop_berth_queues[stop.id]:
+            next_car_id = stop_berth_queues[stop.id].popleft()
+            begin_stop_service(active_streetcars[next_car_id], time_s)
 
     # Advance one second at a time, including final arrivals at the reporting cutoff.
     for time_s in range(start_time, end_time + 1):
@@ -418,11 +438,16 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             if streetcar.status == "in_transit" and elapsed_s >= streetcar.expected_arrival_time_s:
                 arrive_streetcar(streetcar, elapsed_s)
                 record(elapsed_s, "arrive", streetcar, stop_id=streetcar.current_stop_id)
-                begin_stop_service(streetcar, elapsed_s)
+                stop = stops_by_id[streetcar.current_stop_id]
+                # B5 berth rule: only one streetcar serves the stop at a time.
+                if stop.serving_streetcar_id is None:
+                    begin_stop_service(streetcar, elapsed_s)
+                else:
+                    stop_berth_queues[stop.id].append(streetcar.id)
             elif streetcar.status == "at_stop" and streetcar.id in planned_departure_s:
                 if elapsed_s >= planned_departure_s[streetcar.id]:
                     finish_dwell_and_depart(streetcar, elapsed_s)
-                else:
+                elif streetcar.id == stops_by_id[streetcar.current_stop_id].serving_streetcar_id:
                     serve_and_log_stop_passengers(
                         streetcar,
                         elapsed_s,
@@ -444,7 +469,12 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
                 stop_id=streetcar.current_stop_id,
                 passenger_ids=list(streetcar.onboard_passenger_ids),
             )
-            begin_stop_service(streetcar, elapsed_s)
+            stop = stops_by_id[streetcar.current_stop_id]
+            # B5 berth rule: enter berth and begin service if free; otherwise queue for berth.
+            if stop.serving_streetcar_id is None:
+                begin_stop_service(streetcar, elapsed_s)
+            else:
+                stop_berth_queues[stop.id].append(streetcar.id)
             next_entry_s = next(entry_times, None)
 
     # Package the inputs, final state, activity history, and summary metrics as JSON-ready saved-run data.

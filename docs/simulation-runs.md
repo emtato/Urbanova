@@ -136,3 +136,14 @@ minutes)**. This is a runtime estimate for comparable cases, not a measured
 480-run package/demand/phase benchmark; different case sizes and persistence
 costs can change it. Retaining full passenger histories and replay logs also
 consumes more memory as run counts increase.
+
+## Lane B Deliverable Decisions & Status
+
+- **B5 — Berth and No-Overtaking Rules (Implemented)**:
+  - *Berth rule*: Each stop has 1 berth (unless corridor configuration specifies otherwise). Only one streetcar can occupy and serve a stop's berth at a time. Arriving streetcars queue in FIFO order if the berth is occupied and only enter service when the preceding vehicle departs.
+  - *No-overtaking rule*: Streetcars run on rails along the corridor and cannot overtake each other. A trailing streetcar's expected arrival time at a downstream stop is constrained to be no earlier than any preceding streetcar travelling towards that stop, preserving physical vehicle order along links and at stops.
+- **B6 — Passenger-Dependent Dwell (Descheduled / Ignored)**:
+  - *Decision*: Dwell calculation based on door opening time plus passenger boarding/alighting counts is intentionally ignored for the hackathon deliverable. Dwell duration is sampled uniformly from `stop_dwell_range_s` (15–30 seconds), keeping the dwell model predictable and avoiding compounding feedback instability.
+- **B8 — Timetable-Based GTFS Dispatch (Descheduled / Ignored)**:
+  - *Decision*: Strict on-the-dot timetable departure dispatch from static GTFS is intentionally ignored in favor of frequency-based stochastic dispatch using `headway_s` and `headway_randomness_s`. This provides realistic vehicle headway variation and bunching without forcing rigid schedule arrivals.
+
