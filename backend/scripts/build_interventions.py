@@ -1,7 +1,7 @@
 """Build the A10 intervention data: extra service and streetcar priority (design: docs/interventions.md).
 
 1. Service parameters from the cached TTC GTFS feed (run times, layovers, cycle, service days).
-2. Costs and the priority effect from data/sources/intervention_evidence.json, in 2025 CAD.
+2. Costs and the priority effect from data/sources/intervention_evidence.json, in 2026 CAD.
 3. Writes data/reviewed/interventions.json (values, provenance and a contract-shaped catalogue),
    one Lane C policy per target headway (data/reviewed/package_policy_<headway>.json), and
    registers the evidence sources in data/reviewed/simulation_sources.json.
@@ -150,28 +150,28 @@ POLICY_SOURCE_IDS = ["ttc-gtfs", "ttc-2025-operating-budget", "munro-2017-queen-
                      "toronto-king-update-2024"]
 
 
-def to_2025(evidence, amount, year):
+def to_price_year(evidence, amount, year):
     cpi = evidence["cpi"]["index_2002_100"]
     return amount * cpi[str(evidence["price_year"])] / cpi[str(year)]
 
 
 def cost_ranges(evidence, cycle_s):
-    """Low/central/high in 2025 CAD for streetcar-hour, priority capital and priority operating costs."""
+    """Low/central/high in the evidence price year for streetcar-hour and priority costs."""
     f = evidence["figures"]
     route = json.loads((REVIEWED / "route_505.json").read_text())
     km_per_vehicle_hour = sum(d["length_m"] for d in route["directions"]) / 1000 / (cycle_s / 3600)
     factors = f["ttc_streetcar_cost_factors_2015"]
     running = factors["per_vehicle_hour"] + factors["per_vehicle_km"] * km_per_vehicle_hour
     per_hour = {
-        "low": to_2025(evidence, running, 2015),
-        "central": to_2025(evidence, f["ttc_cost_per_service_hour"]["value"], f["ttc_cost_per_service_hour"]["year"]),
-        "high": to_2025(evidence, running + factors["per_vehicle_day"] / PEAK_HOURS, 2015),
+        "low": to_price_year(evidence, running, 2015),
+        "central": to_price_year(evidence, f["ttc_cost_per_service_hour"]["value"], f["ttc_cost_per_service_hour"]["year"]),
+        "high": to_price_year(evidence, running + factors["per_vehicle_day"] / PEAK_HOURS, 2015),
     }
-    pilot = to_2025(evidence, f["king_pilot_capital_2017"]["value"], 2017)
-    permanent = to_2025(evidence, f["king_permanent_capital_2019"]["value"], 2019)
-    improvements = to_2025(evidence, f["king_improvements_capital_2024"]["value"], 2024)
+    pilot = to_price_year(evidence, f["king_pilot_capital_2017"]["value"], 2017)
+    permanent = to_price_year(evidence, f["king_permanent_capital_2019"]["value"], 2019)
+    improvements = to_price_year(evidence, f["king_improvements_capital_2024"]["value"], 2024)
     capital = {"low": pilot, "central": pilot + permanent, "high": pilot + permanent + improvements}
-    annual = [to_2025(evidence, f[key]["value"] / f[key]["months_covered"] * 12, 2019)
+    annual = [to_price_year(evidence, f[key]["value"] / f[key]["months_covered"] * 12, 2019)
               for key in ("king_operating_2019_jan_jul", "king_operating_2019_remainder")]
     operating = {"low": annual[0], "central": sum(annual) / 2, "high": annual[1]}
     rounded = lambda r: {k: round(v) for k, v in r.items()}
@@ -257,7 +257,7 @@ def build():
                    "allowed_range": {"low": 0, "high": 0.5}, "status": "assumed", "source_ids": ["toronto-king-results-2019", "toronto-king-update-2024"]},
     }).model_dump(mode="json"))
 
-    label = ("A10 reviewed policy for 505 Dundas, 2025 CAD. Cycle and headways from the TTC GTFS schedule. "
+    label = ("A10 reviewed policy for 505 Dundas, 2026 CAD. Cycle and headways from the TTC GTFS schedule. "
              "Cost per streetcar-hour: central is the TTC 2025 system-wide average; low/high from 2015 TTC streetcar cost factors. "
              f"Extra cars run {PEAK_HOURS} h/day (AM peak plus carhouse travel, assumed). Priority costs transferred from King Street "
              "reports (budgets, not quotes). Priority time saving of 12% is a team-selected assumption; evidence suggests about 0% in the AM. "
@@ -301,7 +301,7 @@ def build():
         "policies": policies, "default_policy": policies[str(DEFAULT_HEADWAY_S)],
         "manifest_source_ids": POLICY_SOURCE_IDS,
         "limitations": [
-            "Costs are 2025 CAD estimates from budgets and cost factors, not TTC quotes.",
+            "Costs are 2026 CAD estimates from budgets and cost factors, not TTC quotes.",
             "The central streetcar-hour cost is a system-wide average including subway and overheads.",
             "Spare fleet for 3-14 extra streetcars is not established; fleet_allowance stays a scenario input.",
             "Costs cover both directions; simulated benefits are westbound AM only.",

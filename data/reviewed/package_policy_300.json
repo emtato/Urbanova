@@ -32,5 +32,5 @@
     "toronto-king-results-2019",
     "toronto-king-update-2024"
   ],
-  "assumption_label": "A10 reviewed policy for 505 Dundas, 2025 CAD. Cycle and headways from the TTC GTFS schedule. Cost per streetcar-hour: central is the TTC 2025 system-wide average; low/high from 2015 TTC streetcar cost factors. Extra cars run 2.5 h/day (AM peak plus carhouse travel, assumed). Priority costs transferred from King Street reports (budgets, not quotes). Priority time saving of 12% is a team-selected assumption; evidence suggests about 0% in the AM. See docs/interventions.md."
+  "assumption_label": "A10 reviewed policy for 505 Dundas, 2026 CAD. Cycle and headways from the TTC GTFS schedule. Cost per streetcar-hour: central is the TTC 2025 system-wide average; low/high from 2015 TTC streetcar cost factors. Extra cars run 2.5 h/day (AM peak plus carhouse travel, assumed). Priority costs transferred from King Street reports (budgets, not quotes). Priority time saving of 12% is a team-selected assumption; evidence suggests about 0% in the AM. See docs/interventions.md."
 }

@@ -1,5 +1,5 @@
 # A10 design: intervention options (extra service, streetcar priority)
-**Status: design agreed; being built.** Owner: Lane A.
+**Status: A10 data built and validated.** Owner: Lane A. Lane C still needs to load the catalogue into its scenario bundle before interventions are selectable there.
 
 **Scope.** The simulation is mainly about adjusting existing service (headway and frequency), so **extra service is the focus**. Streetcar priority is an optional extra: its costs and shorter round trip are filled in because Lane C's policy format requires them, but **its effect is not simulated** until there is time.
 
@@ -17,7 +17,7 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 | Where extra service runs | **The whole 505 route** (Broadview Station ↔ Dundas West Station) | Added cars enter from the route's ends, so extra service has no partial coverage; its cost uses the full-route cycle. |
 | Where streetcar priority applies | **The whole modelled segment**, Broadview & Dundas → TMU, all 8 links (agreed) | Three reasons. (1) **Simpler to implement:** one saving share applied to every link, and the effect shows fully in the simulation. (2) **No data on which links are most congested:** we only have scheduled times, not observed delay by link, so any choice of partial links would be unsupported. (3) **A partial-coverage option can be added later if time allows**, for example as a cheaper alternative, ideally once observed delay data exists. |
 | Service days | Weekdays in a year, minus statutory holidays | Counted from the GTFS calendar pattern; derived, not observed. |
-| Price year | **CAD 2025** | Lane C requires one `price_year`. 2025 is the latest full CPI year and the TTC budget's own index year. Older costs are inflated with Statistics Canada's annual CPI (Table 18-10-0005-01, Canada, all-items) and labelled. |
+| Price year | **CAD 2026** | Lane C fixes `budget_price_year` at 2026. Older costs are inflated with Statistics Canada's annual CPI; 2026 uses the January–August monthly CPI mean because the year is incomplete, and is labelled accordingly. |
 
 ## Outputs
 1. **`data/reviewed/interventions.json`**: the reviewed A10 data. Every value has `unit`, `status` (`sourced`, `derived`, `transferred`, `assumed` or `user_selected`), `source_ids`, a low/central/high range where uncertain, and a one-line `meaning`.
@@ -38,13 +38,13 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 | `cost_per_hour` | Operating cost of one streetcar for one hour (driver, energy, maintenance) | TTC published operating statistics or budget: cost per vehicle-hour, streetcar mode if available, else system-wide and labelled | sourced or transferred |
 | `lane_capital` | One-time cost to build priority on the modelled segment (paint, signs, signal changes, curb work) | King Street Transit Priority Corridor and RapidTO costs scaled to the segment's length (about 2.5 km). A similar project's budget is not a quote | transferred |
 | `lane_operating` | Annual enforcement and upkeep | Same sources; if no figure exists, a wide labelled range | transferred or assumed |
-| `price_year` | Year of the CAD figures | 2025, after CPI adjustment | derived |
+| `price_year` | Year of the CAD figures | 2026, after CPI adjustment | derived |
 | `earliest_phase` | First phase an upgrade can be in place | `phase-1`, the only phase Lane C defines today | user_selected |
 | `availability` | Optional per-option phase | Omitted unless the team sets different dates for lane and extra service | user_selected |
 | `source_ids`, `assumption_label` | Provenance and one-sentence caveat | Collected from the rows above | — |
 
 ## How the values were chosen
-All figures below are quoted, with page numbers, in `data/sources/intervention_evidence.json`. Costs are in 2025 CAD, converted with Statistics Canada's annual CPI (2015 = 126.6, 2017 = 130.4, 2019 = 136.0, 2024 = 160.9, 2025 = 164.2). King Street's priority section (Bathurst → Jarvis) is about 2.5 km (2,473–2,578 m by direction in the GTFS), almost the same as our 2,513 m segment, so no length scaling is applied (ratio 0.995).
+All figures below are quoted, with page numbers, in `data/sources/intervention_evidence.json`. Costs are in 2026 CAD, converted with Statistics Canada's CPI: 2015 = 126.6, 2017 = 130.4, 2019 = 136.0, 2024 = 160.9, 2025 = 164.2, and 2026 = 168.1. The 2026 index is the January–August 2026 monthly CPI mean (Table 18-10-0004-01, vector v41690973), because the year is incomplete; it matches Lane C's fixed budget price year. King Street's priority section (Bathurst → Jarvis) is about 2.5 km (2,473–2,578 m by direction in the GTFS), almost the same as our 2,513 m segment, so no length scaling is applied (ratio 0.995).
 
 ### Service parameters (step 1, from the TTC GTFS feed, Friday 2026-10-16, trips starting 07:00–09:00)
 | Value | Result | How |
@@ -79,9 +79,9 @@ No 505 priority exists, so there is no measured effect on Dundas. The reasoning,
 ### Costs: central values selected
 | Value | Low | **Selected (central)** | High | Basis |
 | --- | --- | --- | --- | --- |
-| `cost_per_hour` (2025 CAD per streetcar-hour) | 167 | **276** | 435 | Central: TTC 2025 budget, total operating cost per service hour, system-wide and fully allocated (budget notes p. 4). Low and high: TTC 2015 streetcar cost factors quoted by Steve Munro ($95.40/vehicle-hour, $3.42/vehicle-km, $515/vehicle-day), with 9.86 km per vehicle-hour from the cycle; low uses the hour and km factors only, high adds the daily vehicle cost spread over the 2.5 h a peak-only car runs. |
-| `lane_capital` (2025 CAD, one-time) | 1.89 M | **3.70 M** | 6.86 M | Low: the 2017 pilot estimate ($1.5 M). Central: pilot plus the 2019 permanent improvements ($1.5 M). High: also the 2024 improvements ($3.1 M). |
-| `lane_operating` (2025 CAD per year) | 0.43 M | **0.90 M** | 1.36 M | Low: $210,000 for January–July 2019, annualised. High: $750,000 for "the remainder of 2019", assumed May–December (8 months), annualised. Central: midpoint. Traffic-agent costs in the 2024 update are not stated, so high may understate today's cost. |
+| `cost_per_hour` (2026 CAD per streetcar-hour) | 171 | **283** | 445 | Central: TTC 2025 budget, total operating cost per service hour, system-wide and fully allocated (budget notes p. 4), adjusted to 2026 CAD. Low and high: TTC 2015 streetcar cost factors quoted by Steve Munro ($95.40/vehicle-hour, $3.42/vehicle-km, $515/vehicle-day), adjusted to 2026 CAD, with 9.86 km per vehicle-hour from the cycle; low uses the hour and km factors only, high adds the daily vehicle cost spread over the 2.5 h a peak-only car runs. |
+| `lane_capital` (2026 CAD, one-time) | 1.93 M | **3.79 M** | 7.03 M | Low: the 2017 pilot estimate ($1.5 M), CPI-adjusted. Central: pilot plus the 2019 permanent improvements ($1.5 M), CPI-adjusted. High: also the 2024 improvements ($3.1 M), CPI-adjusted. |
+| `lane_operating` (2026 CAD per year) | 0.445 M | **0.918 M** | 1.39 M | Low: $210,000 for January–July 2019, annualised and CPI-adjusted. High: $750,000 for "the remainder of 2019", assumed May–December (8 months), annualised and CPI-adjusted. Central: midpoint. Traffic-agent costs in the 2024 update are not stated, so high may understate today's cost. |
 
 Lane C's policy carries all three bounds for each cost; the selected (central) value is the default used in comparisons.
 
@@ -92,11 +92,12 @@ Required vehicles = `ceil(cycle_s / headway_s)`; Lane C computes this, A10 only 
 1. Compute `cycle_s`, layover, `baseline_headway_s` and `service_days` from cached GTFS (about 30 min).
 2. Find and record `cost_per_hour`, King Street costs and the King Street travel-time effect; download each source once with checksum (about 1 h; the least predictable step).
 3. Write `interventions.json`, the three policy files and the build script; register sources (about 30 min).
-4. Validate each policy against Lane C's rules, then run the package screen locally with `PACKAGE_POLICY_PATH` set and check every package reports vehicles and costs (about 20 min).
-5. Tests and final values in this doc (about 20 min).
+4. **Complete.** Validate each policy against Lane C's rules and run the package screen locally with `PACKAGE_POLICY_PATH` set. All three 2026-CAD policies load; all package rows report vehicles and costs without a price-year mismatch. The default zero budgets and fleet allowance make every upgrade unaffordable until those scenario inputs are set.
+5. **Complete.** Regression tests check the reviewed catalogue, source references, cost ranges and all three generated policy files. Final 2026-CAD values are recorded above.
 
 ## Dependencies and risks
 - **Budgets and fleet are zero in Lane C's default scenario** (`server/src/services/bundle.ts`: `capital_budget_cad: 0`, `fleet_allowance: 0`). With A10 in place, any upgrade still fails "over budget" until a user or Lane C supplies budgets and a fleet allowance. Not part of A10; Lane C needs to know.
+- **Lane C bundle integration is still required.** `server/src/services/bundle.ts` currently sets `interventions: []`; it must load the A10 catalogue from `data/reviewed/interventions.json` (and provide matching `intervention_availability`) before those options can be selected in a scenario. This is intentionally not changed by A10.
 - **The simulator has no streetcar-priority mechanism.** Extra service works through `headway_s`. For priority to change crowding, Lane B needs to apply A10's per-link savings to `link_travel_times_s`; deferred (see below).
 - **Costs cover both directions; benefits are westbound only.** The simulation models westbound AM only. Eastbound is used only because a car must run back eastbound before its next westbound trip, so vehicle counts use the full round trip. Priority is assumed built in both directions, so its capital cost and the shorter round trip (`lane_cycle_s`) include eastbound, but eastbound time savings for riders are not simulated. This understates priority's benefit, which is the conservative direction.
 - **Cost figures may be incomplete.** Anything not found is marked `assumed` with a wide range; no number is presented as a TTC quote.
