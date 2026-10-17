@@ -10,7 +10,7 @@
 import type { Map as MapboxMap, GeoJSONSource, AnyLayer } from 'mapbox-gl'
 import type { Feature, FeatureCollection } from 'geojson'
 import type { Corridor, Development, Stop } from '../lib/types'
-import { corridorMassing, reviewedWalkingRoutes } from '../data'
+import { reviewedWalkingRoutes } from '../data'
 
 // Existing building IDs directly on the development parcels to swap out during phases
 export const OVERWRITTEN_BASE_BUILDING_IDS_P1 = [
@@ -44,14 +44,10 @@ export const LAYER_STOPS_LABEL = 'layer-stops-label'
 export const LAYER_VEHICLES = 'layer-vehicles'
 
 /**
- * Loads real City of Toronto corridor building footprint polygons with actual heights,
- * falling back to synthetic perimeter blocks if offline or unbundled.
+ * Creates surrounding perimeter blocks (used in tests or fallback).
+ * In Mapbox Standard, 3D city buildings are rendered natively by the basemap.
  */
 export function generateSurroundingMassingGeoJSON(corridor?: Corridor): FeatureCollection {
-  if (corridorMassing && corridorMassing.features && corridorMassing.features.length > 0) {
-    return corridorMassing as unknown as FeatureCollection
-  }
-
   const features: Feature[] = []
   if (corridor && corridor.stops) {
     corridor.stops.forEach((stop, i) => {
@@ -277,23 +273,8 @@ export function setupCorridorMapLayers(
   corridor: Corridor,
   developments: Development[]
 ): void {
-  // 1. Existing Background Buildings (Quiet slate 3D extrusions)
-  const surroundingMassing = generateSurroundingMassingGeoJSON(corridor)
-  if (!map.getSource(SOURCE_BUILDINGS)) {
-    map.addSource(SOURCE_BUILDINGS, { type: 'geojson', data: surroundingMassing })
-    map.addLayer({
-      id: LAYER_BUILDINGS_EXISTING,
-      type: 'fill-extrusion',
-      source: SOURCE_BUILDINGS,
-      slot: 'top',
-      paint: {
-        'fill-extrusion-color': '#1e293b',
-        'fill-extrusion-height': ['get', 'height_m'],
-        'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.85,
-      },
-    } as AnyLayer)
-  }
+  // Mapbox Standard renders all 3D buildings natively via basemap style.
+  // Custom corridor layers are placed in slot: 'top' to sit cleanly over the 3D city.
 
   // 2. Walking Catchment Connectors (Dashed paths)
   const walkCatchments = generateWalkCatchmentsGeoJSON(developments, corridor.stops)
@@ -461,28 +442,7 @@ export function updateDevelopmentsPhase(map: MapboxMap, activePhase: number): vo
     }
   }
 
-  // 2. Overwrite / hide baseline buildings on development parcels when phase is active
-  if (map.getLayer(LAYER_BUILDINGS_EXISTING)) {
-    if (activePhase === 0) {
-      map.setFilter(LAYER_BUILDINGS_EXISTING, null)
-    } else if (activePhase === 1) {
-      map.setFilter(LAYER_BUILDINGS_EXISTING, [
-        '!',
-        ['in', ['get', 'id'], ['literal', OVERWRITTEN_BASE_BUILDING_IDS_P1]],
-      ])
-    } else {
-      map.setFilter(LAYER_BUILDINGS_EXISTING, [
-        '!',
-        [
-          'in',
-          ['get', 'id'],
-          ['literal', [...OVERWRITTEN_BASE_BUILDING_IDS_P1, ...OVERWRITTEN_BASE_BUILDING_IDS_P2]],
-        ],
-      ])
-    }
-  }
-
-  // 3. Walk catchments follow active phase
+  // 2. Walk catchments follow active phase
   if (map.getLayer(LAYER_WALK_LINKS)) {
     if (activePhase === 0) {
       map.setFilter(LAYER_WALK_LINKS, ['==', ['get', 'phase'], -1])
@@ -500,10 +460,6 @@ export function updateCorridorMapData(
   corridor: Corridor,
   developments: Development[]
 ): void {
-  const buildingsSrc = map.getSource(SOURCE_BUILDINGS) as GeoJSONSource | undefined
-  if (buildingsSrc) {
-    buildingsSrc.setData(generateSurroundingMassingGeoJSON(corridor))
-  }
 
   const walkSrc = map.getSource(SOURCE_WALK_LINKS) as GeoJSONSource | undefined
   if (walkSrc) {
