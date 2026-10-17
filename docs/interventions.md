@@ -1,5 +1,7 @@
 # A10 design: intervention options (extra service, streetcar priority)
-**Status: design agreed; not built yet.** Owner: Lane A.
+**Status: design agreed; being built.** Owner: Lane A.
+
+**Scope.** The simulation is mainly about adjusting existing service (headway and frequency), so **extra service is the focus**. Streetcar priority is an optional extra: its costs and shorter round trip are filled in because Lane C's policy format requires them, but **its effect is not simulated** until there is time.
 
 The 505 is a streetcar route, so "lane" here means streetcar priority in the style of King Street (traffic restrictions and signal changes that let streetcars go first), not a bus lane.
 
@@ -9,6 +11,7 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 ## Decisions taken
 | Decision | Choice | Why |
 | --- | --- | --- |
+| Focus | **Extra service first; streetcar priority optional** (agreed with the team) | The simulation adjusts existing parameters (headway, frequency). Priority's effect is the least certain input, so its simulation is deferred. |
 | Extra-service target headways | **360 s, 300 s (default), 240 s** | Today's 505 AM peak is about 6–7 min. TTC's AM-peak streetcar headways in the current GTFS range from about 3 min (504 King) to 6 min (most routes); 300 s matches 506 Carlton and 510 Spadina, and 240 s matches 504 King eastbound. |
 | Hours of extra service | **AM peak only**, costed as **2.5 h/day** (agreed) | **Because the simulation only models 07:00–09:00.** The benefit of extra cars (shorter waits, fewer riders left behind) is only measured in that window, so the cost must cover the same window. Costing AM+PM or all-day service against AM-only benefits would make extra service look worse than it is. The extra 0.5 h is an assumption for cars travelling to and from the carhouse. If the simulation later adds the PM peak, cost AM+PM instead. |
 | Where extra service runs | **The whole 505 route** (Broadview Station ↔ Dundas West Station) | Added cars enter from the route's ends, so extra service has no partial coverage; its cost uses the full-route cycle. |
@@ -20,7 +23,8 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 1. **`data/reviewed/interventions.json`**: the reviewed A10 data. Every value has `unit`, `status` (`sourced`, `derived`, `transferred`, `assumed` or `user_selected`), `source_ids`, a low/central/high range where uncertain, and a one-line `meaning`.
 2. **`data/reviewed/package_policy_<headway>.json`** (three files: `_360`, `_300`, `_240`): generated from item 1, each matching Lane C's `PolicySchema` exactly. Lane C's schema holds one `service_headway_s`, so each target headway is one policy. The default (`_300`) is the one to point `PACKAGE_POLICY_PATH` at. The API also accepts a policy per job, so the frontend can offer all three.
 3. **`backend/scripts/build_interventions.py`**: computes the derived values from cached GTFS, assembles items 1 and 2, and registers new sources in `simulation_sources.json`. Lane C rejects any `source_id` missing from that manifest.
-4. Tests and a short section in this doc describing the final values.
+4. A **contract-shaped catalogue** inside `interventions.json`: one `Intervention` per option (extra service at 360, 300 and 240 s; streetcar priority), validated against `backend/schemas/intervention.py`. Lane C's default scenario currently requires an empty catalogue (`server/src/services/bundle.ts`, checked in `validate.ts`); loading this one is a small Lane C change.
+5. Tests and a short section in this doc describing the final values.
 
 ## Fields and where each comes from
 | Lane C field | Meaning | Method / source | Expected status |
@@ -93,10 +97,10 @@ Required vehicles = `ceil(cycle_s / headway_s)`; Lane C computes this, A10 only 
 
 ## Dependencies and risks
 - **Budgets and fleet are zero in Lane C's default scenario** (`server/src/services/bundle.ts`: `capital_budget_cad: 0`, `fleet_allowance: 0`). With A10 in place, any upgrade still fails "over budget" until a user or Lane C supplies budgets and a fleet allowance. Not part of A10; Lane C needs to know.
-- **The simulator has no streetcar-priority mechanism.** Extra service works through `headway_s`. For priority to change crowding, Lane B needs to apply A10's per-link savings to `link_travel_times_s`. Agree this with Lane B before building.
+- **The simulator has no streetcar-priority mechanism.** Extra service works through `headway_s`. For priority to change crowding, Lane B needs to apply A10's per-link savings to `link_travel_times_s`; deferred (see below).
 - **Costs cover both directions; benefits are westbound only.** The simulation models westbound AM only. Eastbound is used only because a car must run back eastbound before its next westbound trip, so vehicle counts use the full round trip. Priority is assumed built in both directions, so its capital cost and the shorter round trip (`lane_cycle_s`) include eastbound, but eastbound time savings for riders are not simulated. This understates priority's benefit, which is the conservative direction.
 - **Cost figures may be incomplete.** Anything not found is marked `assumed` with a wide range; no number is presented as a TTC quote.
 - **Spare fleet.** Whether TTC has the 3–14 extra streetcars these headways need at the AM peak is not something A10 can establish. `fleet_allowance` stays a scenario input.
 
-## Still to agree before building
-- **Lane B (simulator):** apply A10's per-link saving to `link_travel_times_s` when the priority package is run. Without this, the priority package appears in the cost screen but the simulated crowding stays the same as "existing".
+## Deferred: streetcar priority in the simulator
+Simulating priority needs Lane B to apply the per-link saving in `interventions.json` to `link_travel_times_s`. This is deferred until there is time. Until then, Lane C's comparison shows priority's **costs only**; its simulated crowding equals "existing". The dashboard should label priority "cost reference only; effect not simulated", or hide it.

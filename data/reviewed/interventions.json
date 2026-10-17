@@ -1,0 +1,374 @@
+{
+  "format_version": "interventions-v1",
+  "corridor_id": "ttc-505-west-broadview-tmu",
+  "price_year": 2025,
+  "focus": "Extra service is the focus. Streetcar priority is optional: costs are filled in, its effect is not simulated yet.",
+  "service": {
+    "cycle_s": {
+      "value": 7920.0,
+      "status": "derived",
+      "source_ids": [
+        "ttc-gtfs"
+      ],
+      "method": "Median time between a block's consecutive Broadview Station departures, AM peak",
+      "composed_check_s": 7860.0
+    },
+    "run_s": {
+      "westbound": 3660.0,
+      "eastbound": 3600.0
+    },
+    "layover_s": {
+      "Broadview Station": 120,
+      "Dundas West Station": 480.0
+    },
+    "baseline_headway_s": {
+      "value": 419.8125,
+      "status": "derived",
+      "source_ids": [
+        "ttc-gtfs"
+      ],
+      "method": "Same mean scheduled entry gap the simulator uses"
+    },
+    "baseline_vehicles": 19,
+    "cars_in_service_at_0800": 17,
+    "service_days": {
+      "value": 251,
+      "status": "derived",
+      "method": "2026 weekdays minus Ontario holidays on weekdays"
+    },
+    "peak_hours": {
+      "value": 2.5,
+      "status": "assumed",
+      "method": "07:00-09:00 plus carhouse travel"
+    },
+    "km_per_vehicle_hour": 9.86
+  },
+  "extra_service": {
+    "headway_options": [
+      {
+        "headway_s": 360,
+        "default": false,
+        "vehicles": 22,
+        "extra_vehicles": 3,
+        "extra_vehicle_hours_per_year": 1882.5,
+        "annual_operating_cad": {
+          "low": 314378,
+          "central": 519570,
+          "high": 818888
+        }
+      },
+      {
+        "headway_s": 300,
+        "default": true,
+        "vehicles": 27,
+        "extra_vehicles": 8,
+        "extra_vehicle_hours_per_year": 5020.0,
+        "annual_operating_cad": {
+          "low": 838340,
+          "central": 1385520,
+          "high": 2183700
+        }
+      },
+      {
+        "headway_s": 240,
+        "default": false,
+        "vehicles": 33,
+        "extra_vehicles": 14,
+        "extra_vehicle_hours_per_year": 8785.0,
+        "annual_operating_cad": {
+          "low": 1467095,
+          "central": 2424660,
+          "high": 3821475
+        }
+      }
+    ],
+    "default_headway_s": 300,
+    "cost_per_hour_cad": {
+      "low": 167,
+      "central": 276,
+      "high": 435,
+      "selected": "central"
+    },
+    "applies_to": "whole 505 route",
+    "simulated": true
+  },
+  "streetcar_priority": {
+    "link_ids": [
+      "ttc-505-west-broadview-tmu-link-1",
+      "ttc-505-west-broadview-tmu-link-2",
+      "ttc-505-west-broadview-tmu-link-3",
+      "ttc-505-west-broadview-tmu-link-4",
+      "ttc-505-west-broadview-tmu-link-5",
+      "ttc-505-west-broadview-tmu-link-6",
+      "ttc-505-west-broadview-tmu-link-7",
+      "ttc-505-west-broadview-tmu-link-8"
+    ],
+    "time_saving_share": {
+      "low": 0.0,
+      "evidence_central": 0.0,
+      "selected": 0.12
+    },
+    "saving_per_cycle_s": 217,
+    "lane_cycle_s": 7703.0,
+    "capital_cad": {
+      "low": 1888804,
+      "central": 3699833,
+      "high": 6863413,
+      "selected": "central"
+    },
+    "operating_cad_per_year": {
+      "low": 434647,
+      "central": 896460,
+      "high": 1358272,
+      "selected": "central"
+    },
+    "simulated": false
+  },
+  "catalogue": [
+    {
+      "id": "extra-service-360s",
+      "type": "extra_service",
+      "link_ids": [],
+      "headway_s": 360.0,
+      "capital_cost": {
+        "low": 0.0,
+        "central": 0.0,
+        "high": 0.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "no new vehicles purchased; spare fleet assumed",
+        "unit": "CAD",
+        "status": "assumed",
+        "source_ids": []
+      },
+      "operating_cost": {
+        "low": 314378.0,
+        "central": 519570.0,
+        "high": 818888.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "3 extra cars x 2.5 h/day x 251 days",
+        "unit": "CAD/year",
+        "status": "assumed",
+        "source_ids": [
+          "ttc-2025-operating-budget",
+          "munro-2017-queen-cost",
+          "statcan-cpi-annual"
+        ]
+      },
+      "extra_vehicles": 3,
+      "earliest_phase": "phase-1",
+      "effect": {
+        "key": "headway_s",
+        "unit": "seconds between westbound cars at Broadview & Dundas",
+        "meaning": "Scheduled AM-peak headway with extra service (360 s)",
+        "low": 360.0,
+        "central": 360.0,
+        "high": 360.0,
+        "allowed_range": {
+          "low": 180.0,
+          "high": 600.0
+        },
+        "status": "user_selected",
+        "source_ids": []
+      }
+    },
+    {
+      "id": "extra-service-300s",
+      "type": "extra_service",
+      "link_ids": [],
+      "headway_s": 300.0,
+      "capital_cost": {
+        "low": 0.0,
+        "central": 0.0,
+        "high": 0.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "no new vehicles purchased; spare fleet assumed",
+        "unit": "CAD",
+        "status": "assumed",
+        "source_ids": []
+      },
+      "operating_cost": {
+        "low": 838340.0,
+        "central": 1385520.0,
+        "high": 2183700.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "8 extra cars x 2.5 h/day x 251 days",
+        "unit": "CAD/year",
+        "status": "assumed",
+        "source_ids": [
+          "ttc-2025-operating-budget",
+          "munro-2017-queen-cost",
+          "statcan-cpi-annual"
+        ]
+      },
+      "extra_vehicles": 8,
+      "earliest_phase": "phase-1",
+      "effect": {
+        "key": "headway_s",
+        "unit": "seconds between westbound cars at Broadview & Dundas",
+        "meaning": "Scheduled AM-peak headway with extra service (300 s)",
+        "low": 300.0,
+        "central": 300.0,
+        "high": 300.0,
+        "allowed_range": {
+          "low": 180.0,
+          "high": 600.0
+        },
+        "status": "user_selected",
+        "source_ids": []
+      }
+    },
+    {
+      "id": "extra-service-240s",
+      "type": "extra_service",
+      "link_ids": [],
+      "headway_s": 240.0,
+      "capital_cost": {
+        "low": 0.0,
+        "central": 0.0,
+        "high": 0.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "no new vehicles purchased; spare fleet assumed",
+        "unit": "CAD",
+        "status": "assumed",
+        "source_ids": []
+      },
+      "operating_cost": {
+        "low": 1467095.0,
+        "central": 2424660.0,
+        "high": 3821475.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "14 extra cars x 2.5 h/day x 251 days",
+        "unit": "CAD/year",
+        "status": "assumed",
+        "source_ids": [
+          "ttc-2025-operating-budget",
+          "munro-2017-queen-cost",
+          "statcan-cpi-annual"
+        ]
+      },
+      "extra_vehicles": 14,
+      "earliest_phase": "phase-1",
+      "effect": {
+        "key": "headway_s",
+        "unit": "seconds between westbound cars at Broadview & Dundas",
+        "meaning": "Scheduled AM-peak headway with extra service (240 s)",
+        "low": 240.0,
+        "central": 240.0,
+        "high": 240.0,
+        "allowed_range": {
+          "low": 180.0,
+          "high": 600.0
+        },
+        "status": "user_selected",
+        "source_ids": []
+      }
+    },
+    {
+      "id": "streetcar-priority-segment",
+      "type": "priority_lane",
+      "link_ids": [
+        "ttc-505-west-broadview-tmu-link-1",
+        "ttc-505-west-broadview-tmu-link-2",
+        "ttc-505-west-broadview-tmu-link-3",
+        "ttc-505-west-broadview-tmu-link-4",
+        "ttc-505-west-broadview-tmu-link-5",
+        "ttc-505-west-broadview-tmu-link-6",
+        "ttc-505-west-broadview-tmu-link-7",
+        "ttc-505-west-broadview-tmu-link-8"
+      ],
+      "headway_s": null,
+      "capital_cost": {
+        "low": 1888804.0,
+        "central": 3699833.0,
+        "high": 6863413.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "King Street pilot, permanent and 2024 improvement costs; similar-project budgets, not a quote",
+        "unit": "CAD",
+        "status": "assumed",
+        "source_ids": [
+          "toronto-king-pilot-2017",
+          "toronto-king-extension-2018",
+          "toronto-king-results-2019",
+          "toronto-king-update-2024",
+          "statcan-cpi-annual"
+        ]
+      },
+      "operating_cost": {
+        "low": 434647.0,
+        "central": 896460.0,
+        "high": 1358272.0,
+        "currency": "CAD",
+        "price_year": 2025,
+        "scope": "King Street 2019 operating and maintenance, annualised; traffic-agent cost not included",
+        "unit": "CAD/year",
+        "status": "assumed",
+        "source_ids": [
+          "toronto-king-pilot-2017",
+          "toronto-king-extension-2018",
+          "toronto-king-results-2019",
+          "toronto-king-update-2024",
+          "statcan-cpi-annual"
+        ]
+      },
+      "extra_vehicles": 0,
+      "earliest_phase": "phase-1",
+      "effect": {
+        "key": "link_time_saving_share",
+        "unit": "share of scheduled link time saved",
+        "meaning": "AM-peak link time saved by streetcar priority; team-selected 12% stands in for congestion growth since 2019. Evidence alone suggests about 0%. Not simulated yet.",
+        "low": 0.0,
+        "central": 0.12,
+        "high": 0.12,
+        "allowed_range": {
+          "low": 0.0,
+          "high": 0.5
+        },
+        "status": "assumed",
+        "source_ids": [
+          "toronto-king-results-2019",
+          "toronto-king-update-2024"
+        ]
+      }
+    }
+  ],
+  "policies": {
+    "360": "package_policy_360.json",
+    "300": "package_policy_300.json",
+    "240": "package_policy_240.json"
+  },
+  "default_policy": "package_policy_300.json",
+  "manifest_source_ids": [
+    "ttc-gtfs",
+    "ttc-2025-operating-budget",
+    "munro-2017-queen-cost",
+    "statcan-cpi-annual",
+    "toronto-king-pilot-2017",
+    "toronto-king-extension-2018",
+    "toronto-king-results-2019",
+    "toronto-king-update-2024"
+  ],
+  "limitations": [
+    "Costs are 2025 CAD estimates from budgets and cost factors, not TTC quotes.",
+    "The central streetcar-hour cost is a system-wide average including subway and overheads.",
+    "Spare fleet for 3-14 extra streetcars is not established; fleet_allowance stays a scenario input.",
+    "Costs cover both directions; simulated benefits are westbound AM only.",
+    "Priority effect is a team-selected assumption and is not simulated yet."
+  ],
+  "source_ids": [
+    "ttc-gtfs",
+    "ttc-2025-operating-budget",
+    "munro-2017-queen-cost",
+    "statcan-cpi-annual",
+    "toronto-king-pilot-2017",
+    "toronto-king-extension-2018",
+    "toronto-king-results-2019",
+    "toronto-king-update-2024"
+  ]
+}

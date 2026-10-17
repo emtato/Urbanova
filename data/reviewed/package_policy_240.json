@@ -1,0 +1,36 @@
+{
+  "cycle_s": 7920.0,
+  "lane_cycle_s": 7703.0,
+  "baseline_headway_s": 419.8125,
+  "service_headway_s": 240,
+  "peak_hours": 2.5,
+  "service_days": 251,
+  "cost_per_hour": {
+    "low": 167,
+    "central": 276,
+    "high": 435
+  },
+  "lane_capital": {
+    "low": 1888804,
+    "central": 3699833,
+    "high": 6863413
+  },
+  "lane_operating": {
+    "low": 434647,
+    "central": 896460,
+    "high": 1358272
+  },
+  "price_year": 2025,
+  "earliest_phase": "phase-1",
+  "source_ids": [
+    "ttc-gtfs",
+    "ttc-2025-operating-budget",
+    "munro-2017-queen-cost",
+    "statcan-cpi-annual",
+    "toronto-king-pilot-2017",
+    "toronto-king-extension-2018",
+    "toronto-king-results-2019",
+    "toronto-king-update-2024"
+  ],
+  "assumption_label": "A10 reviewed policy for 505 Dundas, 2025 CAD. Cycle and headways from the TTC GTFS schedule. Cost per streetcar-hour: central is the TTC 2025 system-wide average; low/high from 2015 TTC streetcar cost factors. Extra cars run 2.5 h/day (AM peak plus carhouse travel, assumed). Priority costs transferred from King Street reports (budgets, not quotes). Priority time saving of 12% is a team-selected assumption; evidence suggests about 0% in the AM. See docs/interventions.md."
+}
