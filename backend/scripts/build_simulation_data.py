@@ -209,7 +209,7 @@ def travel_context(path):
                 caveat="CSV contains an 8:59 pm typo on AM rows; adjacent AM transit row specifies am. These are expanded resident-trip survey estimates, not trips originating in the area or observed 505 boardings.")
 
 
-def build(*, refresh=False):
+def build(*, refresh=False, expand_buildings=True):
     selection = json.loads(SELECTION.read_text(encoding="utf-8"))
     corridor = json.loads((REVIEWED / "corridor.json").read_text(encoding="utf-8"))
     paths, sources = {}, json.loads((REVIEWED / "sources.json").read_text(encoding="utf-8"))
@@ -335,6 +335,7 @@ def build(*, refresh=False):
         "commuter_distribution": dict(unit="relative arrival weights", status="assumed", source_ids=[], meaning="A single bin assumes uniform arrivals over the window."),
         "seed": dict(unit="integer", status="internal", source_ids=[], meaning="Reproducible random seed; not real-world data."),
     }
+    write_json(REVIEWED / "registered_rental_input.json", bundle)
     write_json(REVIEWED / "simulation_input.json", bundle)
     write_json(REVIEWED / "simulation_sources.json", sources)
     write_json(REVIEWED / "housing_context_2021.json", census)
@@ -345,14 +346,18 @@ def build(*, refresh=False):
     print(json.dumps(dict(existing_buildings=len(residences), registered_units=sum(item["total_units"] for item in residences),
                           net_development_units=[item["net_added_units"] for item in developments], mean_scheduled_headway_s=mean_gap,
                           trips_per_resident_in_window=inputs["trips_per_resident_in_window"], transit_share=travel["transit_share"], walking_routes=len(route_features)), indent=2))
+    if expand_buildings:
+        from backend.scripts.build_building_inventory import build_inventory
+        return build_inventory(access=access, refresh=refresh)
     return bundle
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--refresh", action="store_true")
+    parser.add_argument("--rental-only", action="store_true", help="Rebuild only the published registered-rental baseline")
     args = parser.parse_args()
-    build(refresh=args.refresh)
+    build(refresh=args.refresh, expand_buildings=not args.rental_only)
 
 
 if __name__ == "__main__":

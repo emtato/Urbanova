@@ -19,11 +19,14 @@ This loads local files, with no network, database, Gemini or contract-fixture de
 | File under data/reviewed/ | Contents |
 | --- | --- |
 | simulation_input.json | Full inputs plus field metadata, assumptions, evidence and unresolved limits |
-| existing_residences.csv | 58 registered rental buildings, 6,269 recorded units, coordinates and input values |
+| existing_residences.csv | Expanded published/estimated residential records, coordinates and input values; original 58 rentals retained |
+| building_unit_inventory.json / .csv | Every mapped footprint, posted/estimated counts, ranges, methods, source links and unknowns |
+| building_unit_summary.json / building_unit_calibration.json | Coverage totals and local estimation anchors |
+| registered_rental_input.json | Original narrow rental baseline preserved for audit/rebuild |
 | existing_housing_audit.json | Registry IDs, unit fields, official address matches, inclusion/exclusion and neighbourhoods |
 | housing_context_2021.json | Neighbourhood household sizes and occupied household totals, for context only |
 | travel_context_2022.json | Ward 13 resident-trip survey counts and derived shares/rates |
-| simulation_walking_routes.geojson | 100 mapped walking routes, up to two accessible stops per included building/development |
+| simulation_walking_routes.geojson | Mapped walking routes, up to two accessible stops per included building/development |
 | simulation_sources.json | Source URLs, retrieval dates, versions, licences and SHA-256 checksums |
 
 The original corridor/development evidence remains intact. simulation_selection.json under data/sources/ records explicit scenario and development-revision decisions. Raw source documents, address queries and OSM tiles stay in ignored data/cache/.
@@ -33,7 +36,7 @@ The original corridor/development evidence remains intact. simulation_selection.
 | Required input | Supplied value/evidence | Status |
 | --- | --- | --- |
 | stops | Nine GTFS stops in westbound order, Broadview 1756 to TMU 2136 | Sourced |
-| existing_residences.total_units | 6,269 units across 58 individually identified registered rental buildings with mapped access | Sourced counts; incomplete housing coverage |
+| existing_residences.total_units | Published counts and explicit residential estimates; 58 rentals / 6,269 units preserved as a subset | Mixed evidence; per-building status and ranges in building_unit_inventory.json |
 | existing_residences.occupied_share | 0.97 | Assumed transfer of 1 minus the 2025 Toronto CMA purpose-built rental vacancy rate of 3%; not measured building occupancy |
 | developments.occupied_share | 1.0 | Assumed future fully occupied scenario; no completion dates or present occupancy claim |
 | residents_per_occupied_unit | Matching neighbourhood's 2021 Census mean, e.g. 1.6 in Moss Park and 2.1 in Regent Park | Neighbourhood measure transferred to buildings and future housing as an assumption |
@@ -59,9 +62,9 @@ TTC's [charter capacity](https://www.ttc.ca/en/doing-business-with-the-ttc/chart
 
 ## Coverage and walking review
 
-The registered-apartment dataset is a **partial rental-building baseline**, not a full catchment housing census. It omits condos, many small homes, unmatched/ambiguous addresses and properties without a qualifying mapped walk. Counts are assigned once per unique registration RSN. Census neighbourhood household totals are context and are never added on top of building counts. The housing audit records exclusions rather than silently geocoding ambiguous addresses. Registry counts and coordinates do not prove current occupancy.
+The original registered-apartment subset is preserved, and the default handoff now expands to mapped condos and smaller homes. See [building-units.md](building-units.md) for the complete inventory, source extraction, count conflicts and estimation method. Unknown-use buildings remain conditional and excluded from demand; this is not a full observed catchment housing census. Counts are assigned once per unique registration RSN. Census neighbourhood household totals are context and are never added on top of building counts. The housing audit records exclusions rather than silently geocoding ambiguous addresses. Registry counts and coordinates do not prove current occupancy.
 
-Candidate buildings are screened within 500 m of a corridor stop, then routed on the merged OSM pedestrian network. Motorways, construction/proposed ways and explicitly private/no-foot-access paths are excluded. Origins use official municipal address points, not confirmed entrances. Access requires a network route plus estimated endpoint connectors totalling at most 500 m, with each connector at most 75 m. Up to two stop options are supplied; no stop is assigned solely because it is close in a straight line.
+Candidate buildings are screened within 500 m of a corridor stop, then routed on the merged OSM pedestrian network. Motorways, construction/proposed ways and explicitly private/no-foot-access paths are excluded. Original rental origins use official municipal address points; added footprints use geometry representative points. Neither establishes a confirmed entrance. Access requires a network route plus estimated endpoint connectors totalling at most 500 m, with each connector at most 75 m. Up to two stop options are supplied; no stop is assigned solely because it is close in a straight line.
 
 Every route has manual_review=pending. Before calling it verified, review the actual building entrance, parcel-to-sidewalk connector, legal crossing to the westbound stop, service-lane permissions, accessibility and current closures. A mapped road intersection does not prove a legal or accessible pedestrian crossing. The GeoJSON provides inspectable paths; no field inspection has been claimed.
 
@@ -78,6 +81,6 @@ python -m backend.scripts.build_simulation_data
 python -m pytest backend/tests/data/test_simulation_data.py -q
 ```
 
-The first build downloads official source documents and small OSM tiles. Later builds verify checksums and reuse caches. --refresh deliberately replaces snapshots and may require reviewing manual fact extraction and address matches. The 58-building count describes the committed snapshot, not a promised future count.
+The first build downloads official source documents and small OSM tiles. Later builds verify checksums and reuse caches. --refresh deliberately replaces snapshots and may require reviewing manual fact extraction and address matches. building_unit_summary.json records the expanded snapshot totals; registered_rental_input.json preserves the original 58-building subset. Counts are snapshot results, not promised future coverage.
 
 Contains information licensed under the Open Government Licence - Toronto. Map data copyright OpenStreetMap contributors, ODbL. Other numeric extracts are attributed to TTC, CMHC and the University of Toronto Data Management Group; consult their linked terms for reuse.

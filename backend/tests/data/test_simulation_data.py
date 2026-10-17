@@ -31,7 +31,7 @@ def test_bundle_matches_the_simulation_owners_actual_dataclasses():
     assert [project.net_added_units for project in result.developments] == [624, 413, 1197]
     assert result.existing_residences
     assert all(building.total_units > 0 for building in result.existing_residences)
-    assert sum(building.total_units for building in result.existing_residences) == 6269
+    assert sum(building.total_units for building in result.existing_residences if building.id.startswith("rentsafe-")) == 6269
     again = load_simulation_input()
     result.stops[0].waiting_passenger_ids.append("test-rider")
     assert not again.stops[0].waiting_passenger_ids
@@ -52,7 +52,7 @@ def test_bad_inputs_fail_before_reaching_the_simulator(overrides):
 def test_registry_counts_are_unique_and_walks_are_network_estimates():
     bundle = json.loads((REVIEWED / "simulation_input.json").read_text(encoding="utf-8"))
     audit = json.loads((REVIEWED / "existing_housing_audit.json").read_text(encoding="utf-8"))
-    included = {row["id"]: row for row in audit if row["status"] == "included_partial_rental_baseline"}
+    included = {row["id"]: row for row in audit if row["status"] in ("included_partial_rental_baseline", "included_expanded_building")}
     homes = bundle["inputs"]["existing_residences"]
     assert len({home["id"] for home in homes}) == len(homes)
     assert {home["id"] for home in homes} == set(included)

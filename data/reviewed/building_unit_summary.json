@@ -1,0 +1,18 @@
+{
+  "mapped_buildings": 2444,
+  "by_unit_count_status": {
+    "not_identified_as_household_residential": 288,
+    "estimated": 977,
+    "unknown_use": 1104,
+    "estimated_conflicting_published": 2,
+    "published_city": 67,
+    "published_developer": 6
+  },
+  "registry_buildings_preserved": 58,
+  "expanded_housing_buildings": 533,
+  "total_housing_records": 591,
+  "modelled_units": 30663,
+  "estimated_housing_records": 523,
+  "unresolved_use_records": 1104,
+  "coverage": "Every complete, valid OSM building footprint in the cached corridor tiles within 500m of a stop; not a guarantee every physical building is mapped. Unknown-use buildings have conditional estimates but are not silently treated as homes."
+}

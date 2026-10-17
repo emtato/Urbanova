@@ -27,7 +27,7 @@ Her definitions in backend/simulation/inputs.py remain authoritative. This hando
 | headway_s | 419.8125 s mean of adjacent scheduled entry gaps. The separate 360 s summary is a median. Neither is observed reliability. |
 | rush_hour_duration_s | The selected 07:00–09:00 window spans 7,200 seconds. |
 | developments | Adopted net-added units 624 / 413 / 1,197, with report/pipeline conflicts and the assumed 761 replacement count recorded. Household size, future occupancy and transit share are labelled transfers/assumptions. |
-| existing_residences | 58 registered rental buildings, 6,269 recorded units, geocoded to official address points with mapped access. Incomplete coverage; per-building occupancy and travel behaviour are proxies. |
+| existing_residences | Expanded mapped residential records using published counts and explicit unit estimates; the original 58 rentals / 6,269 units are preserved. See building-units.md for per-building ranges, unknowns and source links. Occupancy/travel behaviour remain proxies. |
 | streetcar_capacity | TTC physical maximum 251; historical planning capacity 130 is a separate quantity. |
 | trips_per_resident_in_window | 0.2310568468 all-mode trips/resident/2h: assumed 2/3 transfer of TTS Ward 13 AM rate, before applying transit share. |
 | headway_randomness_s, commuter_distribution, seed | Explicit defaults 0, [1.0], 0. Arrival/service regularity is assumed; seed is internal. |

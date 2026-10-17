@@ -1,0 +1,1142 @@
+{
+  "format_version": "simulation-input-v1",
+  "corridor_id": "ttc-505-west-broadview-tmu",
+  "fixture": false,
+  "product_label": "scenario experiment",
+  "coverage": "Partial registered-rental housing scenario; not all corridor housing or observed 505 demand.",
+  "inputs": {
+    "stops": [
+      {
+        "id": "ttc-stop-1756",
+        "name": "Broadview Ave at Dundas St East",
+        "latitude": 43.6626,
+        "longitude": -79.351506,
+        "sequence": 0
+      },
+      {
+        "id": "ttc-stop-2127",
+        "name": "Dundas St East at River St",
+        "latitude": 43.661284,
+        "longitude": -79.358,
+        "sequence": 1
+      },
+      {
+        "id": "ttc-stop-15873",
+        "name": "Dundas St East at Regent Park Blvd",
+        "latitude": 43.66045,
+        "longitude": -79.361739,
+        "sequence": 2
+      },
+      {
+        "id": "ttc-stop-2125",
+        "name": "Dundas St East at Parliament St",
+        "latitude": 43.65951,
+        "longitude": -79.365882,
+        "sequence": 3
+      },
+      {
+        "id": "ttc-stop-2123",
+        "name": "Dundas St East at Ontario St",
+        "latitude": 43.658961,
+        "longitude": -79.368357,
+        "sequence": 4
+      },
+      {
+        "id": "ttc-stop-2131",
+        "name": "Dundas St East at Sherbourne St",
+        "latitude": 43.658406,
+        "longitude": -79.370878,
+        "sequence": 5
+      },
+      {
+        "id": "ttc-stop-2119",
+        "name": "Dundas St East at Jarvis St",
+        "latitude": 43.657162,
+        "longitude": -79.374377,
+        "sequence": 6
+      },
+      {
+        "id": "ttc-stop-2117",
+        "name": "Dundas St East at Church St",
+        "latitude": 43.656583,
+        "longitude": -79.376993,
+        "sequence": 7
+      },
+      {
+        "id": "ttc-stop-2136",
+        "name": "Dundas St East at Yonge St - Dundas Station",
+        "latitude": 43.656426,
+        "longitude": -79.380755,
+        "sequence": 8
+      }
+    ],
+    "existing_residences": [
+      {
+        "id": "rentsafe-4153437",
+        "name": "181-183  GERRARD ST E",
+        "latitude": 43.6608408517081,
+        "longitude": -79.3730858483889,
+        "total_units": 22,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131"
+        ]
+      },
+      {
+        "id": "rentsafe-4153441",
+        "name": "260  SHERBOURNE ST",
+        "latitude": 43.65909039448,
+        "longitude": -79.371561167242,
+        "total_units": 10,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4288743",
+        "name": "78  PEMBROKE ST",
+        "latitude": 43.6589661930425,
+        "longitude": -79.3730187423217,
+        "total_units": 15,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153450",
+        "name": "269  JARVIS ST",
+        "latitude": 43.6581186865223,
+        "longitude": -79.374672097035,
+        "total_units": 75,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119",
+          "ttc-stop-2117"
+        ]
+      },
+      {
+        "id": "rentsafe-4153461",
+        "name": "40  GERRARD ST E",
+        "latitude": 43.6598361641208,
+        "longitude": -79.3804738963152,
+        "total_units": 447,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2136"
+        ]
+      },
+      {
+        "id": "rentsafe-4250271",
+        "name": "431  DUNDAS ST E",
+        "latitude": 43.6590700861779,
+        "longitude": -79.3664695610127,
+        "total_units": 37,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4153582",
+        "name": "280  GERRARD ST E",
+        "latitude": 43.6624509534952,
+        "longitude": -79.3680263422059,
+        "total_units": 26,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125"
+        ]
+      },
+      {
+        "id": "rentsafe-4153584",
+        "name": "321  SHERBOURNE ST",
+        "latitude": 43.6618857322049,
+        "longitude": -79.3721127130559,
+        "total_units": 67,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131"
+        ]
+      },
+      {
+        "id": "rentsafe-4153453",
+        "name": "368  GEORGE ST",
+        "latitude": 43.6597408963735,
+        "longitude": -79.3746932098145,
+        "total_units": 16,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-5853218",
+        "name": "180  SHERBOURNE ST",
+        "latitude": 43.6562560651231,
+        "longitude": -79.3705294418473,
+        "total_units": 19,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131"
+        ]
+      },
+      {
+        "id": "rentsafe-4153443",
+        "name": "280  DUNDAS ST E",
+        "latitude": 43.6584309929349,
+        "longitude": -79.3717706394842,
+        "total_units": 241,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153446",
+        "name": "80-82  PEMBROKE ST",
+        "latitude": 43.6590431325533,
+        "longitude": -79.3730556635847,
+        "total_units": 11,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153576",
+        "name": "859  DUNDAS ST E",
+        "latitude": 43.6621073729701,
+        "longitude": -79.3516762502057,
+        "total_units": 29,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.2,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-1756"
+        ]
+      },
+      {
+        "id": "rentsafe-4250288",
+        "name": "305-307  PARLIAMENT ST",
+        "latitude": 43.6590283870328,
+        "longitude": -79.3655515076758,
+        "total_units": 10,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4153571",
+        "name": "210  OAK ST",
+        "latitude": 43.6633680720016,
+        "longitude": -79.3584622650814,
+        "total_units": 260,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2127"
+        ]
+      },
+      {
+        "id": "rentsafe-4153581",
+        "name": "330  GERRARD ST E",
+        "latitude": 43.6626005476961,
+        "longitude": -79.3653870228145,
+        "total_units": 81,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.8,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125"
+        ]
+      },
+      {
+        "id": "rentsafe-4156107",
+        "name": "201  SHERBOURNE ST",
+        "latitude": 43.6577022039907,
+        "longitude": -79.3702436590096,
+        "total_units": 225,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4167680",
+        "name": "259  SUMACH ST",
+        "latitude": 43.6624059916399,
+        "longitude": -79.36072013067,
+        "total_units": 47,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2127",
+          "ttc-stop-15873"
+        ]
+      },
+      {
+        "id": "rentsafe-4155602",
+        "name": "220  OAK ST",
+        "latitude": 43.6630613843896,
+        "longitude": -79.3577564444185,
+        "total_units": 469,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2127"
+        ]
+      },
+      {
+        "id": "rentsafe-4153455",
+        "name": "177  MUTUAL ST",
+        "latitude": 43.6595504404065,
+        "longitude": -79.3765329013628,
+        "total_units": 42,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2117",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153430",
+        "name": "49  MUTUAL ST",
+        "latitude": 43.6553382148861,
+        "longitude": -79.3747299867574,
+        "total_units": 20,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119",
+          "ttc-stop-2117"
+        ]
+      },
+      {
+        "id": "rentsafe-4153439",
+        "name": "266  SHERBOURNE ST",
+        "latitude": 43.6592882202645,
+        "longitude": -79.3718206404157,
+        "total_units": 121,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4153440",
+        "name": "262  SHERBOURNE ST",
+        "latitude": 43.6591572792443,
+        "longitude": -79.3715894416966,
+        "total_units": 12,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4153577",
+        "name": "179  BROADVIEW AVE",
+        "latitude": 43.6610935237636,
+        "longitude": -79.3502325680894,
+        "total_units": 41,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.2,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-1756"
+        ]
+      },
+      {
+        "id": "rentsafe-4155600",
+        "name": "155  SHERBOURNE ST",
+        "latitude": 43.6555837031119,
+        "longitude": -79.3695186828181,
+        "total_units": 301,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131"
+        ]
+      },
+      {
+        "id": "rentsafe-4156772",
+        "name": "180  SACKVILLE ST",
+        "latitude": 43.6585865542954,
+        "longitude": -79.3627251376907,
+        "total_units": 83,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-15873",
+          "ttc-stop-2125"
+        ]
+      },
+      {
+        "id": "rentsafe-4153454",
+        "name": "145  MUTUAL ST",
+        "latitude": 43.6590937894372,
+        "longitude": -79.376337968099,
+        "total_units": 145,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2117",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153435",
+        "name": "77  PEMBROKE ST",
+        "latitude": 43.6589336290282,
+        "longitude": -79.3723504925427,
+        "total_units": 16,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-5156142",
+        "name": "109  PEMBROKE ST",
+        "latitude": 43.6601116235,
+        "longitude": -79.3728245971596,
+        "total_units": 20,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153578",
+        "name": "230  RIVER ST",
+        "latitude": 43.6642455069717,
+        "longitude": -79.3598450307198,
+        "total_units": 25,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.8,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2127"
+        ]
+      },
+      {
+        "id": "rentsafe-4265577",
+        "name": "425  DUNDAS ST E",
+        "latitude": 43.6590801842118,
+        "longitude": -79.3668232384267,
+        "total_units": 32,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4156374",
+        "name": "257  SHERBOURNE ST",
+        "latitude": 43.6592890049858,
+        "longitude": -79.3710537120747,
+        "total_units": 102,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4156034",
+        "name": "261  JARVIS ST",
+        "latitude": 43.6579204164551,
+        "longitude": -79.3745924176942,
+        "total_units": 55,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119",
+          "ttc-stop-2117"
+        ]
+      },
+      {
+        "id": "rentsafe-4153567",
+        "name": "123  SACKVILLE ST",
+        "latitude": 43.6570812238676,
+        "longitude": -79.3615244431982,
+        "total_units": 20,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-15873"
+        ]
+      },
+      {
+        "id": "rentsafe-4153395",
+        "name": "147  QUEEN ST E",
+        "latitude": 43.653659390451,
+        "longitude": -79.3726930547134,
+        "total_units": 76,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4774556",
+        "name": "55  MUTUAL ST",
+        "latitude": 43.6556061539464,
+        "longitude": -79.3747343764254,
+        "total_units": 40,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119",
+          "ttc-stop-2117"
+        ]
+      },
+      {
+        "id": "rentsafe-4153422",
+        "name": "25  MUTUAL ST",
+        "latitude": 43.6543128766527,
+        "longitude": -79.3743498951983,
+        "total_units": 97,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119",
+          "ttc-stop-2117"
+        ]
+      },
+      {
+        "id": "rentsafe-4153456",
+        "name": "262  JARVIS ST",
+        "latitude": 43.6596478346236,
+        "longitude": -79.3760501539098,
+        "total_units": 72,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153457",
+        "name": "80  DUNDAS ST E",
+        "latitude": 43.6564390101706,
+        "longitude": -79.3781124080242,
+        "total_units": 138,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2117",
+          "ttc-stop-2136"
+        ]
+      },
+      {
+        "id": "rentsafe-4153462",
+        "name": "423  YONGE ST",
+        "latitude": 43.660200235481,
+        "longitude": -79.382324726785,
+        "total_units": 340,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2136"
+        ]
+      },
+      {
+        "id": "rentsafe-4153568",
+        "name": "205  PARLIAMENT ST",
+        "latitude": 43.6564439325962,
+        "longitude": -79.364457056538,
+        "total_units": 16,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125"
+        ]
+      },
+      {
+        "id": "rentsafe-4153583",
+        "name": "317  SHERBOURNE ST",
+        "latitude": 43.661717645851,
+        "longitude": -79.3719561000126,
+        "total_units": 38,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131"
+        ]
+      },
+      {
+        "id": "rentsafe-4167463",
+        "name": "184  RIVER ST",
+        "latitude": 43.6627707696173,
+        "longitude": -79.3592711595672,
+        "total_units": 54,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2127",
+          "ttc-stop-15873"
+        ]
+      },
+      {
+        "id": "rentsafe-4479218",
+        "name": "45  PEMBROKE ST",
+        "latitude": 43.6576850017311,
+        "longitude": -79.3718710022682,
+        "total_units": 12,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153436",
+        "name": "95  PEMBROKE ST",
+        "latitude": 43.6595515514821,
+        "longitude": -79.3726392572407,
+        "total_units": 19,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153448",
+        "name": "70  PEMBROKE ST",
+        "latitude": 43.6584982478042,
+        "longitude": -79.3728314119249,
+        "total_units": 15,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-5566013",
+        "name": "25  DALHOUSIE ST",
+        "latitude": 43.6542254860368,
+        "longitude": -79.3753975162306,
+        "total_units": 240,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2117",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153431",
+        "name": "90  SHUTER ST",
+        "latitude": 43.6554822995608,
+        "longitude": -79.3742790469448,
+        "total_units": 77,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119",
+          "ttc-stop-2117"
+        ]
+      },
+      {
+        "id": "rentsafe-4153434",
+        "name": "200  SHERBOURNE ST",
+        "latitude": 43.6571743451343,
+        "longitude": -79.3707984135636,
+        "total_units": 174,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4153442",
+        "name": "256  SHERBOURNE ST",
+        "latitude": 43.6589168015173,
+        "longitude": -79.3715914419857,
+        "total_units": 23,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4155664",
+        "name": "230  OAK ST",
+        "latitude": 43.6635695781846,
+        "longitude": -79.3579488094042,
+        "total_units": 327,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2127"
+        ]
+      },
+      {
+        "id": "rentsafe-4153574",
+        "name": "330  DUNDAS ST E",
+        "latitude": 43.6586683805685,
+        "longitude": -79.3701713423041,
+        "total_units": 29,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4233261",
+        "name": "252  VICTORIA ST",
+        "latitude": 43.6556492559131,
+        "longitude": -79.3795620985076,
+        "total_units": 337,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2136",
+          "ttc-stop-2117"
+        ]
+      },
+      {
+        "id": "rentsafe-4153444",
+        "name": "291  GEORGE ST",
+        "latitude": 43.6583799488575,
+        "longitude": -79.3734855919526,
+        "total_units": 132,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4153445",
+        "name": "100  PEMBROKE ST",
+        "latitude": 43.659649470629,
+        "longitude": -79.3733951204774,
+        "total_units": 102,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "rentsafe-4156250",
+        "name": "295  SHUTER ST",
+        "latitude": 43.6564466600763,
+        "longitude": -79.3654246984048,
+        "total_units": 300,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125"
+        ]
+      },
+      {
+        "id": "rentsafe-4155809",
+        "name": "191  SHERBOURNE ST",
+        "latitude": 43.656790048371,
+        "longitude": -79.369923427413,
+        "total_units": 371,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2123"
+        ]
+      },
+      {
+        "id": "rentsafe-4156725",
+        "name": "160  JARVIS ST",
+        "latitude": 43.6546727538454,
+        "longitude": -79.3739683701379,
+        "total_units": 98,
+        "occupied_share": 0.97,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2119",
+          "ttc-stop-2117"
+        ]
+      }
+    ],
+    "developments": [
+      {
+        "id": "toronto-app-22-124214-ste-13-oz",
+        "name": "239 DUNDAS ST E",
+        "latitude": 43.657776590088,
+        "longitude": -79.3727167030444,
+        "net_added_units": 624,
+        "occupied_share": 1.0,
+        "residents_per_occupied_unit": 1.6,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2131",
+          "ttc-stop-2119"
+        ]
+      },
+      {
+        "id": "toronto-app-26-122451-ste-13-oz",
+        "name": "500 DUNDAS ST E",
+        "latitude": 43.6600907352172,
+        "longitude": -79.3642039444762,
+        "net_added_units": 413,
+        "occupied_share": 1.0,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2125",
+          "ttc-stop-15873"
+        ]
+      },
+      {
+        "id": "toronto-app-25-236949-ste-13-oz",
+        "name": "761 DUNDAS ST E",
+        "latitude": 43.6612907741496,
+        "longitude": -79.356394637334,
+        "net_added_units": 1197,
+        "occupied_share": 1.0,
+        "residents_per_occupied_unit": 2.1,
+        "transit_share": 0.29808941720005777,
+        "accessible_stop_ids": [
+          "ttc-stop-2127"
+        ]
+      }
+    ],
+    "link_travel_times_s": [
+      175,
+      90,
+      104,
+      85,
+      85,
+      136,
+      89,
+      140
+    ],
+    "streetcar_capacity": 251,
+    "headway_s": 419.8125,
+    "rush_hour_duration_s": 7200,
+    "start_time_s": 25200,
+    "end_time_s": 32400,
+    "trips_per_resident_in_window": 0.23105684683407418,
+    "headway_randomness_s": 0.0,
+    "commuter_distribution": [
+      1.0
+    ],
+    "seed": 0,
+    "link_travel_time_variation_share": 0.0
+  },
+  "evidence": {
+    "developments": [
+      {
+        "id": "toronto-app-22-124214-ste-13-oz",
+        "pipeline_proposed_units": 630,
+        "adopted_total_units": 632,
+        "removed_existing_units": 8,
+        "status": "sourced_report_revision",
+        "source_ids": [
+          "planning-239-2024"
+        ],
+        "note": "Use the internally consistent May 2024 decision-report revision: 632 total minus 8 removed = 624 net. Pipeline snapshot says 630; preserve that conflict rather than combining revisions. Future site delivery is unobserved."
+      },
+      {
+        "id": "toronto-app-26-122451-ste-13-oz",
+        "pipeline_proposed_units": 413,
+        "adopted_total_units": 413,
+        "removed_existing_units": 0,
+        "status": "derived_site_description",
+        "source_ids": [
+          "planning-500-2026"
+        ],
+        "note": "June 2026 report describes a sales centre and surface parking on the current site. Zero current homes is derived from that description, not the earlier whole Regent Park demolition programme."
+      },
+      {
+        "id": "toronto-app-25-236949-ste-13-oz",
+        "pipeline_proposed_units": 1197,
+        "adopted_total_units": 1197,
+        "removed_existing_units": 0,
+        "status": "assumed_replacement_count",
+        "source_ids": [
+          "planning-761-consultation"
+        ],
+        "note": "Consultation confirms 1,197 proposed units but not the existing residential count. Zero existing homes remains an assumption requiring current application review, not a confirmed net-new total. Historical report downloads returned 404 and are not relied on."
+      }
+    ],
+    "housing_audit": "existing_housing_audit.json",
+    "household_size": "2021 neighbourhood mean transferred to each building: assumption, not observed building occupancy",
+    "existing_occupied_share": "Assumed transfer: 1 minus CMHC 2025 Toronto CMA purpose-built vacancy of 3%; not an observed building rate, especially for social housing.",
+    "new_occupied_share": "Assumed future fully occupied phase; no completion date or current occupancy claim.",
+    "transit_share": "Assumed transfer of TTS 2022 Ward 13 resident-trip AM share including GO-only and GO+transit; not specifically 505 or westbound.",
+    "trips_per_resident_in_window": "Assumed uniform transfer from TTS 06:00-09:00 to 07:00-09:00 using factor 2/3.",
+    "link_travel_times_s": "GTFS schedule differences as proxy; may include dwell. Do not add another dwell component without correcting for overlap.",
+    "streetcar_capacity": "TTC physical maximum 251 (70 seats + 181 standing). Historical planned loading is 130, not the same quantity.",
+    "headway_s": "Arithmetic mean of adjacent dated GTFS entry gaps, not median or observed reliability.",
+    "arrival_variability": "Regular headways and uniform passenger arrivals are assumptions; seed is internal."
+  },
+  "observed_passenger_demand": {
+    "route": "505",
+    "average_weekday_boardings": 32100,
+    "period": "November 2025",
+    "geography": "whole route, both directions, all day",
+    "source_ids": [
+      "ttc-505-observed-boardings"
+    ],
+    "segment_am_boardings": null,
+    "incoming_occupancy": null
+  },
+  "unresolved": [
+    "Only registered rental buildings with unambiguous address matches and mapped walks under 500m are included. Condos, small homes, unmatched buildings and other baseline riders are omitted; this is not a complete catchment census.",
+    "No observed stop/direction/time-window boardings or incoming load were found. Do not scale whole-route daily boardings into this segment without an explicit model.",
+    "transit_share is all transit; the owner must agree corridor/direction/destination assignment before interpreting generated riders as 505 demand.",
+    "Walking paths use estimated connectors; legal crossings, entrances and closures remain unverified. Network access is not field sign-off.",
+    "761 existing-unit replacement is assumed zero. 239 report and pipeline versions disagree; the chosen report revision is explicit.",
+    "The default reporting cap is 09:00, the end of passenger arrivals. Late cars/riders may remain unresolved; the simulation owner must choose and record a clearance rule."
+  ],
+  "source_manifest": "simulation_sources.json",
+  "source_ids": [
+    "ttc-gtfs",
+    "toronto-development-pipeline",
+    "toronto-address-796104",
+    "toronto-address-30009862",
+    "toronto-address-7667205",
+    "toronto-address-7650832",
+    "toronto-address-796099",
+    "osm-walk-239",
+    "osm-walk-500",
+    "osm-walk-761",
+    "census-neighbourhoods-2021",
+    "neighbourhood-boundaries",
+    "registered-apartments",
+    "tts-2022-wards",
+    "ttc-physical-capacity",
+    "ttc-planning-capacity",
+    "ttc-505-observed-boardings",
+    "cmhc-vacancy-2025",
+    "planning-239-2024",
+    "planning-500-2026",
+    "planning-761-consultation",
+    "housing-addresses-0",
+    "housing-addresses-1",
+    "housing-addresses-2",
+    "housing-addresses-3",
+    "housing-addresses-4",
+    "housing-addresses-5",
+    "housing-addresses-6",
+    "housing-addresses-7",
+    "osm-housing-0-0",
+    "osm-housing-0-1",
+    "osm-housing-1-0",
+    "osm-housing-1-1",
+    "osm-housing-2-0",
+    "osm-housing-2-1",
+    "osm-housing-3-0",
+    "osm-housing-3-1"
+  ],
+  "field_metadata": {
+    "stops": {
+      "unit": "WGS84 degrees; zero-based sequence",
+      "status": "sourced",
+      "source_ids": [
+        "ttc-gtfs"
+      ]
+    },
+    "existing_residences": {
+      "unit": "registered housing units",
+      "status": "mixed",
+      "source_ids": [
+        "registered-apartments",
+        "census-neighbourhoods-2021",
+        "cmhc-vacancy-2025",
+        "tts-2022-wards"
+      ],
+      "meaning": "Unit counts sourced; coordinates geocoded; household size, occupancy and transit share transferred assumptions; mapped access still needs review."
+    },
+    "developments": {
+      "unit": "net-added units",
+      "status": "mixed",
+      "source_ids": [
+        "planning-239-2024",
+        "planning-500-2026",
+        "planning-761-consultation"
+      ],
+      "meaning": "See per-project revision and replacement-count reconciliation. Future occupied share is an assumption, not today's occupancy."
+    },
+    "link_travel_times_s": {
+      "unit": "seconds",
+      "status": "proxy",
+      "source_ids": [
+        "ttc-gtfs"
+      ],
+      "meaning": "Scheduled stop-time differences may include dwell; not an observed movement-only measure."
+    },
+    "streetcar_capacity": {
+      "unit": "passengers/vehicle",
+      "status": "sourced",
+      "source_ids": [
+        "ttc-physical-capacity"
+      ],
+      "meaning": "251 is the physical maximum. Historical TTC planned loading is 130; the owner can model a lower effective cap explicitly."
+    },
+    "headway_s": {
+      "unit": "seconds/entry",
+      "status": "derived_schedule",
+      "source_ids": [
+        "ttc-gtfs"
+      ],
+      "meaning": "Mean of successive entry gaps; not the 360-second median and not observed service."
+    },
+    "rush_hour_duration_s": {
+      "unit": "seconds",
+      "status": "user_selected",
+      "source_ids": [],
+      "meaning": "07:00-09:00 Toronto time on the selected GTFS service date."
+    },
+    "start_time_s": {
+      "unit": "service-day seconds",
+      "status": "user_selected",
+      "source_ids": [],
+      "meaning": "07:00 local is 25200 seconds after midnight."
+    },
+    "end_time_s": {
+      "unit": "service-day seconds",
+      "status": "user_selected",
+      "source_ids": [],
+      "meaning": "09:00 local is 32400 seconds. This is an explicit reporting cap; late vehicles remain unresolved unless the owner extends it."
+    },
+    "trips_per_resident_in_window": {
+      "unit": "all-mode trips/resident/2h",
+      "status": "assumed_transfer",
+      "source_ids": [
+        "tts-2022-wards"
+      ],
+      "meaning": "Resident-trip AM survey total divided by resident population, then multiplied by 2/3 under a uniform-within-3h assumption."
+    },
+    "headway_randomness_s": {
+      "unit": "seconds, maximum deviation",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Zero retains regular entries; this is not measured variability or a standard deviation."
+    },
+    "link_travel_time_variation_share": {
+      "unit": "fractional maximum duration variation",
+      "status": "user_selected",
+      "source_ids": [],
+      "meaning": "Zero keeps fixed link times. This control is not an observed variation estimate or standard deviation."
+    },
+    "commuter_distribution": {
+      "unit": "relative arrival weights",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "A single bin assumes uniform arrivals over the window."
+    },
+    "seed": {
+      "unit": "integer",
+      "status": "internal",
+      "source_ids": [],
+      "meaning": "Reproducible random seed; not real-world data."
+    }
+  }
+}

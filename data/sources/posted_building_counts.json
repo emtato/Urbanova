@@ -1,0 +1,10 @@
+[
+  {"osm_way_id":"668372120","name":"Grid Condos","url":"https://centrecourt.com/projects/grid/","publisher":"CentreCourt","extractor":"centrecourt","cache_file":"posted_grid.html"},
+  {"osm_way_id":"965836277","name":"199 Church Condominiums","url":"https://centrecourt.com/projects/199-church/","publisher":"CentreCourt","extractor":"centrecourt","cache_file":"posted_199-church.html"},
+  {"osm_way_id":"35159806","name":"252 Church","url":"https://centrecourt.com/projects/252-church/","publisher":"CentreCourt","extractor":"centrecourt","cache_file":"posted_252-church.html"},
+  {"osm_way_id":"205665801","name":"Prime Condos","url":"https://centrecourt.com/projects/prime/","publisher":"CentreCourt","extractor":"centrecourt","cache_file":"posted_prime.html"},
+  {"osm_way_id":"111661971","name":"Panda Condos","url":"https://lifetimedevelopments.com/project/panda/","publisher":"Lifetime Developments","extractor":"panda","cache_file":"posted_panda.html"},
+  {"osm_way_id":"668372121","name":"Dundas Square Gardens","url":"https://www.guptagroup.ca/portfolio/dundas-square-gardens","publisher":"The Gupta Group","extractor":"dundas_gardens","cache_file":"posted_dundas-gardens.html"},
+  {"osm_way_id":"261802899","name":"Aura","url":"https://canderelresidential.com/projects/aura-at-college-park/","publisher":"Canderel Residential","reviewed_counts":[995],"reviewed_on":"2026-10-17","evidence":"Main project narrative: 995 units offering luxurious finishes. Manually reviewed numeric fact; raw page download unavailable from local resolver."},
+  {"osm_way_id":"234014500","name":"MAX Condos","url":"https://greybrook.com/portfolio/max-condos/","publisher":"Greybrook, development investment partner","reviewed_counts":[363],"reviewed_on":"2026-10-17","evidence":"Main project description and Total Units table both give 363. Completed and registered in 2021. Manually reviewed numeric fact; raw page download unavailable from local resolver."}
+]

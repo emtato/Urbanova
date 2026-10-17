@@ -405,5 +405,95 @@
     "retrieved_at": "2026-10-17T08:00:06.114635+00:00",
     "sha256": "89bd66b5d00370c1d748a4cb98a7a64c92d5f505d0f12c110d665fa69e57584e",
     "bytes": 5917356
+  },
+  {
+    "source_id": "posted-building-668372120",
+    "title": "Public unit-count page for Grid Condos",
+    "url": "https://centrecourt.com/projects/grid/",
+    "publisher": "CentreCourt",
+    "version": "retrieved published developer page",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17T13:46:48.912264+00:00",
+    "sha256": "7e6fe0b611ee2a0565a55407c5cc8d414e0dde62d9ce59bf8e6576de7ed089cc",
+    "bytes": 40453
+  },
+  {
+    "source_id": "posted-building-965836277",
+    "title": "Public unit-count page for 199 Church Condominiums",
+    "url": "https://centrecourt.com/projects/199-church/",
+    "publisher": "CentreCourt",
+    "version": "retrieved published developer page",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17T13:46:49.972697+00:00",
+    "sha256": "6451d38a64b54e3c4c2c439f640690581f126df77867640ee2d387a47d18f698",
+    "bytes": 45188
+  },
+  {
+    "source_id": "posted-building-35159806",
+    "title": "Public unit-count page for 252 Church",
+    "url": "https://centrecourt.com/projects/252-church/",
+    "publisher": "CentreCourt",
+    "version": "retrieved published developer page",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17T13:46:50.987151+00:00",
+    "sha256": "875c8d8e5a27f3d42a82528e9e92b2ba4bd7de5d68fa188e71d0c2abbf1d5b2c",
+    "bytes": 39789
+  },
+  {
+    "source_id": "posted-building-205665801",
+    "title": "Public unit-count page for Prime Condos",
+    "url": "https://centrecourt.com/projects/prime/",
+    "publisher": "CentreCourt",
+    "version": "retrieved published developer page",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17T13:46:51.907529+00:00",
+    "sha256": "a4b632e25fa0553395de6b6500ebd889123e1d40cea9dd4919b32ea28ea5e172",
+    "bytes": 44494
+  },
+  {
+    "source_id": "posted-building-111661971",
+    "title": "Public unit-count page for Panda Condos",
+    "url": "https://lifetimedevelopments.com/project/panda/",
+    "publisher": "Lifetime Developments",
+    "version": "retrieved published developer page",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17T13:46:52.307605+00:00",
+    "sha256": "e913d66bbb05d957533c90cfecb67ea20737fa4eed6df7a417077be21b3ac94c",
+    "bytes": 50413
+  },
+  {
+    "source_id": "posted-building-668372121",
+    "title": "Public unit-count page for Dundas Square Gardens",
+    "url": "https://www.guptagroup.ca/portfolio/dundas-square-gardens",
+    "publisher": "The Gupta Group",
+    "version": "retrieved published developer page",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17T13:46:53.021801+00:00",
+    "sha256": "3768e93706c88107f546ca615a1cd68483c717e0cb9ae67f683dab87628c189c",
+    "bytes": 74537
+  },
+  {
+    "source_id": "posted-building-261802899",
+    "title": "Manually reviewed public unit-count fact for Aura",
+    "url": "https://canderelresidential.com/projects/aura-at-college-park/",
+    "publisher": "Canderel Residential",
+    "version": "Manual numeric extraction; checksum covers committed fact file, not upstream HTML",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17",
+    "sha256": "d2822e86d8c4f492f3dfccfccc24a2fd74917b564e4322c928bf9f02dec4b17b",
+    "bytes": 1954,
+    "review_note": "Main project narrative: 995 units offering luxurious finishes. Manually reviewed numeric fact; raw page download unavailable from local resolver."
+  },
+  {
+    "source_id": "posted-building-234014500",
+    "title": "Manually reviewed public unit-count fact for MAX Condos",
+    "url": "https://greybrook.com/portfolio/max-condos/",
+    "publisher": "Greybrook, development investment partner",
+    "version": "Manual numeric extraction; checksum covers committed fact file, not upstream HTML",
+    "licence": "Publisher website terms; numeric facts only",
+    "retrieved_at": "2026-10-17",
+    "sha256": "d2822e86d8c4f492f3dfccfccc24a2fd74917b564e4322c928bf9f02dec4b17b",
+    "bytes": 1954,
+    "review_note": "Main project description and Total Units table both give 363. Completed and registered in 2021. Manually reviewed numeric fact; raw page download unavailable from local resolver."
   }
 ]
