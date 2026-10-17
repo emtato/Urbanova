@@ -16,7 +16,7 @@ def main() -> None:
     try:
         ping_database()
     except Exception:
-        raise SystemExit("Database check failed. Run setup and verify your Tiger Data DATABASE_URL.")
+        raise SystemExit("Database check failed. Run setup and verify your hosted PostgreSQL DATABASE_URL.")
     logging.info("PostGIS reachable. Waiting for the future job processor.")
     if not args.once:
         try:

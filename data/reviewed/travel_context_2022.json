@@ -1,0 +1,16 @@
+{
+  "geography": "Toronto Ward 13",
+  "survey_year": 2022,
+  "source_window": "06:00-09:00",
+  "residents": 119907,
+  "all_mode_resident_trips": 41558,
+  "transit_excluding_go_rail": 12087,
+  "go_rail_only": 154,
+  "joint_go_and_transit": 147,
+  "transit_share": 0.29808941720005777,
+  "trips_per_resident_3h": 0.3465852702511113,
+  "source_ids": [
+    "tts-2022-wards"
+  ],
+  "caveat": "CSV contains an 8:59 pm typo on AM rows; adjacent AM transit row specifies am. These are expanded resident-trip survey estimates, not trips originating in the area or observed 505 boardings."
+}

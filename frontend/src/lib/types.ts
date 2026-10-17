@@ -1,4 +1,5 @@
-// Contract 1.0.0; mirrored from backend/schemas. Units and semantics: docs/contract.md.
+// Contract 2.0.0; Stop/Development mirror backend/simulation/objects; other models mirror backend/schemas.
+// Units and semantics: docs/contract.md.
 export type Status = 'sourced' | 'assumed' | 'user_selected'
 export type RiderGroup = 'existing' | 'new'
 export type DemandCase = 'low' | 'central' | 'high'
@@ -11,8 +12,8 @@ export interface Assumption {
   allowed_range: { low: number; high: number }; status: Status; source_ids: string[]
 }
 export interface Stop {
-  stop_id: string; gtfs_stop_id: string; name: string; seq: number
-  lon: number; lat: number; source_ids: string[]
+  id: string; name: string; sequence: number; latitude: number; longitude: number
+  waiting_passenger_ids: string[]; serving_streetcar_id: string | null
 }
 export interface Link {
   link_id: string; from_stop: string; to_stop: string; length_m: number
@@ -26,15 +27,10 @@ export interface Corridor {
   stops: Stop[]; links: Link[]; berths_per_stop: Record<string, number>
   incoming_load: Assumption; source_ids: string[]
 }
-export interface Footprint { type: 'Polygon'; coordinates: [number, number][][] }
-export interface Access {
-  stop_id: string; walk_m: number; status: 'estimated' | 'reviewed'; source_ids: string[]
-}
 export interface Development {
-  dev_id: string; pipeline_ref: string | null; address: string; units: number
-  stage: string; record_date: string; kind: 'proposal' | 'hypothetical'
-  footprint: Footprint | null; footprint_status: 'sourced' | 'unavailable'
-  access: Access[]; source_ids: string[]
+  id: string; name: string; latitude: number; longitude: number; net_added_units: number
+  occupied_share: number; residents_per_occupied_unit: number; transit_share: number
+  accessible_stop_ids: string[]
 }
 export interface CostRange {
   low: number; central: number; high: number; currency: 'CAD'; price_year: number
@@ -99,7 +95,7 @@ export interface ReplayStream {
   initial_queues: InitialQueue[]; events: ReplayEvent[]
 }
 export interface Comparison {
-  contract_version: '1.0.0'; comparison_id: string; fixture: boolean; product_label: 'scenario experiment'
+  contract_version: '2.0.0'; comparison_id: string; fixture: boolean; product_label: 'scenario experiment'
   scenario: Scenario; corridor: Corridor; cases: CaseResult[]; packages: Package[]
   sensitivity: SensitivityResult[]; assumptions: Assumption[]; sources: SourceRef[]
   warnings: string[]; replay: ReplayStream | null

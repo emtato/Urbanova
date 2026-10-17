@@ -1,0 +1,15 @@
+{
+  "cycle_s":3600,
+  "lane_cycle_s":3000,
+  "baseline_headway_s":600,
+  "service_headway_s":300,
+  "peak_hours":2,
+  "service_days":250,
+  "cost_per_hour":{"low":100,"central":120,"high":150},
+  "lane_capital":{"low":10000,"central":15000,"high":20000},
+  "lane_operating":{"low":0,"central":0,"high":0},
+  "price_year":2026,
+  "earliest_phase":"phase-1",
+  "source_ids":[],
+  "assumption_label":"SYNTHETIC EXAMPLE ONLY. Replace every value with explicitly reviewed or user-selected assumptions; these are not TTC observations or cost quotes."
+}

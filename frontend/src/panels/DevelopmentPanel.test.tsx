@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { DevelopmentPanel, REVIEWED_METADATA } from './DevelopmentPanel'
-import { sampleComparison } from '../lib/sampleComparison'
-import type { Comparison, Development } from '../lib/types'
+import { sampleComparison } from '../data'
+import type { CorridorDevelopment } from '../map/types'
 
-const comparison = sampleComparison as unknown as Comparison
-const developments = comparison.scenario.developments
+const comparison = sampleComparison as any
+const developments = comparison.scenario.developments as CorridorDevelopment[]
 const stops = comparison.corridor.stops
 
 function cleanHtml(raw: string): string {
@@ -121,7 +121,7 @@ describe('D4: DevelopmentPanel Component Tests', () => {
   })
 
   it('handles development with missing metadata gracefully', () => {
-    const hypotheticalDev: Development = {
+    const hypotheticalDev: CorridorDevelopment = {
       dev_id: 'hypothetical-test',
       pipeline_ref: null,
       address: '999 DUNDAS ST E',

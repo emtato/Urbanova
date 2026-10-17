@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type FC } from 'react'
 import mapboxgl, {
-  Map as MapboxMap,
-  NavigationControl,
-  LngLatBounds,
+  type Map as MapboxMap,
   type MapLayerMouseEvent,
 } from 'mapbox-gl'
-import type { Corridor, Development, Stop } from '../lib/types'
+import type { Corridor } from '../lib/types'
+import {
+  normalizeStop,
+  normalizeDevelopment,
+} from './types'
 import {
   setupCorridorMapLayers,
   updateDevelopmentsPhase,
@@ -23,8 +25,8 @@ import {
 } from '../data/shadow_metadata'
 
 export interface CorridorMapProps {
-  corridor: Corridor
-  developments: Development[]
+  corridor: Corridor | any
+  developments: any[]
   selectedStopId?: string | null
   selectedDevId?: string | null
   activePhase?: number // 0 = Today, 1 = Phase 1, 2 = Phase 2
@@ -32,8 +34,8 @@ export interface CorridorMapProps {
   onToggleShadows?: (enabled: boolean) => void
   hideAllPopups?: boolean
   onToggleHideAllPopups?: () => void
-  onSelectStop?: (stop: Stop) => void
-  onSelectDevelopment?: (dev: Development) => void
+  onSelectStop?: (stop: any) => void
+  onSelectDevelopment?: (dev: any) => void
   className?: string
 }
 
@@ -109,7 +111,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     const defaultCenter: [number, number] = [-79.364, 43.660]
 
     try {
-      const map = new MapboxMap({
+      const map = new mapboxgl.Map({
         container: mapContainerRef.current,
         style: MAPBOX_STANDARD_STYLE,
         center: defaultCenter,
@@ -118,7 +120,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         bearing: -20,
       })
 
-      map.addControl(new NavigationControl({ showCompass: true }), 'bottom-right')
+      map.addControl(new mapboxgl.NavigationControl({ showCompass: true }), 'bottom-right')
 
       map.on('style.load', () => {
         // Mapbox Standard 3D lighting configuration
@@ -157,7 +159,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         if (!e.features || e.features.length === 0) return
         const feature = e.features[0]
         const stopId = feature.properties?.stop_id
-        const stop = corridor.stops.find((s) => s.stop_id === stopId)
+        const stop = (corridor?.stops ?? []).find((s: any) => normalizeStop(s).stop_id === stopId)
         if (stop && onSelectStop) {
           onSelectStop(stop)
         }
@@ -168,7 +170,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         if (!e.features || e.features.length === 0) return
         const feature = e.features[0]
         const devId = feature.properties?.dev_id
-        const dev = developments.find((d) => d.dev_id === devId)
+        const dev = developments.find((d: any) => normalizeDevelopment(d).dev_id === devId)
         if (dev && onSelectDevelopment) {
           onSelectDevelopment(dev)
         }
@@ -242,10 +244,14 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   // Center camera when selected stop changes
   useEffect(() => {
     if (!mapRef.current || !selectedStopId) return
-    const stop = corridor.stops.find((s) => s.stop_id === selectedStopId)
+    const stop = corridor.stops.find((s: any) => {
+      const norm = normalizeStop(s)
+      return norm.stop_id === selectedStopId
+    })
     if (stop) {
+      const norm = normalizeStop(stop)
       mapRef.current.flyTo({
-        center: [stop.lon, stop.lat],
+        center: [norm.lon, norm.lat],
         zoom: 15.8,
         pitch: is3D ? 50 : 0,
         bearing: is3D ? -20 : 0,
@@ -257,7 +263,10 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   // Center camera when selected development changes
   useEffect(() => {
     if (!mapRef.current || !selectedDevId) return
-    const dev = developments.find((d) => d.dev_id === selectedDevId)
+    const dev = developments.find((d: any) => {
+      const norm = normalizeDevelopment(d)
+      return norm.dev_id === selectedDevId
+    })
     if (dev) {
       const coords = getDevelopmentCoordinates(dev)
       mapRef.current.flyTo({
@@ -271,10 +280,13 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   }, [selectedDevId, developments, is3D])
 
   // Fit bounds helper (preserves 3D pitch and adds right panel padding)
-  const fitToCorridor = (map: MapboxMap, stops: Stop[]) => {
-    if (stops.length === 0) return
-    const bounds = new LngLatBounds()
-    stops.forEach((s) => bounds.extend([s.lon, s.lat]))
+  const fitToCorridor = (map: MapboxMap, stops: any[]) => {
+    if (!stops || stops.length === 0) return
+    const bounds = new mapboxgl.LngLatBounds()
+    stops.forEach((raw) => {
+      const s = normalizeStop(raw)
+      bounds.extend([s.lon, s.lat])
+    })
     map.fitBounds(bounds, {
       padding: { top: 90, bottom: 90, left: 100, right: 380 },
       maxZoom: 15.6,

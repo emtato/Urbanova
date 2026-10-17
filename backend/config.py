@@ -16,10 +16,13 @@ class Settings(BaseSettings):
     )
 
     gemini_api_key: SecretStr = SecretStr("")
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.8-flash"
     database_url: PostgresDsn | None = Field(default=None, repr=False)
     data_cache_dir: Path = ROOT_DIR / "data/cache"
     sim_runs: int = Field(default=100, ge=1)
+    cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173"]
+    )
 
     @field_validator("database_url", mode="before")
     @classmethod
@@ -34,7 +37,7 @@ class Settings(BaseSettings):
     @property
     def active_database_url(self) -> str:
         if self.database_url is None:
-            raise ValueError("Set DATABASE_URL in the root .env to your Tiger Data connection URL.")
+            raise ValueError("Set DATABASE_URL in the root .env to your hosted PostgreSQL connection URL.")
         return str(self.database_url)
 
 

@@ -9,7 +9,12 @@
 
 import type { Map as MapboxMap, GeoJSONSource, AnyLayer } from 'mapbox-gl'
 import type { Feature, FeatureCollection } from 'geojson'
-import type { Corridor, Development, Stop } from '../lib/types'
+import {
+  type CorridorStop,
+  type CorridorDevelopment,
+  normalizeStop,
+  normalizeDevelopment,
+} from './types'
 import { reviewedWalkingRoutes } from '../data'
 
 // Existing building IDs directly on the development parcels to swap out during phases
@@ -51,10 +56,11 @@ export const LAYER_SHADOWS_ADDED = 'layer-shadows-added'
  * Creates surrounding perimeter blocks (used in tests or fallback).
  * In Mapbox Standard, 3D city buildings are rendered natively by the basemap.
  */
-export function generateSurroundingMassingGeoJSON(corridor?: Corridor): FeatureCollection {
+export function generateSurroundingMassingGeoJSON(corridor?: any): FeatureCollection {
   const features: Feature[] = []
   if (corridor && corridor.stops) {
-    corridor.stops.forEach((stop, i) => {
+    corridor.stops.forEach((rawStop: any, i: number) => {
+      const stop = normalizeStop(rawStop)
       const offsetNorth = 0.0008 + (i % 3) * 0.0004
       const offsetSouth = -0.0008 - ((i + 1) % 3) * 0.0004
       const width = 0.0012
@@ -120,22 +126,25 @@ export const DEV_PHASES: Record<string, number> = {
   'toronto-app-25-236949-ste-13-oz': 2,
 }
 
-export function getDevelopmentCoordinates(dev: Development): [number, number] {
-  if (dev.footprint && dev.footprint.coordinates[0]?.[0]) {
-    return dev.footprint.coordinates[0][0]
+export function getDevelopmentCoordinates(dev: any): [number, number] {
+  const d = normalizeDevelopment(dev)
+  if (d.footprint && d.footprint.coordinates[0]?.[0]) {
+    return d.footprint.coordinates[0][0]
   }
-  return DEV_COORDINATES[dev.dev_id] || [-79.365, 43.660]
+  return DEV_COORDINATES[d.dev_id] || [-79.365, 43.660]
 }
 
-export function getDevelopmentPhase(dev: Development): number {
-  return DEV_PHASES[dev.dev_id] || 2
+export function getDevelopmentPhase(dev: any): number {
+  const d = normalizeDevelopment(dev)
+  return DEV_PHASES[d.dev_id] || 2
 }
 
 /**
  * Builds GeoJSON features for development proposal towers
  */
-export function generateDevelopmentsGeoJSON(developments: Development[]): FeatureCollection {
-  const features: Feature[] = developments.map((dev) => {
+export function generateDevelopmentsGeoJSON(developments: any[]): FeatureCollection {
+  const features: Feature[] = developments.map((rawDev) => {
+    const dev = normalizeDevelopment(rawDev)
     const [lon, lat] = getDevelopmentCoordinates(dev)
     const phase = getDevelopmentPhase(dev)
     const size = 0.0006 // ~45m x 45m footprint
@@ -173,11 +182,14 @@ export function generateDevelopmentsGeoJSON(developments: Development[]): Featur
  * Uses official surveyed OSM pedestrian routes if available.
  */
 export function generateWalkCatchmentsGeoJSON(
-  developments: Development[],
-  stops: Stop[]
+  developments: any[],
+  stops: any[]
 ): FeatureCollection {
+  const normalizedDevs = developments.map(normalizeDevelopment)
+  const normalizedStops = stops.map(normalizeStop)
+
   if (reviewedWalkingRoutes && reviewedWalkingRoutes.features && reviewedWalkingRoutes.features.length > 0) {
-    const devMap = new Map<string, Development>(developments.map((d) => [d.dev_id, d]))
+    const devMap = new Map<string, CorridorDevelopment>(normalizedDevs.map((d) => [d.dev_id, d]))
     const features: Feature[] = (reviewedWalkingRoutes.features as any[]).map((f) => {
       const dev = devMap.get(f.properties?.dev_id)
       const phase = dev ? getDevelopmentPhase(dev) : (DEV_PHASES[f.properties?.dev_id] || 2)
@@ -192,13 +204,13 @@ export function generateWalkCatchmentsGeoJSON(
     return { type: 'FeatureCollection', features }
   }
 
-  const stopMap = new Map<string, Stop>(stops.map((s) => [s.stop_id, s]))
+  const stopMap = new Map<string, CorridorStop>(normalizedStops.map((s) => [s.stop_id, s]))
   const features: Feature[] = []
 
-  developments.forEach((dev) => {
+  normalizedDevs.forEach((dev) => {
     const coords = getDevelopmentCoordinates(dev)
     const phase = getDevelopmentPhase(dev)
-    dev.access.forEach((acc) => {
+    dev.access?.forEach((acc: any) => {
       const stop = stopMap.get(acc.stop_id)
       if (stop) {
         features.push({
@@ -224,12 +236,14 @@ export function generateWalkCatchmentsGeoJSON(
 /**
  * Builds corridor track alignment line GeoJSON
  */
-export function generateCorridorLinksGeoJSON(corridor: Corridor): FeatureCollection {
+export function generateCorridorLinksGeoJSON(corridor: any): FeatureCollection {
   const coordinates: [number, number][] = []
 
-  // Connect sequential stops
-  for (let i = 0; i < corridor.stops.length; i++) {
-    coordinates.push([corridor.stops[i].lon, corridor.stops[i].lat])
+  if (corridor && corridor.stops) {
+    for (let i = 0; i < corridor.stops.length; i++) {
+      const s = normalizeStop(corridor.stops[i])
+      coordinates.push([s.lon, s.lat])
+    }
   }
 
   return {
@@ -237,7 +251,7 @@ export function generateCorridorLinksGeoJSON(corridor: Corridor): FeatureCollect
     features: [
       {
         type: 'Feature',
-        properties: { corridor_id: corridor.corridor_id, name: `Route ${corridor.route_pattern} (${corridor.direction})` },
+        properties: { corridor_id: corridor?.corridor_id ?? '', name: `Route ${corridor?.route_pattern ?? '505'} (${corridor?.direction ?? 'westbound'})` },
         geometry: {
           type: 'LineString',
           coordinates,
@@ -250,10 +264,11 @@ export function generateCorridorLinksGeoJSON(corridor: Corridor): FeatureCollect
 /**
  * Builds corridor stops GeoJSON
  */
-export function generateCorridorStopsGeoJSON(stops: Stop[]): FeatureCollection {
+export function generateCorridorStopsGeoJSON(stops: any[]): FeatureCollection {
+  const normalizedStops = stops.map(normalizeStop)
   return {
     type: 'FeatureCollection',
-    features: stops.map((s) => ({
+    features: normalizedStops.map((s) => ({
       type: 'Feature',
       properties: {
         stop_id: s.stop_id,
@@ -274,8 +289,8 @@ export function generateCorridorStopsGeoJSON(stops: Stop[]): FeatureCollection {
  */
 export function setupCorridorMapLayers(
   map: MapboxMap,
-  corridor: Corridor,
-  developments: Development[]
+  corridor: any,
+  developments: any[]
 ): void {
   // Mapbox Standard renders all 3D buildings natively via basemap style.
   // Custom corridor layers are placed in slot: 'top' to sit cleanly over the 3D city.
@@ -530,8 +545,8 @@ export function updateDevelopmentsPhase(map: MapboxMap, activePhase: number): vo
  */
 export function updateCorridorMapData(
   map: MapboxMap,
-  corridor: Corridor,
-  developments: Development[]
+  corridor: any,
+  developments: any[]
 ): void {
 
   const walkSrc = map.getSource(SOURCE_WALK_LINKS) as GeoJSONSource | undefined

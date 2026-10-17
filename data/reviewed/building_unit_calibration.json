@@ -1,0 +1,489 @@
+{
+  "method": "median of local published rental counts with matched footprint and storeys",
+  "sample_count": 51,
+  "gross_m2_per_unit": 62.813703634063806,
+  "samples": [
+    {
+      "building_id": "osm-way-796691322",
+      "registry_id": "rentsafe-4153437",
+      "published_units": 22,
+      "published_storeys": 4.0,
+      "footprint_m2": 510.12,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 92.74852071077542
+    },
+    {
+      "building_id": "osm-way-973900989",
+      "registry_id": "rentsafe-4288743",
+      "published_units": 15,
+      "published_storeys": 3.0,
+      "footprint_m2": 205.35,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 41.06990846228499
+    },
+    {
+      "building_id": "osm-way-30979352",
+      "registry_id": "rentsafe-4153461",
+      "published_units": 447,
+      "published_storeys": 33.0,
+      "footprint_m2": 850.84,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 62.813703634063806
+    },
+    {
+      "building_id": "osm-way-195211478",
+      "registry_id": "rentsafe-4250271",
+      "published_units": 37,
+      "published_storeys": 4.0,
+      "footprint_m2": 492.04,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 53.19389715707625
+    },
+    {
+      "building_id": "osm-way-184504118",
+      "registry_id": "rentsafe-4153582",
+      "published_units": 26,
+      "published_storeys": 3.0,
+      "footprint_m2": 317.63,
+      "match_distance_m": 5.79,
+      "gross_m2_per_unit": 36.65012040566079
+    },
+    {
+      "building_id": "osm-way-30979838",
+      "registry_id": "rentsafe-4153584",
+      "published_units": 67,
+      "published_storeys": 7.0,
+      "footprint_m2": 678.71,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 70.9101187096094
+    },
+    {
+      "building_id": "osm-way-205665797",
+      "registry_id": "rentsafe-4153453",
+      "published_units": 16,
+      "published_storeys": 3.0,
+      "footprint_m2": 273.82,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 51.34173165613216
+    },
+    {
+      "building_id": "osm-way-796691356",
+      "registry_id": "rentsafe-5853218",
+      "published_units": 19,
+      "published_storeys": 3.0,
+      "footprint_m2": 192.31,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 30.36518312414938
+    },
+    {
+      "building_id": "osm-way-61014026",
+      "registry_id": "rentsafe-4153443",
+      "published_units": 241,
+      "published_storeys": 11.0,
+      "footprint_m2": 1033.89,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 47.19007787057987
+    },
+    {
+      "building_id": "osm-way-796681443",
+      "registry_id": "rentsafe-4153576",
+      "published_units": 29,
+      "published_storeys": 4.0,
+      "footprint_m2": 372.72,
+      "match_distance_m": 1.04,
+      "gross_m2_per_unit": 51.40978507611486
+    },
+    {
+      "building_id": "osm-way-796691184",
+      "registry_id": "rentsafe-4250288",
+      "published_units": 10,
+      "published_storeys": 3.0,
+      "footprint_m2": 104.46,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 31.33833149476631
+    },
+    {
+      "building_id": "osm-way-43806228",
+      "registry_id": "rentsafe-4153571",
+      "published_units": 260,
+      "published_storeys": 17.0,
+      "footprint_m2": 1173.11,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 76.70325141671819
+    },
+    {
+      "building_id": "osm-way-195214766",
+      "registry_id": "rentsafe-4153581",
+      "published_units": 81,
+      "published_storeys": 7.0,
+      "footprint_m2": 782.56,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 67.6282428173531
+    },
+    {
+      "building_id": "osm-way-33406213",
+      "registry_id": "rentsafe-4156107",
+      "published_units": 225,
+      "published_storeys": 23.0,
+      "footprint_m2": 780.0,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 79.73370027652835
+    },
+    {
+      "building_id": "osm-way-300579757",
+      "registry_id": "rentsafe-4167680",
+      "published_units": 47,
+      "published_storeys": 3.0,
+      "footprint_m2": 1554.47,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 99.22137828991333
+    },
+    {
+      "building_id": "osm-way-43805131",
+      "registry_id": "rentsafe-4155602",
+      "published_units": 469,
+      "published_storeys": 27.0,
+      "footprint_m2": 1116.04,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 64.24954696973292
+    },
+    {
+      "building_id": "osm-way-70079303",
+      "registry_id": "rentsafe-4153455",
+      "published_units": 42,
+      "published_storeys": 10.0,
+      "footprint_m2": 420.44,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 100.1043744950025
+    },
+    {
+      "building_id": "osm-way-127288105",
+      "registry_id": "rentsafe-4153430",
+      "published_units": 20,
+      "published_storeys": 4.0,
+      "footprint_m2": 307.3,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 61.4606841554582
+    },
+    {
+      "building_id": "osm-way-30979786",
+      "registry_id": "rentsafe-4153439",
+      "published_units": 121,
+      "published_storeys": 13.0,
+      "footprint_m2": 301.32,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 32.37356150245931
+    },
+    {
+      "building_id": "osm-way-161727030",
+      "registry_id": "rentsafe-4153577",
+      "published_units": 41,
+      "published_storeys": 4.0,
+      "footprint_m2": 929.13,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 90.64665625278532
+    },
+    {
+      "building_id": "osm-way-33406320",
+      "registry_id": "rentsafe-4155600",
+      "published_units": 301,
+      "published_storeys": 16.0,
+      "footprint_m2": 1370.54,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 72.85285522802913
+    },
+    {
+      "building_id": "osm-way-298948145",
+      "registry_id": "rentsafe-4156772",
+      "published_units": 83,
+      "published_storeys": 9.0,
+      "footprint_m2": 1071.87,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 116.22726915852809
+    },
+    {
+      "building_id": "osm-way-70079304",
+      "registry_id": "rentsafe-4153454",
+      "published_units": 145,
+      "published_storeys": 15.0,
+      "footprint_m2": 985.58,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 101.95672531678959
+    },
+    {
+      "building_id": "osm-way-205666361",
+      "registry_id": "rentsafe-4153435",
+      "published_units": 16,
+      "published_storeys": 4.0,
+      "footprint_m2": 194.18,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 48.543853569867366
+    },
+    {
+      "building_id": "osm-way-796691362",
+      "registry_id": "rentsafe-5156142",
+      "published_units": 20,
+      "published_storeys": 4.0,
+      "footprint_m2": 298.18,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 59.63589810059739
+    },
+    {
+      "building_id": "osm-way-118778157",
+      "registry_id": "rentsafe-4153578",
+      "published_units": 25,
+      "published_storeys": 3.0,
+      "footprint_m2": 388.84,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 46.66078899586829
+    },
+    {
+      "building_id": "osm-way-257140733",
+      "registry_id": "rentsafe-4265577",
+      "published_units": 32,
+      "published_storeys": 5.0,
+      "footprint_m2": 304.42,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 47.56582019913549
+    },
+    {
+      "building_id": "osm-way-33406211",
+      "registry_id": "rentsafe-4156374",
+      "published_units": 102,
+      "published_storeys": 4.0,
+      "footprint_m2": 1359.48,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 53.31303503957264
+    },
+    {
+      "building_id": "osm-way-184344842",
+      "registry_id": "rentsafe-4153567",
+      "published_units": 20,
+      "published_storeys": 3.0,
+      "footprint_m2": 239.11,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 35.86620601151748
+    },
+    {
+      "building_id": "osm-way-184353027",
+      "registry_id": "rentsafe-4153395",
+      "published_units": 76,
+      "published_storeys": 7.0,
+      "footprint_m2": 1343.41,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 123.73472908855875
+    },
+    {
+      "building_id": "osm-way-202990514",
+      "registry_id": "rentsafe-4153422",
+      "published_units": 97,
+      "published_storeys": 11.0,
+      "footprint_m2": 795.53,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 90.21463120908763
+    },
+    {
+      "building_id": "osm-way-150501232",
+      "registry_id": "rentsafe-4153456",
+      "published_units": 72,
+      "published_storeys": 6.0,
+      "footprint_m2": 540.24,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 45.01977299364634
+    },
+    {
+      "building_id": "osm-way-61014139",
+      "registry_id": "rentsafe-4153457",
+      "published_units": 138,
+      "published_storeys": 15.0,
+      "footprint_m2": 1376.93,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 149.66652733752673
+    },
+    {
+      "building_id": "osm-way-34554941",
+      "registry_id": "rentsafe-4153462",
+      "published_units": 340,
+      "published_storeys": 20.0,
+      "footprint_m2": 777.26,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 45.721379048205506
+    },
+    {
+      "building_id": "osm-way-128007955",
+      "registry_id": "rentsafe-4153568",
+      "published_units": 16,
+      "published_storeys": 6.0,
+      "footprint_m2": 622.61,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 233.480099162679
+    },
+    {
+      "building_id": "osm-way-33405987",
+      "registry_id": "rentsafe-4153583",
+      "published_units": 38,
+      "published_storeys": 4.0,
+      "footprint_m2": 626.48,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 65.94547689524823
+    },
+    {
+      "building_id": "osm-way-300579760",
+      "registry_id": "rentsafe-4167463",
+      "published_units": 54,
+      "published_storeys": 3.0,
+      "footprint_m2": 1554.62,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 86.36765818670429
+    },
+    {
+      "building_id": "osm-way-205666367",
+      "registry_id": "rentsafe-4479218",
+      "published_units": 12,
+      "published_storeys": 3.0,
+      "footprint_m2": 267.3,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 66.82418965380637
+    },
+    {
+      "building_id": "osm-way-973900991",
+      "registry_id": "rentsafe-4153436",
+      "published_units": 19,
+      "published_storeys": 3.0,
+      "footprint_m2": 516.79,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 81.59863435277721
+    },
+    {
+      "building_id": "osm-way-796691103",
+      "registry_id": "rentsafe-4153448",
+      "published_units": 15,
+      "published_storeys": 3.0,
+      "footprint_m2": 323.92,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 64.78419582902237
+    },
+    {
+      "building_id": "osm-way-234014498",
+      "registry_id": "rentsafe-4153431",
+      "published_units": 77,
+      "published_storeys": 10.0,
+      "footprint_m2": 409.96,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 53.24123349497083
+    },
+    {
+      "building_id": "osm-way-33406317",
+      "registry_id": "rentsafe-4153434",
+      "published_units": 174,
+      "published_storeys": 7.0,
+      "footprint_m2": 1479.3,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 59.51203193815772
+    },
+    {
+      "building_id": "osm-way-205666362",
+      "registry_id": "rentsafe-4153442",
+      "published_units": 23,
+      "published_storeys": 4.0,
+      "footprint_m2": 240.8,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 41.8788974215915
+    },
+    {
+      "building_id": "osm-way-43805363",
+      "registry_id": "rentsafe-4155664",
+      "published_units": 327,
+      "published_storeys": 23.0,
+      "footprint_m2": 998.51,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 70.23182067580312
+    },
+    {
+      "building_id": "osm-way-796691283",
+      "registry_id": "rentsafe-4153574",
+      "published_units": 29,
+      "published_storeys": 4.0,
+      "footprint_m2": 391.96,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 54.06386074751361
+    },
+    {
+      "building_id": "osm-way-207411891",
+      "registry_id": "rentsafe-4233261",
+      "published_units": 337,
+      "published_storeys": 37.0,
+      "footprint_m2": 900.69,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 98.88861985897786
+    },
+    {
+      "building_id": "osm-way-61014025",
+      "registry_id": "rentsafe-4153444",
+      "published_units": 132,
+      "published_storeys": 5.0,
+      "footprint_m2": 1022.2,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 38.71968747463576
+    },
+    {
+      "building_id": "osm-way-33406206",
+      "registry_id": "rentsafe-4153445",
+      "published_units": 102,
+      "published_storeys": 11.0,
+      "footprint_m2": 297.47,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 32.08041620750404
+    },
+    {
+      "building_id": "osm-way-33406323",
+      "registry_id": "rentsafe-4156250",
+      "published_units": 300,
+      "published_storeys": 16.0,
+      "footprint_m2": 1396.75,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 74.49330583269877
+    },
+    {
+      "building_id": "osm-way-33406214",
+      "registry_id": "rentsafe-4155809",
+      "published_units": 371,
+      "published_storeys": 17.0,
+      "footprint_m2": 1611.69,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 73.85114055989423
+    },
+    {
+      "building_id": "osm-way-233671970",
+      "registry_id": "rentsafe-4156725",
+      "published_units": 98,
+      "published_storeys": 6.0,
+      "footprint_m2": 979.4,
+      "match_distance_m": 0.0,
+      "gross_m2_per_unit": 59.96299507630304
+    }
+  ],
+  "excluded_anchor_count": 3,
+  "limitations": "Geometry-to-property matches and uniform storeys can be wrong for podiums, split sites and building parts. Plausibility filtering is a modelling choice, not an observation.",
+  "source_ids": [
+    "registered-apartments",
+    "osm-housing-0-0",
+    "osm-housing-0-1",
+    "osm-housing-1-0",
+    "osm-housing-1-1",
+    "osm-housing-2-0",
+    "osm-housing-2-1",
+    "osm-housing-3-0",
+    "osm-housing-3-1"
+  ],
+  "uncertainty": "Estimates use half to twice the central count, rounded to units. This is an assumed sensitivity band, not a confidence interval. Missing levels use local building-type medians.",
+  "assumed_storeys_by_type": {
+    "apartments": 10.5,
+    "bungalow": 2,
+    "detached": 2.0,
+    "house": 2.0,
+    "residential": 3.0,
+    "semidetached_house": 1.0,
+    "terrace": 3.0
+  }
+}

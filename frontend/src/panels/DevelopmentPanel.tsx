@@ -1,12 +1,17 @@
 import type { FC } from 'react'
-import type { Development, Stop } from '../lib/types'
+import {
+  type CorridorDevelopment,
+  type CorridorStop,
+  normalizeDevelopment,
+  normalizeStop,
+} from '../map/types'
 import { getDevelopmentPhase } from '../map/MassingLayer'
 
 export interface DevelopmentPanelProps {
-  development: Development
-  stops: Stop[]
+  development: CorridorDevelopment | any
+  stops: Array<CorridorStop | any>
   onClose: () => void
-  onSelectStop?: (stop: Stop) => void
+  onSelectStop?: (stop: any) => void
   isMinimized?: boolean
   onToggleMinimize?: () => void
   className?: string
@@ -57,17 +62,19 @@ export const REVIEWED_METADATA: Record<string, SourcedDevelopmentMeta> = {
 }
 
 export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
-  development,
-  stops,
+  development: rawDev,
+  stops: rawStops,
   onClose,
   onSelectStop,
   isMinimized = false,
   onToggleMinimize,
   className = '',
 }) => {
+  const development = normalizeDevelopment(rawDev)
+  const stops = rawStops.map(normalizeStop)
   const meta = REVIEWED_METADATA[development.dev_id]
   const phase = getDevelopmentPhase(development)
-  const stopMap = new Map<string, Stop>(stops.map((s) => [s.stop_id, s]))
+  const stopMap = new Map<string, CorridorStop>(stops.map((s) => [s.stop_id, s]))
 
   const lon = meta?.lon ?? development.footprint?.coordinates[0]?.[0]?.[0] ?? -79.365
   const lat = meta?.lat ?? development.footprint?.coordinates[0]?.[0]?.[1] ?? 43.660
@@ -75,7 +82,7 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
   const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}`
   const aicUrl = meta?.applicationUrl ?? 'http://app.toronto.ca/AIC/'
 
-  const isUnderReview = development.stage.toLowerCase().includes('review')
+  const isUnderReview = (development.stage ?? '').toLowerCase().includes('review')
 
   if (isMinimized) {
     return (
@@ -233,7 +240,7 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
         </div>
 
         <div className="flex flex-col gap-1.5" data-testid="access-stops-list">
-          {development.access.map((acc) => {
+          {(development.access ?? []).map((acc) => {
             const stop = stopMap.get(acc.stop_id)
             const walkMin = (acc.walk_m / 80).toFixed(1)
 

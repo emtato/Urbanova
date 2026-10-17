@@ -1,12 +1,12 @@
 {
-  "corridor_id": "ttc-505-west-broadview-jarvis",
+  "corridor_id": "ttc-505-west-broadview-tmu",
   "corridor": {
     "route_short_name": "505",
     "direction_id": "1",
     "direction": "westbound",
     "start_stop_id": "1756",
-    "end_stop_id": "2119",
-    "reason": "Westbound toward downtown: riders from new housing near River St, Regent Park Blvd and Parliament St board upstream of Ontario, Sherbourne and Jarvis, so crowding reaches existing riders downstream."
+    "end_stop_id": "2136",
+    "reason": "Westbound toward TMU Station at Yonge/Dundas: housing near River, Regent Park and Parliament adds riders upstream of downtown stops and the Line 1 connection."
   },
   "service_date": "2026-10-16",
   "window": {

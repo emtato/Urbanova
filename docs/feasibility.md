@@ -5,14 +5,14 @@ Product label: **scenario experiment**. Schedules and proposed unit counts are s
 ## Evidence and status
 | Step | Status | Evidence |
 | --- | --- | --- |
-| 1.1 Corridor | Verified with an explicit window assumption | 505 westbound Dundas/Broadview → Jarvis, seven consecutive stops; see corridor.md |
+| 1.1 Corridor | Verified with an explicit window assumption | 505 westbound Dundas/Broadview → TMU Station, nine consecutive stops; see corridor.md |
 | 1.2 GTFS and developments | Verified as feasibility evidence | Dated weekday service plus three distinct pipeline proposals and estimated pedestrian access |
 | 1.3 Tiger Data and Gemini | Passed live | data/reviewed/access_check.json records PostGIS and a schema-validated Gemini response |
 | 1.4 Tiny case | Simulation teammate owns this | Duplicate simulation scaffolding removed; use the sourced data handoff, not synthetic fixture values |
 
 The analysis window is Friday 2026-10-16, 07:00–09:00 America/Toronto, chosen for reproducibility.
-The feed covers that day, and calendar exceptions are applied. There are 17 scheduled westbound entries, a median 6-minute headway and a roughly 1.97 km segment.
-The user-confirmed endpoints yield seven stops, replacing the original generic 8–12-stop target.
+The feed covers that day, and calendar exceptions are applied. There are 17 scheduled westbound entries, a median 6-minute headway and a roughly 2.51 km segment.
+The user extended the westbound endpoint to TMU Station at Yonge/Dundas, yielding nine stops and a Line 1 connection.
 
 ## Residential development shortlist
 Source: the City's Development Pipeline CSV, resource updated 2026-10-08. Unit counts below are the dataset's **proposed residential units**, not occupied homes, net-new units or an approved completion forecast.
@@ -30,8 +30,8 @@ The review keeps five candidates in development_shortlist.csv. 401 Dundas East (
 The selected 239 and 761 unit counts agree with their source descriptions; 500 uses the explicit numeric unit field.
 Pipeline stage "Active" is preserved as published and is not relabelled "Approved".
 
-**Open team decision: the third development.** Westbound, 239 Dundas St E's nearest stop is Jarvis, the last stop in the segment. Its riders board where the segment ends, so they add almost no crowding inside it.
-The alternative is Regent Park Phases 4–5 (22 136063 STE 13 OZ), next to Regent Park Blvd. Its pipeline record lists 3,432 proposed units; the application description says about 3,246, of which 1,270 are TCHC-owned rental, partly replacing existing homes. Its status is OMB Appeal, and the net-new count is not sourced.
+**Third development retained after the TMU extension.** Westbound, 239 Dundas St E's nearest stop remains Jarvis. It is now upstream of Church and TMU Station, so its riders can contribute load on those two links. Its occupancy and demand still need explicit assumptions.
+A previously discussed, unselected alternative is Regent Park Phases 4–5 (22 136063 STE 13 OZ), next to Regent Park Blvd. Its pipeline record lists 3,432 proposed units; the application description says about 3,246, of which 1,270 are TCHC-owned rental, partly replacing existing homes. Its status is OMB Appeal, and the net-new count is not sourced.
 
 ## Walking access and its limits
 Official Toronto municipal address points locate the projects. Small OpenStreetMap tiles provide the pedestrian network.
@@ -80,4 +80,4 @@ Keys and database URLs remain backend-only and are excluded from the committed e
 
 ## Phase 01 handoff
 Steps 1.5–1.16 are documented in [contract.md](contract.md). The synthetic fixture, replay and frontend now match the westbound data and pass the contract checks. Simulation variables and validation belong to the simulation teammate. Her sourced inputs are listed in [data-handoff.md](data-handoff.md); laptop confirmations and walking-review caveats remain explicit.
-The frozen API boundary is backend/schemas/Comparison, version 1.0.0. The reviewed corridor.json remains the data evidence rather than the API response shape.
+The API boundary is backend.schemas.Comparison, version 2.0.0, reusing the simulation's Stop and Development dataclasses. The reviewed corridor.json remains the data evidence rather than the API response shape.

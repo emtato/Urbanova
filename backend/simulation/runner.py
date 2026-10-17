@@ -1,0 +1,329 @@
+"""Run one simulation using the supplied scenario inputs."""
+
+from copy import deepcopy
+from dataclasses import asdict
+from math import isfinite
+from random import Random
+
+# commute.py helpers:
+#   corridor_505_share(home_lat, home_lon, corridor_stops)
+#   -> returns 1.0 if <40% of the way from Dundas to College/Queen, 0.5 if 40-60%,
+#      or 0.0 if >60% (where riders take 501 Queen or 506 College instead).
+#   sample_streetcar_trip(home_lat, home_lon, rng, *, accessible_stop_ids=None)
+#   -> returns StreetcarTrip(board_stop_id, alight_stop_id, exit, ...) if the
+#      commuter uses the westbound 505, or None if they walk, take Line 1, or
+#      travel outside this corridor model.
+from .commute import corridor_505_share, sample_streetcar_trip
+from .inputs import SimulationInput
+from .objects import Passenger, SimLog, Streetcar
+from .objects.sim_log import SimAction
+
+# streetcars.py helpers:
+#   streetcar_entry_times(inputs) -> Iterator[float] of entry times at Broadview (stop 0).
+#   generate_streetcar(inputs, streetcar_id) -> new empty Streetcar at inputs.stops[0].
+#   handle_stop_passengers(inputs, streetcar, passengers, time_s) -> alights riders
+#       at their destination_stop_id, boards waiting_passenger_ids FIFO up to capacity,
+#       marks denied_boarding_once=True when full, and moves destination_stop_id=None
+#       riders to status="beyond_segment" at the terminus (inputs.stops[-1]).
+#   depart_streetcar(inputs, streetcar, time_s) -> starts link to next stop.
+#   arrive_streetcar(streetcar, time_s) -> places streetcar at next_stop_id.
+#   terminate_streetcar(inputs, streetcar) -> marks streetcar "finished" at terminus.
+from .streetcars import (
+    arrive_streetcar,
+    depart_streetcar,
+    generate_streetcar,
+    handle_stop_passengers,
+    streetcar_entry_times,
+    terminate_streetcar,
+)
+
+
+def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
+    """Generate westbound 505 passengers from existing_residences and developments.
+
+    1. Calls `corridor_505_share(lat, lon, inputs.stops)` (from commute.py) to
+       account for parallel streetcars (506 College to the north, 501 Queen to the south):
+       - < 40% of the way from Dundas to College/Queen -> 100% of commuters stay on 505
+       - 40% to 60% of the way -> 50% stay on 505, 50% take Queen/College (ignored)
+       - > 60% of the way -> 0% stay on 505 (all take Queen/College, ignored)
+    2. Calls `sample_streetcar_trip` (from commute.py) for each remaining commuter:
+       - Samples a workplace from the City of Toronto 2021 Census heatmap (60% west
+         of home, 40% elsewhere) and checks the 750 m walking/subway/505 rules.
+       - Returns None if the commuter walks, takes the subway directly, or cannot
+         use the 505 (so we do NOT also multiply by `transit_share`).
+       - Returns a `StreetcarTrip` when they ride the westbound 505:
+           * `trip.board_stop_id` -> `Passenger.origin_stop_id`
+           * `trip.alight_stop_id` -> `Passenger.destination_stop_id`
+             (`None` means they stay on past TMU / `beyond_segment`).
+    """
+    if not isfinite(inputs.trips_per_resident_in_window) or inputs.trips_per_resident_in_window < 0:
+        raise ValueError("trips_per_resident_in_window must be finite and nonnegative")
+    weights = inputs.commuter_distribution
+    if not weights or any(not isfinite(w) or w < 0 for w in weights) or sum(weights) <= 0:
+        raise ValueError("commuter_distribution must be non-empty with nonnegative finite weights and positive sum")
+
+    # Separate RNG stream so passenger sampling never alters streetcar entry or link timing.
+    passenger_rng = Random(f"{inputs.seed}:passengers")
+    valid_stop_ids = {stop.id for stop in inputs.stops}
+    bin_indices = range(len(weights))
+    bin_width_s = inputs.rush_hour_duration_s / len(weights)
+    passengers: dict[str, Passenger] = {}
+
+    # Combine existing housing clusters (rider_group="existing") and new proposals (rider_group="new").
+    housing_sources = [
+        ("existing", None, cluster.latitude, cluster.longitude,
+         cluster.total_units * cluster.occupied_share * cluster.residents_per_occupied_unit,
+         cluster.accessible_stop_ids)
+        for cluster in inputs.existing_residences
+    ] + [
+        ("new", dev.id, dev.latitude, dev.longitude,
+         dev.net_added_units * dev.occupied_share * dev.residents_per_occupied_unit,
+         dev.accessible_stop_ids)
+        for dev in inputs.developments
+    ]
+
+    for rider_group, dev_id, lat, lon, estimated_residents, accessible_stop_ids in housing_sources:
+        # Scale by how close the building is to Dundas vs. College/Queen (1.0, 0.5, or 0.0).
+        route_share = corridor_505_share(lat, lon, inputs.stops)
+        if route_share <= 0:
+            continue
+        # Total commuter trips from this building that consider the 505 corridor.
+        num_commuters = round(estimated_residents * inputs.trips_per_resident_in_window * route_share)
+        for _ in range(num_commuters):
+            # Call commute.py helper: returns StreetcarTrip(board_stop_id, alight_stop_id, ...) or None.
+            trip = sample_streetcar_trip(
+                lat,
+                lon,
+                passenger_rng,
+                accessible_stop_ids=accessible_stop_ids or None,
+            )
+            if trip is None:
+                continue  # Commuter walked, used Line 1 directly, or wasn't served by the 505.
+            if trip.board_stop_id not in valid_stop_ids:
+                continue
+            if trip.alight_stop_id is not None and trip.alight_stop_id not in valid_stop_ids:
+                continue
+
+            # Sample when this passenger reaches their boarding stop within [0, rush_hour_duration_s)
+            # using the relative time-bin weights in inputs.commuter_distribution.
+            chosen_bin = passenger_rng.choices(bin_indices, weights=weights, k=1)[0]
+            get_to_stop_time = (chosen_bin + passenger_rng.random()) * bin_width_s
+
+            passenger_id = f"passenger-{len(passengers) + 1}"
+            passengers[passenger_id] = Passenger(
+                id=passenger_id,
+                origin_stop_id=trip.board_stop_id,
+                destination_stop_id=trip.alight_stop_id,  # None = rides west past TMU (beyond_segment)
+                get_to_stop_time=get_to_stop_time,
+                rider_group=rider_group,
+                development_id=dev_id,
+            )
+
+    return passengers
+
+
+# Assumed number of passengers already onboard a westbound 505 streetcar when it
+# arrives at Broadview & Dundas (from Broadview Station / Broadview Ave north of Dundas).
+INCOMING_BROADVIEW_LOAD_RANGE = (12, 24)
+
+# Hardcoded random stop dwell time range in seconds (boarding/alighting dwell at each stop).
+STOP_DWELL_RANGE_S = (15, 30)
+
+
+def seed_incoming_passengers(
+    inputs: SimulationInput,
+    streetcar: Streetcar,
+    passengers: dict[str, Passenger],
+    incoming_rng: Random,
+    time_s: float,
+) -> None:
+    """Place 12-24 already-onboard riders onto a new streetcar entering at Broadview.
+
+    Uses `sample_streetcar_trip` (from commute.py) at the entry stop (`inputs.stops[0]`)
+    so each incoming rider gets a realistic downstream alighting stop (or `None` if
+    riding past TMU).
+    """
+    entry_stop = inputs.stops[0]
+    valid_stop_ids = {stop.id for stop in inputs.stops}
+    low, high = INCOMING_BROADVIEW_LOAD_RANGE
+    incoming_count = min(incoming_rng.randint(low, high), streetcar.capacity)
+
+    for _ in range(incoming_count):
+        # Sample downstream 505 destinations from the entry stop (Broadview & Dundas).
+        destination_stop_id: str | None = None
+        for _attempt in range(25):
+            trip = sample_streetcar_trip(
+                entry_stop.latitude,
+                entry_stop.longitude,
+                incoming_rng,
+                accessible_stop_ids=(entry_stop.id,),
+            )
+            if trip is not None and (trip.alight_stop_id is None or trip.alight_stop_id in valid_stop_ids):
+                destination_stop_id = trip.alight_stop_id
+                break
+
+        passenger_id = f"passenger-{len(passengers) + 1}"
+        passengers[passenger_id] = Passenger(
+            id=passenger_id,
+            origin_stop_id=entry_stop.id,
+            destination_stop_id=destination_stop_id,
+            get_to_stop_time=time_s,
+            rider_group="existing",
+            status="onboard",
+            streetcar_id=streetcar.id,
+            boarding_time_s=time_s,
+        )
+        streetcar.onboard_passenger_ids.append(passenger_id)
+
+
+def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | None = None) -> dict:
+    """Run streetcars and passengers and return their activity and final state as JSON-ready data.
+
+    start/end are service-day seconds; activity and vehicle times are elapsed
+    from the start. Actions happen on whole-second ticks once their time is due.
+    Entry stops at the earlier of the rush-window end or run end.
+    Cars still travelling at run end stay in transit in the saved state.
+    """
+    # TODO: Add summary metrics.
+
+    # Read the clock boundaries that control how long this simulation runs.
+    start_time = inputs.start_time_s
+    end_time = inputs.end_time_s
+
+    # Check that the supplied clock and route can support streetcar movement.
+    if not isinstance(start_time, int) or not isinstance(end_time, int) or end_time <= start_time:
+        raise ValueError("Start/end times must be integer service-day seconds with end after start")
+    if not inputs.stops:
+        raise ValueError("The simulation requires at least one stop")
+    stop_ids = [stop.id for stop in inputs.stops]
+    if len(stop_ids) != len(set(stop_ids)):
+        raise ValueError("Stop IDs must be unique")
+    if [stop.sequence for stop in inputs.stops] != list(range(len(inputs.stops))):
+        raise ValueError("Stops must be supplied in zero-based travel order")
+    if len(inputs.link_travel_times_s) != len(inputs.stops) - 1:
+        raise ValueError("Supply one travel time per adjacent stop pair")
+    if any(not isfinite(duration) or duration <= 0 for duration in inputs.link_travel_times_s):
+        raise ValueError("Link travel times must be finite and positive")
+    travel_variation_share = inputs.link_travel_time_variation_share
+    if not isfinite(travel_variation_share) or not 0 <= travel_variation_share < 1:
+        raise ValueError("Travel-time variation must be finite and between zero (inclusive) and one (exclusive)")
+
+    # Keep active cars for updates, all cars for results, and every action for replay.
+    duration_s = end_time - start_time
+    entry_end_s = min(inputs.rush_hour_duration_s, duration_s)
+    streetcars: list[Streetcar] = []
+    active_streetcars: dict[str, Streetcar] = {}
+    planned_departure_s: dict[str, float] = {}
+    stops_by_id = {stop.id: stop for stop in inputs.stops}
+    sim_log: list[SimLog] = []
+
+    # Generate passengers from housing inputs via commute.py's sample_streetcar_trip
+    # unless the caller explicitly passed a custom passengers dict (e.g. in unit tests).
+    use_incoming_broadview_load = passengers is None and bool(inputs.existing_residences or inputs.developments)
+    if passengers is None:
+        for stop in inputs.stops:
+            stop.waiting_passenger_ids.clear()
+        passengers = generate_passengers(inputs)
+
+    # Sort scheduled passengers by arrival time at stop so we can enqueue them in order.
+    scheduled_passengers = sorted(
+        (p for p in passengers.values() if p.status == "scheduled"),
+        key=lambda p: p.get_to_stop_time,
+    )
+    next_passenger_idx = 0
+
+    # Prepare the entry schedule so the clock knows when to introduce each car.
+    # streetcar_entry_times (from streetcars.py) yields float entry timestamps in seconds.
+    entry_times = streetcar_entry_times(inputs)
+    next_entry_s = next(entry_times, None)
+
+    # Give link travel times, stop dwell times, and incoming Broadview loads repeatable random streams.
+    travel_rng = Random(f"{inputs.seed}:link_travel_times")
+    dwell_rng = Random(f"{inputs.seed}:dwell_times")
+    incoming_rng = Random(f"{inputs.seed}:incoming_loads")
+
+    # Preserve each action's state in the shared history for saving and replaying the run.
+    def record(time_s: int, action: SimAction, streetcar: Streetcar) -> None:
+        sim_log.append(SimLog(time_s, action, deepcopy(streetcar)))
+
+    # Serve passengers upon reaching a stop; terminate at TMU or schedule 15-30s stop dwell.
+    def begin_stop_service(streetcar: Streetcar, time_s: int) -> None:
+        # handle_stop_passengers (from streetcars.py):
+        # 1) Alights onboard passengers whose destination_stop_id == streetcar.current_stop_id
+        # 2) Boards stop.waiting_passenger_ids FIFO up to streetcar.capacity (sets boarding_time_s)
+        # 3) Sets denied_boarding_once=True on remaining waiting passengers if car is full
+        # 4) If at inputs.stops[-1] (TMU), transitions destination_stop_id=None riders to
+        #    status="beyond_segment" and clears onboard_passenger_ids before termination.
+        handle_stop_passengers(inputs, streetcar, passengers, time_s)
+        if streetcar.current_stop_id == inputs.stops[-1].id:
+            terminate_streetcar(inputs, streetcar)
+            record(time_s, "terminate", streetcar)
+            active_streetcars.pop(streetcar.id)
+        else:
+            dwell_low_s, dwell_high_s = STOP_DWELL_RANGE_S
+            planned_departure_s[streetcar.id] = time_s + dwell_rng.randint(dwell_low_s, dwell_high_s)
+
+    # Depart a non-terminus stop once its 15-30s dwell time has elapsed.
+    def finish_dwell_and_depart(streetcar: Streetcar, time_s: int) -> None:
+        handle_stop_passengers(inputs, streetcar, passengers, time_s)
+        planned_departure_s.pop(streetcar.id, None)
+        depart_streetcar(inputs, streetcar, time_s)
+
+        # Sample this car's link duration once, then save that plan in its departure record.
+        if travel_variation_share > 0:
+            base_duration_s = streetcar.expected_arrival_time_s - time_s
+            travel_duration_s = travel_rng.uniform(
+                base_duration_s * (1 - travel_variation_share),
+                base_duration_s * (1 + travel_variation_share),
+            )
+            streetcar.expected_arrival_time_s = time_s + travel_duration_s
+        record(time_s, "depart", streetcar)
+
+    # Advance one second at a time, including final arrivals at the reporting cutoff.
+    for time_s in range(start_time, end_time + 1):
+        elapsed_s = time_s - start_time
+
+        # Enqueue scheduled passengers whose stop-arrival time (get_to_stop_time) has arrived.
+        while (
+            next_passenger_idx < len(scheduled_passengers)
+            and elapsed_s >= scheduled_passengers[next_passenger_idx].get_to_stop_time
+        ):
+            passenger = scheduled_passengers[next_passenger_idx]
+            if passenger.status == "scheduled":
+                passenger.status = "waiting"
+                stops_by_id[passenger.origin_stop_id].waiting_passenger_ids.append(passenger.id)
+            next_passenger_idx += 1
+
+        # Update travelling cars that have reached their next stop and dwelling cars ready to depart.
+        for streetcar in list(active_streetcars.values()):
+            if streetcar.status == "in_transit" and elapsed_s >= streetcar.expected_arrival_time_s:
+                arrive_streetcar(streetcar, elapsed_s)
+                record(elapsed_s, "arrive", streetcar)
+                begin_stop_service(streetcar, elapsed_s)
+            elif streetcar.status == "at_stop" and streetcar.id in planned_departure_s:
+                handle_stop_passengers(inputs, streetcar, passengers, elapsed_s)
+                if elapsed_s >= planned_departure_s[streetcar.id]:
+                    finish_dwell_and_depart(streetcar, elapsed_s)
+
+        # Introduce cars whose entry time has been reached while the entry window is open.
+        while elapsed_s < entry_end_s and next_entry_s is not None and elapsed_s >= next_entry_s:
+            streetcar = generate_streetcar(inputs, f"streetcar-{len(streetcars) + 1}")
+            if use_incoming_broadview_load:
+                # Seed 12-24 riders already onboard from north of Broadview & Dundas.
+                seed_incoming_passengers(inputs, streetcar, passengers, incoming_rng, elapsed_s)
+            streetcars.append(streetcar)
+            active_streetcars[streetcar.id] = streetcar
+            record(elapsed_s, "generate", streetcar)
+            begin_stop_service(streetcar, elapsed_s)
+            next_entry_s = next(entry_times, None)
+
+    # Package the inputs, final state and activity history as JSON-ready saved-run data.
+    saved_inputs = asdict(inputs)
+    for stop in saved_inputs["stops"]:
+        stop["waiting_passenger_ids"] = list(stop["waiting_passenger_ids"])
+    return {
+        "inputs": saved_inputs,
+        "streetcars": [asdict(streetcar) for streetcar in streetcars],
+        "passengers": [asdict(passenger) for passenger in passengers.values()],
+        "sim_log": [asdict(entry) for entry in sim_log],
+    }

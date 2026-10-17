@@ -1,0 +1,36 @@
+{
+  "model_scope": "Partial registered-rental housing scenario; not all corridor housing or observed 505 demand.",
+  "housing_screen_m": 500,
+  "housing_postal_areas": ["M5A", "M5B", "M4M", "M4K"],
+  "existing_occupied_share": 0.97,
+  "new_occupied_share": 1.0,
+  "am_window_transfer_factor": 0.6666666666666666,
+  "streetcar_capacity": 251,
+  "headway_randomness_s": 0.0,
+  "link_travel_time_variation_share": 0.0,
+  "commuter_distribution": [1.0],
+  "seed": 0,
+  "development_reconciliation": {
+    "22 124214 STE 13 OZ": {
+      "adopted_total_units": 632,
+      "removed_existing_units": 8,
+      "status": "sourced_report_revision",
+      "source_ids": ["planning-239-2024"],
+      "note": "Use the internally consistent May 2024 decision-report revision: 632 total minus 8 removed = 624 net. Pipeline snapshot says 630; preserve that conflict rather than combining revisions. Future site delivery is unobserved."
+    },
+    "26 122451 STE 13 OZ": {
+      "adopted_total_units": 413,
+      "removed_existing_units": 0,
+      "status": "derived_site_description",
+      "source_ids": ["planning-500-2026"],
+      "note": "June 2026 report describes a sales centre and surface parking on the current site. Zero current homes is derived from that description, not the earlier whole Regent Park demolition programme."
+    },
+    "25 236949 STE 13 OZ": {
+      "adopted_total_units": 1197,
+      "removed_existing_units": 0,
+      "status": "assumed_replacement_count",
+      "source_ids": ["planning-761-consultation"],
+      "note": "Consultation confirms 1,197 proposed units but not the existing residential count. Zero existing homes remains an assumption requiring current application review, not a confirmed net-new total. Historical report downloads returned 404 and are not relied on."
+    }
+  }
+}

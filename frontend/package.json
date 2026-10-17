@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "check:contract": "node scripts/check-contract.mjs && tsc -b && node scripts/check-fixture-ui.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

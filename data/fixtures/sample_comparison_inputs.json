@@ -1,0 +1,247 @@
+{
+  "corridor": {
+    "corridor_id": "ttc-505-west-broadview-tmu",
+    "route_pattern": "505:1:shp-505-60",
+    "mode": "streetcar",
+    "direction": "westbound",
+    "crs": "EPSG:4326",
+    "metric_crs": "EPSG:26917",
+    "peak_window": {
+      "start_s": 25200,
+      "end_s": 32400,
+      "timezone": "America/Toronto",
+      "service_date": "2026-10-16"
+    },
+    "stops": [
+      {
+        "id": "ttc-stop-1756",
+        "name": "Broadview Ave at Dundas St East",
+        "sequence": 0,
+        "latitude": 43.6626,
+        "longitude": -79.351506,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-2127",
+        "name": "Dundas St East at River St",
+        "sequence": 1,
+        "latitude": 43.661284,
+        "longitude": -79.358,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-15873",
+        "name": "Dundas St East at Regent Park Blvd",
+        "sequence": 2,
+        "latitude": 43.66045,
+        "longitude": -79.361739,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-2125",
+        "name": "Dundas St East at Parliament St",
+        "sequence": 3,
+        "latitude": 43.65951,
+        "longitude": -79.365882,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-2123",
+        "name": "Dundas St East at Ontario St",
+        "sequence": 4,
+        "latitude": 43.658961,
+        "longitude": -79.368357,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-2131",
+        "name": "Dundas St East at Sherbourne St",
+        "sequence": 5,
+        "latitude": 43.658406,
+        "longitude": -79.370878,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-2119",
+        "name": "Dundas St East at Jarvis St",
+        "sequence": 6,
+        "latitude": 43.657162,
+        "longitude": -79.374377,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-2117",
+        "name": "Dundas St East at Church St",
+        "sequence": 7,
+        "latitude": 43.656583,
+        "longitude": -79.376993,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      },
+      {
+        "id": "ttc-stop-2136",
+        "name": "Dundas St East at Yonge St - Dundas Station",
+        "sequence": 8,
+        "latitude": 43.656426,
+        "longitude": -79.380755,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
+      }
+    ],
+    "links": [
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-1",
+        "from_stop": "ttc-stop-1756",
+        "to_stop": "ttc-stop-2127",
+        "length_m": 551.76,
+        "base_time_s": 175,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-2",
+        "from_stop": "ttc-stop-2127",
+        "to_stop": "ttc-stop-15873",
+        "length_m": 315.45,
+        "base_time_s": 90,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-3",
+        "from_stop": "ttc-stop-15873",
+        "to_stop": "ttc-stop-2125",
+        "length_m": 350.06,
+        "base_time_s": 104,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-4",
+        "from_stop": "ttc-stop-2125",
+        "to_stop": "ttc-stop-2123",
+        "length_m": 209.84,
+        "base_time_s": 85,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-5",
+        "from_stop": "ttc-stop-2123",
+        "to_stop": "ttc-stop-2131",
+        "length_m": 213.47,
+        "base_time_s": 85,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-6",
+        "from_stop": "ttc-stop-2131",
+        "to_stop": "ttc-stop-2119",
+        "length_m": 333.3,
+        "base_time_s": 136,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-7",
+        "from_stop": "ttc-stop-2119",
+        "to_stop": "ttc-stop-2117",
+        "length_m": 221.49,
+        "base_time_s": 89,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-tmu-link-8",
+        "from_stop": "ttc-stop-2117",
+        "to_stop": "ttc-stop-2136",
+        "length_m": 317.66,
+        "base_time_s": 140,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      }
+    ],
+    "berths_per_stop": {
+      "ttc-stop-1756": 1,
+      "ttc-stop-2127": 1,
+      "ttc-stop-15873": 1,
+      "ttc-stop-2125": 1,
+      "ttc-stop-2123": 1,
+      "ttc-stop-2131": 1,
+      "ttc-stop-2119": 1,
+      "ttc-stop-2117": 1,
+      "ttc-stop-2136": 1
+    },
+    "source_ids": [
+      "ttc-gtfs"
+    ]
+  },
+  "developments": [
+    {
+      "id": "fixture-development-1",
+      "name": "Fixture development 1",
+      "latitude": 43.657162,
+      "longitude": -79.374377,
+      "net_added_units": 100,
+      "occupied_share": 0.5,
+      "residents_per_occupied_unit": 2.0,
+      "transit_share": 0.5,
+      "accessible_stop_ids": [
+        "ttc-stop-2119"
+      ]
+    },
+    {
+      "id": "fixture-development-2",
+      "name": "Fixture development 2",
+      "latitude": 43.65951,
+      "longitude": -79.365882,
+      "net_added_units": 100,
+      "occupied_share": 0.5,
+      "residents_per_occupied_unit": 2.0,
+      "transit_share": 0.5,
+      "accessible_stop_ids": [
+        "ttc-stop-2125"
+      ]
+    },
+    {
+      "id": "fixture-development-3",
+      "name": "Fixture development 3",
+      "latitude": 43.661284,
+      "longitude": -79.358,
+      "net_added_units": 100,
+      "occupied_share": 0.5,
+      "residents_per_occupied_unit": 2.0,
+      "transit_share": 0.5,
+      "accessible_stop_ids": [
+        "ttc-stop-2127"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "ttc-gtfs",
+      "title": "Merged GTFS - TTC Routes and Schedules",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/b811ead4-6eaf-4adb-8408-d389fb5a069c/resource/c920e221-7a1c-488b-8c5b-6d8cd4e85eaf/download/completegtfs.zip",
+      "publisher": "Toronto Transit Commission / City of Toronto",
+      "version": "S1000542",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T06:36:33.015052+00:00"
+    }
+  ]
+}
