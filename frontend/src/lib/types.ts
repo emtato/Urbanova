@@ -1,233 +1,106 @@
-/**
- * FutureProof TypeScript Schemas
- * Directly mirrors backend schemas 1.5 - 1.14 (Freeze Contract)
- */
-
-export interface SourceRef {
-  source_id: string
-  title: string
-  url: string
-  publisher: string
-  retrieved_at: string
-  version: string
-  licence: string
-}
-
-export type AssumptionStatus = 'sourced' | 'assumed' | 'user_selected'
-
-export interface Assumption {
-  key: string
-  unit: string
-  meaning: string
-  low: number
-  central: number
-  high: number
-  allowed_range: [number, number]
-  status: AssumptionStatus
-  source_ids: string[]
-}
-
-export interface Stop {
-  stop_id: string
-  gtfs_stop_id: string
-  name: string
-  seq: number
-  lon: number
-  lat: number
-}
-
-export interface Link {
-  link_id: string
-  from_stop: string
-  to_stop: string
-  length_m: number
-  base_time_s: number
-}
-
-export interface Corridor {
-  corridor_id: string
-  name: string
-  route_pattern: string
-  direction: string
-  peak_window: string
-  stops: Stop[]
-  links: Link[]
-  berths_per_stop: number
-  incoming_load: number
-}
-
-export interface DevelopmentAccess {
-  stop_id: string
-  walk_m: number
-}
-
-export type DevelopmentKind = 'proposal' | 'hypothetical'
-
-export interface Development {
-  dev_id: string
-  pipeline_ref: string
-  address: string
-  units: number
-  stage: string
-  record_date: string
-  kind: DevelopmentKind
-  coordinates: [number, number] | number[]
-  height_m?: number
-  phase: number
-  access: DevelopmentAccess[]
-  source_ids: string[]
-}
-
-export type InterventionType = 'priority_lane' | 'extra_service'
-
-export interface CostEstimate {
-  low: number
-  central: number
-  high: number
-  year: number
-  scope: string
-}
-
-export interface Intervention {
-  id: string
-  type: InterventionType
-  name: string
-  link_ids?: string[]
-  headway_s?: number
-  capital_cost: CostEstimate
-  operating_cost: CostEstimate
-  extra_vehicles: number
-  earliest_phase: number
-  effect: {
-    description: string
-    speed_gain_pct?: number
-    headway_reduction_s?: number
-    status: AssumptionStatus
-  }
-}
-
-export interface Scenario {
-  scenario_id: string
-  version: string
-  name: string
-  developments_per_phase: Record<number, string[]>
-  occupied_share: number
-  demand_case: 'low' | 'central' | 'high'
-  intervention_availability: Record<string, number>
-  capital_budget: number
-  operating_budget: number
-  fleet_allowance: number
-  planning_criterion: {
-    max_mean_wait_s: number
-    max_denied_share: number
-  }
-}
-
-export interface Run {
-  run_id: string
-  scenario_version: string
-  package_id: string
-  model_version: string
-  data_version: string
-  seed_ids: number[]
-  status: 'completed' | 'running' | 'failed'
-  diagnostics: {
-    conservation_error: number
-    unresolved_passengers: number
-    runtime_ms: number
-  }
-}
-
-export type ReplayEventKind = 'dispatch' | 'arrive' | 'alight' | 'board' | 'deny' | 'depart'
+// Contract 1.0.0; mirrored from backend/schemas. Units and semantics: docs/contract.md.
+export type Status = 'sourced' | 'assumed' | 'user_selected'
 export type RiderGroup = 'existing' | 'new'
-
+export type DemandCase = 'low' | 'central' | 'high'
+export interface SourceRef {
+  source_id: string; title: string; url: string; publisher: string
+  retrieved_at: string; version: string; licence: string
+}
+export interface Assumption {
+  key: string; unit: string; meaning: string; low: number; central: number; high: number
+  allowed_range: { low: number; high: number }; status: Status; source_ids: string[]
+}
+export interface Stop {
+  stop_id: string; gtfs_stop_id: string; name: string; seq: number
+  lon: number; lat: number; source_ids: string[]
+}
+export interface Link {
+  link_id: string; from_stop: string; to_stop: string; length_m: number
+  base_time_s: number; source_ids: string[]
+}
+export interface Corridor {
+  corridor_id: string; route_pattern: string; mode: 'streetcar' | 'bus'
+  direction: 'eastbound' | 'westbound' | 'northbound' | 'southbound'
+  crs: 'EPSG:4326'; metric_crs: 'EPSG:26917'
+  peak_window: { start_s: number; end_s: number; timezone: 'America/Toronto'; service_date: string }
+  stops: Stop[]; links: Link[]; berths_per_stop: Record<string, number>
+  incoming_load: Assumption; source_ids: string[]
+}
+export interface Footprint { type: 'Polygon'; coordinates: [number, number][][] }
+export interface Access {
+  stop_id: string; walk_m: number; status: 'estimated' | 'reviewed'; source_ids: string[]
+}
+export interface Development {
+  dev_id: string; pipeline_ref: string | null; address: string; units: number
+  stage: string; record_date: string; kind: 'proposal' | 'hypothetical'
+  footprint: Footprint | null; footprint_status: 'sourced' | 'unavailable'
+  access: Access[]; source_ids: string[]
+}
+export interface CostRange {
+  low: number; central: number; high: number; currency: 'CAD'; price_year: number
+  scope: string; unit: 'CAD' | 'CAD/year'; status: Status; source_ids: string[]
+}
+export interface Intervention {
+  id: string; type: 'priority_lane' | 'extra_service'; link_ids: string[]
+  headway_s: number | null; capital_cost: CostRange; operating_cost: CostRange
+  extra_vehicles: number; earliest_phase: string; effect: Assumption
+}
+export interface DevelopmentPhase {
+  phase_id: string; year: number; development_ids: string[]; occupied_share: number
+}
+export interface PlanningCriterion {
+  max_p95_wait_s: number; max_denied_share: number; max_unresolved_passengers: number; meaning: string
+}
+export interface Scenario {
+  scenario_id: string; version: number; developments: Development[]; phases: DevelopmentPhase[]
+  demand_case: DemandCase; interventions: Intervention[]; intervention_availability: Record<string, string>
+  capital_budget_cad: number; annual_operating_budget_cad: number; budget_price_year: number
+  fleet_allowance: number; planning_criterion: PlanningCriterion
+}
+export interface Diagnostics {
+  passengers_created: number; passengers_arrived: number; passengers_waiting: number
+  passengers_onboard: number; conservation: boolean; unresolved_passengers: number; runtime_s: number
+}
+export interface Run {
+  run_id: string; scenario_version: number; package: string; model_version: string
+  data_version: string; seed_ids: number[]; status: 'completed' | 'failed'; diagnostics: Diagnostics
+}
 export interface ReplayEvent {
-  run_id: string
-  t_s: number
-  kind: ReplayEventKind
-  vehicle_id: string
-  stop_id: string
-  count: number
-  load_after: number
-  rider_group?: RiderGroup
+  run_id: string; t_s: number; kind: 'dispatch' | 'arrive' | 'alight' | 'board' | 'deny' | 'depart'
+  vehicle_id: string; stop_id: string; count: number; load_after: number; rider_group: RiderGroup | null
 }
-
-export interface RiderGroupMetrics {
-  mean_wait_s: number
-  p95_wait_s: number
-  share_denied: number
-  remaining_queue: number
-}
-
 export interface StopResult {
-  stop_id: string
-  stop_name: string
-  existing_riders: RiderGroupMetrics
-  new_riders: RiderGroupMetrics
-  total_riders: RiderGroupMetrics
-  headway_cv: number
-  bunched_trips_share: number
+  stop_id: string; rider_group: RiderGroup; passengers: number; completed_passengers: number
+  mean_wait_s: number | null; p95_wait_s: number | null; denied_at_least_once_share: number | null
+  remaining_queue: number; headway_cv: number | null
 }
-
-export interface CaseSummary {
-  mean_wait_s: number
-  p95_wait_s: number
-  total_denied_share: number
-  max_queue: number
-  total_boardings: number
-}
-
 export interface CaseResult {
-  case_id: 'current' | 'growth' | 'supported_growth'
-  case_label: string
-  stop_results: Record<string, StopResult>
-  summary: CaseSummary
-  run_count: number
-  unresolved_passengers: number
+  case_id: string; kind: 'current' | 'growth' | 'supported_growth'; package_id: string
+  phase_id: string; demand_case: DemandCase; stops: StopResult[]; runs: Run[]
+  per_run_mean_wait_s: (number | null)[]; per_run_p95_wait_s: (number | null)[]
+  per_run_denied_share: (number | null)[]; per_run_unresolved_passengers: number[]
+  run_count: number; unresolved_passengers: number
 }
-
 export interface PackageEvaluation {
-  package_id: string
-  name: string
-  interventions: string[]
-  is_feasible: boolean
-  infeasibility_reasons: string[]
-  capital_cost: number
-  operating_cost_annual: number
-  extra_vehicles: number
-  criterion_met: {
-    phase_1: boolean
-    phase_2: boolean
-  }
-  rank?: number
+  phase_id: string; demand_case: DemandCase; case_id: string; feasible: boolean
+  feasibility_reasons: string[]; criterion_met: boolean; criterion_reasons: string[]
 }
-
-export interface SensitivityAnalysis {
-  demand_cases: Record<'low' | 'central' | 'high', {
-    preferred_package: string
-    worst_stops: string[]
-  }>
-  upgrade_delay: {
-    preferred_package: string
-    impact: string
-  }
+export interface Package {
+  package_id: string; label: string; intervention_ids: string[]; evaluations: PackageEvaluation[]
 }
-
+export interface SensitivityResult {
+  assumption_key: string; case_id: string; tested_values: number[]
+  metric: 'mean_wait_s' | 'p95_wait_s' | 'denied_share' | 'unresolved_passengers'
+  outcomes: number[]; status: 'fixture' | 'modelled'; interpretation: string
+}
+export interface InitialQueue { stop_id: string; rider_group: RiderGroup; count: number }
+export interface ReplayStream {
+  run_id: string; horizon_s: number; vehicle_capacity: Record<string, number>
+  initial_queues: InitialQueue[]; events: ReplayEvent[]
+}
 export interface Comparison {
-  fixture: boolean
-  generated_at: string
-  scenario: Scenario
-  corridor: Corridor
-  developments: Development[]
-  cases: {
-    current: CaseResult
-    growth: CaseResult
-    supported_growth: CaseResult
-  }
-  packages: PackageEvaluation[]
-  sensitivity: SensitivityAnalysis
-  assumptions: Assumption[]
-  sources: SourceRef[]
-  warnings: string[]
-  replay_stream?: ReplayEvent[]
+  contract_version: '1.0.0'; comparison_id: string; fixture: boolean; product_label: 'scenario experiment'
+  scenario: Scenario; corridor: Corridor; cases: CaseResult[]; packages: Package[]
+  sensitivity: SensitivityResult[]; assumptions: Assumption[]; sources: SourceRef[]
+  warnings: string[]; replay: ReplayStream | null
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchComparison, isUsingFixture, setUseFixture } from './lib/api'
 import type { Comparison, Stop, Development } from './lib/types'
 import { CorridorMap } from './map/CorridorMap'
+import { getDevelopmentPhase } from './map/MassingLayer'
 
 export function App() {
   const [comparison, setComparison] = useState<Comparison | null>(null)
@@ -55,7 +56,10 @@ export function App() {
     )
   }
 
-  const totalNewUnits = comparison.developments.reduce((sum, d) => sum + d.units, 0)
+  const developments = comparison.scenario?.developments ?? []
+  const totalNewUnits = developments.reduce((sum, d) => sum + d.units, 0)
+  const currentCase = comparison.cases.find((c) => c.kind === 'current')
+  const growthCase = comparison.cases.find((c) => c.kind === 'growth')
 
   return (
     <div className="flex flex-col w-screen h-screen overflow-hidden bg-background text-foreground font-body">
@@ -151,7 +155,9 @@ export function App() {
           <div className="animate-fade-rise-delay-2 flex items-center gap-6 text-xs pb-1">
             <div>
               <div className="text-[10px] tracking-wider uppercase text-muted-foreground">Peak Window</div>
-              <div className="font-mono font-medium text-foreground">{comparison.corridor.peak_window}</div>
+              <div className="font-mono font-medium text-foreground">
+                {comparison.corridor.peak_window ? '07:00–09:00' : '07:00–09:00'}
+              </div>
             </div>
             <div className="border-l border-border/40 pl-6">
               <div className="text-[10px] tracking-wider uppercase text-muted-foreground">New Homes (P1+P2)</div>
@@ -159,7 +165,9 @@ export function App() {
             </div>
             <div className="border-l border-border/40 pl-6">
               <div className="text-[10px] tracking-wider uppercase text-muted-foreground">Corridor Reach</div>
-              <div className="font-mono font-medium text-foreground">{comparison.corridor.stops.length} stops · 10 links</div>
+              <div className="font-mono font-medium text-foreground">
+                {comparison.corridor.stops.length} stops · {comparison.corridor.links.length} links
+              </div>
             </div>
           </div>
         </div>
@@ -169,7 +177,7 @@ export function App() {
       <main className="relative flex-1 min-h-0 w-full overflow-hidden">
         <CorridorMap
           corridor={comparison.corridor}
-          developments={comparison.developments}
+          developments={developments}
           selectedStopId={selectedStop?.stop_id}
           selectedDevId={selectedDev?.dev_id}
           activePhase={activePhase}
@@ -186,84 +194,90 @@ export function App() {
         {/* Selected Entity Inspector Panel (Floating Top Right) */}
         {(selectedStop || selectedDev) && (
           <div className="!absolute top-6 right-6 w-[360px] z-30 max-h-[calc(100vh-14rem)] overflow-y-auto animate-fade-rise liquid-glass-panel rounded-2xl p-6 shadow-2xl">
-            {selectedStop && (
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <span className="status-chip status-chip-sourced">
-                    TTC STOP #{selectedStop.gtfs_stop_id}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStop(null)}
-                    className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            {selectedStop && (() => {
+              const currentStopResult = currentCase?.stops.find((s) => s.stop_id === selectedStop.stop_id)
+              const growthStopResult = growthCase?.stops.find((s) => s.stop_id === selectedStop.stop_id)
+
+              return (
+                <div>
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="status-chip status-chip-sourced">
+                      TTC STOP #{selectedStop.gtfs_stop_id}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStop(null)}
+                      className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <h3
+                    className="text-2xl text-foreground font-normal tracking-tight mb-1"
+                    style={{ fontFamily: "'Instrument Serif', serif" }}
                   >
-                    ✕
-                  </button>
-                </div>
+                    {selectedStop.name}
+                  </h3>
+                  <div className="text-xs text-muted-foreground mb-4">
+                    Sequence {selectedStop.seq} of {comparison.corridor.stops.length} · Inbound Westbound
+                  </div>
 
-                <h3
-                  className="text-2xl text-foreground font-normal tracking-tight mb-1"
-                  style={{ fontFamily: "'Instrument Serif', serif" }}
-                >
-                  {selectedStop.name}
-                </h3>
-                <div className="text-xs text-muted-foreground mb-4">
-                  Sequence {selectedStop.seq} of {comparison.corridor.stops.length} · Inbound Westbound
-                </div>
-
-                {/* Stop Metric Summary from Baseline vs Growth */}
-                {comparison.cases.growth.stop_results[selectedStop.stop_id] ? (
-                  <div className="flex flex-col gap-2.5">
-                    <div className="liquid-glass rounded-xl p-3.5">
-                      <div className="flex justify-between items-center text-[11px] text-muted-foreground mb-1">
-                        <span>MEAN WAIT TIME</span>
-                        <span className="status-chip status-chip-assumed">SIMULATED</span>
+                  {/* Stop Metric Summary from Baseline vs Growth */}
+                  {growthStopResult ? (
+                    <div className="flex flex-col gap-2.5">
+                      <div className="liquid-glass rounded-xl p-3.5">
+                        <div className="flex justify-between items-center text-[11px] text-muted-foreground mb-1">
+                          <span>MEAN WAIT TIME</span>
+                          <span className="status-chip status-chip-assumed">SIMULATED</span>
+                        </div>
+                        <div className="flex items-baseline gap-2 mt-0.5">
+                          <span className="text-2xl font-mono font-semibold text-rose-400">
+                            {growthStopResult.mean_wait_s != null
+                              ? `${(growthStopResult.mean_wait_s / 60).toFixed(1)}m`
+                              : '—'}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            (Baseline:{' '}
+                            {currentStopResult?.mean_wait_s != null
+                              ? `${(currentStopResult.mean_wait_s / 60).toFixed(1)}m`
+                              : '—'}
+                            )
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-2xl font-mono font-semibold text-rose-400">
-                          {(
-                            comparison.cases.growth.stop_results[selectedStop.stop_id].total_riders.mean_wait_s / 60
-                          ).toFixed(1)}m
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          (Baseline:{' '}
-                          {(
-                            comparison.cases.current.stop_results[selectedStop.stop_id]?.total_riders.mean_wait_s / 60
-                          ).toFixed(1)}m)
-                        </span>
+
+                      <div className="liquid-glass rounded-xl p-3.5">
+                        <div className="flex justify-between items-center text-[11px] text-muted-foreground mb-1">
+                          <span>SHARE LEFT BEHIND (DENIED)</span>
+                          <span className="status-chip status-chip-assumed">INVARIANT</span>
+                        </div>
+                        <div className="flex items-baseline gap-2 mt-0.5">
+                          <span className="text-2xl font-mono font-semibold text-rose-400">
+                            {growthStopResult.denied_at_least_once_share != null
+                              ? `${(growthStopResult.denied_at_least_once_share * 100).toFixed(0)}%`
+                              : '0%'}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Queue: {growthStopResult.remaining_queue} riders
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="liquid-glass rounded-xl p-3.5">
-                      <div className="flex justify-between items-center text-[11px] text-muted-foreground mb-1">
-                        <span>SHARE LEFT BEHIND (DENIED)</span>
-                        <span className="status-chip status-chip-assumed">INVARIANT</span>
-                      </div>
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-2xl font-mono font-semibold text-rose-400">
-                          {(
-                            comparison.cases.growth.stop_results[selectedStop.stop_id].total_riders.share_denied * 100
-                          ).toFixed(0)}%
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          Queue: {comparison.cases.growth.stop_results[selectedStop.stop_id].total_riders.remaining_queue} riders
-                        </span>
-                      </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground/80 py-2">
+                      Stop outside critical bottleneck cluster.
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground/80 py-2">
-                    Stop outside critical bottleneck cluster.
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )
+            })()}
 
             {selectedDev && (
               <div>
                 <div className="flex justify-between items-start mb-3">
-                  <span className={`phase-pill phase-pill-${selectedDev.phase}`}>
-                    Phase {selectedDev.phase} Proposal
+                  <span className={`phase-pill phase-pill-${getDevelopmentPhase(selectedDev)}`}>
+                    Phase {getDevelopmentPhase(selectedDev)} Proposal
                   </span>
                   <button
                     type="button"

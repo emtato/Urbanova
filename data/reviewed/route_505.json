@@ -1,0 +1,1065 @@
+{
+  "route_id": "505",
+  "route_short_name": "505",
+  "route_long_name": "Dundas",
+  "mode": "streetcar",
+  "gtfs_feed_version": "S1000542",
+  "day_types": {
+    "weekday": [
+      "1",
+      "4401",
+      "7001"
+    ],
+    "saturday": [
+      "2"
+    ],
+    "sunday": [
+      "3"
+    ]
+  },
+  "time_unit": "seconds; GTFS times after 24:00 continue past 86400",
+  "interpretation": "Scheduled reference only; not observed headways or travel times.",
+  "directions": [
+    {
+      "direction_id": "0",
+      "headsign": "East - 505 Dundas towards Broadview Station",
+      "main_shape_id": "shp-505-09",
+      "length_m": 10870,
+      "scheduled_run_s": 3780,
+      "trips": {
+        "weekday": 190,
+        "saturday": 178,
+        "sunday": 154
+      },
+      "first_departure": "04:14:22",
+      "last_departure": "25:06:00",
+      "weekday_trips_by_start_hour": {
+        "04": 6,
+        "05": 11,
+        "06": 6,
+        "07": 11,
+        "08": 12,
+        "09": 10,
+        "10": 11,
+        "11": 10,
+        "12": 10,
+        "13": 10,
+        "14": 11,
+        "15": 11,
+        "16": 10,
+        "17": 10,
+        "18": 9,
+        "19": 11,
+        "20": 6,
+        "21": 6,
+        "22": 6,
+        "23": 6,
+        "24": 6,
+        "25": 1
+      },
+      "stops": [
+        {
+          "seq": 1,
+          "gtfs_stop_id": "14666",
+          "name": "Dundas West Station at Bay 5",
+          "lat": 43.656698,
+          "lon": -79.45346,
+          "dist_from_start_m": 0,
+          "scheduled_from_start_s": 0,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 2,
+          "gtfs_stop_id": "2181",
+          "name": "Dundas St West at Roncesvalles Ave East Side",
+          "lat": 43.653479,
+          "lon": -79.451258,
+          "dist_from_start_m": 604,
+          "scheduled_from_start_s": 201,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 3,
+          "gtfs_stop_id": "2167",
+          "name": "Dundas St West at Howard Park Ave",
+          "lat": 43.652232,
+          "lon": -79.448522,
+          "dist_from_start_m": 864,
+          "scheduled_from_start_s": 287,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 4,
+          "gtfs_stop_id": "987",
+          "name": "Dundas St West at Sorauren Ave",
+          "lat": 43.651247,
+          "lon": -79.445756,
+          "dist_from_start_m": 1113,
+          "scheduled_from_start_s": 370,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 5,
+          "gtfs_stop_id": "991",
+          "name": "Dundas St West at Sterling Rd",
+          "lat": 43.650631,
+          "lon": -79.443251,
+          "dist_from_start_m": 1326,
+          "scheduled_from_start_s": 441,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 6,
+          "gtfs_stop_id": "2170",
+          "name": "Dundas St West at Lansdowne Ave",
+          "lat": 43.650111,
+          "lon": -79.440135,
+          "dist_from_start_m": 1585,
+          "scheduled_from_start_s": 527,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 7,
+          "gtfs_stop_id": "2151",
+          "name": "Dundas St West at Brock Ave",
+          "lat": 43.649845,
+          "lon": -79.435731,
+          "dist_from_start_m": 1942,
+          "scheduled_from_start_s": 654,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 8,
+          "gtfs_stop_id": "2160",
+          "name": "Dundas St West at Dufferin St",
+          "lat": 43.649587,
+          "lon": -79.431565,
+          "dist_from_start_m": 2279,
+          "scheduled_from_start_s": 772,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 9,
+          "gtfs_stop_id": "2164",
+          "name": "Dundas St West at Gladstone Ave",
+          "lat": 43.649516,
+          "lon": -79.429975,
+          "dist_from_start_m": 2408,
+          "scheduled_from_start_s": 817,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 10,
+          "gtfs_stop_id": "2172",
+          "name": "Dundas St West at Lisgar St",
+          "lat": 43.649434,
+          "lon": -79.426882,
+          "dist_from_start_m": 2658,
+          "scheduled_from_start_s": 904,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 11,
+          "gtfs_stop_id": "2158",
+          "name": "Dundas St West at Dovercourt Rd",
+          "lat": 43.649365,
+          "lon": -79.424889,
+          "dist_from_start_m": 2820,
+          "scheduled_from_start_s": 960,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 12,
+          "gtfs_stop_id": "2175",
+          "name": "Dundas St West at Ossington Ave",
+          "lat": 43.64927,
+          "lon": -79.420944,
+          "dist_from_start_m": 3139,
+          "scheduled_from_start_s": 1072,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 13,
+          "gtfs_stop_id": "2185",
+          "name": "Dundas St West at Shaw St",
+          "lat": 43.649703,
+          "lon": -79.418489,
+          "dist_from_start_m": 3343,
+          "scheduled_from_start_s": 1134,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 14,
+          "gtfs_stop_id": "10181",
+          "name": "Dundas St West at Grace St",
+          "lat": 43.650581,
+          "lon": -79.41422,
+          "dist_from_start_m": 3701,
+          "scheduled_from_start_s": 1238,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 15,
+          "gtfs_stop_id": "15354",
+          "name": "Dundas St West at Manning Ave",
+          "lat": 43.651197,
+          "lon": -79.411029,
+          "dist_from_start_m": 3968,
+          "scheduled_from_start_s": 1315,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 16,
+          "gtfs_stop_id": "2140",
+          "name": "Dundas St West at Bathurst St - Toronto Western Hospital",
+          "lat": 43.652163,
+          "lon": -79.406259,
+          "dist_from_start_m": 4369,
+          "scheduled_from_start_s": 1431,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 17,
+          "gtfs_stop_id": "2156",
+          "name": "Dundas St West at Denison Ave",
+          "lat": 43.651939,
+          "lon": -79.40236,
+          "dist_from_start_m": 4709,
+          "scheduled_from_start_s": 1551,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 18,
+          "gtfs_stop_id": "2189",
+          "name": "Dundas St West at Spadina Ave",
+          "lat": 43.652776,
+          "lon": -79.398341,
+          "dist_from_start_m": 5047,
+          "scheduled_from_start_s": 1669,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 19,
+          "gtfs_stop_id": "2146",
+          "name": "Dundas St West at Beverley St",
+          "lat": 43.65371,
+          "lon": -79.393961,
+          "dist_from_start_m": 5414,
+          "scheduled_from_start_s": 1816,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 20,
+          "gtfs_stop_id": "2173",
+          "name": "Dundas St West at McCaul St",
+          "lat": 43.654219,
+          "lon": -79.391552,
+          "dist_from_start_m": 5617,
+          "scheduled_from_start_s": 1896,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 21,
+          "gtfs_stop_id": "2193",
+          "name": "Dundas St West at University Ave - St Patrick Station",
+          "lat": 43.654679,
+          "lon": -79.388742,
+          "dist_from_start_m": 5852,
+          "scheduled_from_start_s": 1989,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 22,
+          "gtfs_stop_id": "2153",
+          "name": "Dundas St West at Chestnut St",
+          "lat": 43.655136,
+          "lon": -79.386129,
+          "dist_from_start_m": 6069,
+          "scheduled_from_start_s": 2076,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 23,
+          "gtfs_stop_id": "2142",
+          "name": "Dundas St West at Bay St",
+          "lat": 43.655582,
+          "lon": -79.384014,
+          "dist_from_start_m": 6248,
+          "scheduled_from_start_s": 2147,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 24,
+          "gtfs_stop_id": "2197",
+          "name": "Dundas St West at Yonge St - Dundas Station",
+          "lat": 43.65619,
+          "lon": -79.38119,
+          "dist_from_start_m": 6486,
+          "scheduled_from_start_s": 2305,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 25,
+          "gtfs_stop_id": "2116",
+          "name": "Dundas St East at Church St",
+          "lat": 43.656371,
+          "lon": -79.377358,
+          "dist_from_start_m": 6810,
+          "scheduled_from_start_s": 2493,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 26,
+          "gtfs_stop_id": "2118",
+          "name": "Dundas St East at Jarvis St",
+          "lat": 43.656947,
+          "lon": -79.374706,
+          "dist_from_start_m": 7034,
+          "scheduled_from_start_s": 2605,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 27,
+          "gtfs_stop_id": "2130",
+          "name": "Dundas St East at Sherbourne St",
+          "lat": 43.65822,
+          "lon": -79.371303,
+          "dist_from_start_m": 7363,
+          "scheduled_from_start_s": 2772,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 28,
+          "gtfs_stop_id": "2122",
+          "name": "Dundas St East at Ontario St",
+          "lat": 43.658752,
+          "lon": -79.368653,
+          "dist_from_start_m": 7585,
+          "scheduled_from_start_s": 2883,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 29,
+          "gtfs_stop_id": "2124",
+          "name": "Dundas St East at Parliament St",
+          "lat": 43.659283,
+          "lon": -79.366291,
+          "dist_from_start_m": 7786,
+          "scheduled_from_start_s": 2984,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 30,
+          "gtfs_stop_id": "15872",
+          "name": "Dundas St East at Regent Park Blvd",
+          "lat": 43.660247,
+          "lon": -79.361966,
+          "dist_from_start_m": 8150,
+          "scheduled_from_start_s": 3098,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 31,
+          "gtfs_stop_id": "2126",
+          "name": "Dundas St East at River St",
+          "lat": 43.661097,
+          "lon": -79.358272,
+          "dist_from_start_m": 8462,
+          "scheduled_from_start_s": 3188,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 32,
+          "gtfs_stop_id": "2115",
+          "name": "Dundas St East at Broadview Ave",
+          "lat": 43.662249,
+          "lon": -79.351814,
+          "dist_from_start_m": 9000,
+          "scheduled_from_start_s": 3345,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 33,
+          "gtfs_stop_id": "9317",
+          "name": "Broadview Ave at Mountstephen St",
+          "lat": 43.663942,
+          "lon": -79.35187,
+          "dist_from_start_m": 9214,
+          "scheduled_from_start_s": 3418,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 34,
+          "gtfs_stop_id": "1757",
+          "name": "Broadview Ave at Gerrard St East",
+          "lat": 43.665274,
+          "lon": -79.352444,
+          "dist_from_start_m": 9369,
+          "scheduled_from_start_s": 3471,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 35,
+          "gtfs_stop_id": "1759",
+          "name": "Broadview Ave at Langley Ave-Bridgepoint Health Ctr",
+          "lat": 43.667664,
+          "lon": -79.353308,
+          "dist_from_start_m": 9648,
+          "scheduled_from_start_s": 3531,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 36,
+          "gtfs_stop_id": "1766",
+          "name": "Broadview Ave at Withrow Ave",
+          "lat": 43.669638,
+          "lon": -79.353022,
+          "dist_from_start_m": 9871,
+          "scheduled_from_start_s": 3574,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 37,
+          "gtfs_stop_id": "1761",
+          "name": "Broadview Ave at Millbrook Cres",
+          "lat": 43.671897,
+          "lon": -79.354733,
+          "dist_from_start_m": 10161,
+          "scheduled_from_start_s": 3632,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 38,
+          "gtfs_stop_id": "1768",
+          "name": "Broadview Ave at Wolfrey Ave",
+          "lat": 43.674192,
+          "lon": -79.356887,
+          "dist_from_start_m": 10470,
+          "scheduled_from_start_s": 3693,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 39,
+          "gtfs_stop_id": "14639",
+          "name": "Broadview Station at Bay 6",
+          "lat": 43.677013,
+          "lon": -79.358147,
+          "dist_from_start_m": 10870,
+          "scheduled_from_start_s": 3780,
+          "corridor_stop_id": null
+        }
+      ],
+      "patterns": [
+        {
+          "shape_id": "shp-505-09",
+          "headsign": "East - 505 Dundas towards Broadview Station",
+          "first_stop": "Dundas West Station at Bay 5",
+          "last_stop": "Broadview Station at Bay 6",
+          "stop_count": 39,
+          "trips": {
+            "weekday": 160,
+            "saturday": 156,
+            "sunday": 141
+          }
+        },
+        {
+          "shape_id": "shp-505-03",
+          "headsign": "East - 505 Dundas towards Broadview Station",
+          "first_stop": "Broadview Ave at Mountstephen St",
+          "last_stop": "Broadview Ave at Danforth Ave",
+          "stop_count": 7,
+          "trips": {
+            "weekday": 12,
+            "saturday": 7,
+            "sunday": 0
+          }
+        },
+        {
+          "shape_id": "shp-505-07",
+          "headsign": "East - 505 Dundas towards Broadview Station",
+          "first_stop": "Broadview Ave at Mountstephen St",
+          "last_stop": "Broadview Station at Bay 6",
+          "stop_count": 7,
+          "trips": {
+            "weekday": 8,
+            "saturday": 7,
+            "sunday": 7
+          }
+        },
+        {
+          "shape_id": "shp-505-10",
+          "headsign": "East - 505 Dundas Short Turn towards Broadview Ave",
+          "first_stop": "Dundas West Station at Bay 5",
+          "last_stop": "Dundas St East at Broadview Ave",
+          "stop_count": 32,
+          "trips": {
+            "weekday": 7,
+            "saturday": 4,
+            "sunday": 6
+          }
+        },
+        {
+          "shape_id": "shp-505-01",
+          "headsign": "East - 505 Dundas towards Broadview Station",
+          "first_stop": "Dundas West Station at Bay 5",
+          "last_stop": "Broadview Ave at Danforth Ave",
+          "stop_count": 40,
+          "trips": {
+            "weekday": 3,
+            "saturday": 0,
+            "sunday": 0
+          }
+        },
+        {
+          "shape_id": "shp-505-02",
+          "headsign": "East - 505 Dundas towards Broadview Station",
+          "first_stop": "Edna Ave at Dundas St West",
+          "last_stop": "Broadview Ave at Danforth Ave",
+          "stop_count": 39,
+          "trips": {
+            "weekday": 0,
+            "saturday": 4,
+            "sunday": 0
+          }
+        }
+      ]
+    },
+    {
+      "direction_id": "1",
+      "headsign": "West - 505 Dundas towards Dundas West Station",
+      "main_shape_id": "shp-505-59",
+      "length_m": 10824,
+      "scheduled_run_s": 3900,
+      "trips": {
+        "weekday": 186,
+        "saturday": 177,
+        "sunday": 155
+      },
+      "first_departure": "04:21:03",
+      "last_departure": "25:44:00",
+      "weekday_trips_by_start_hour": {
+        "04": 5,
+        "05": 6,
+        "06": 7,
+        "07": 11,
+        "08": 11,
+        "09": 10,
+        "10": 10,
+        "11": 10,
+        "12": 10,
+        "13": 10,
+        "14": 11,
+        "15": 10,
+        "16": 10,
+        "17": 10,
+        "18": 10,
+        "19": 11,
+        "20": 7,
+        "21": 6,
+        "22": 6,
+        "23": 6,
+        "24": 6,
+        "25": 3
+      },
+      "stops": [
+        {
+          "seq": 1,
+          "gtfs_stop_id": "14639",
+          "name": "Broadview Station at Bay 6",
+          "lat": 43.677013,
+          "lon": -79.358147,
+          "dist_from_start_m": 0,
+          "scheduled_from_start_s": 0,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 2,
+          "gtfs_stop_id": "1769",
+          "name": "Broadview Ave at Wolfrey Ave",
+          "lat": 43.674457,
+          "lon": -79.357342,
+          "dist_from_start_m": 484,
+          "scheduled_from_start_s": 148,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 3,
+          "gtfs_stop_id": "1762",
+          "name": "Broadview Ave at Millbrook Cres",
+          "lat": 43.672144,
+          "lon": -79.355165,
+          "dist_from_start_m": 797,
+          "scheduled_from_start_s": 240,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 4,
+          "gtfs_stop_id": "1767",
+          "name": "Broadview Ave at Withrow Ave",
+          "lat": 43.669859,
+          "lon": -79.353435,
+          "dist_from_start_m": 1088,
+          "scheduled_from_start_s": 326,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 5,
+          "gtfs_stop_id": "1760",
+          "name": "Broadview Ave at Langley Ave-Bridgepoint Health Ctr",
+          "lat": 43.668079,
+          "lon": -79.353319,
+          "dist_from_start_m": 1302,
+          "scheduled_from_start_s": 389,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 6,
+          "gtfs_stop_id": "1763",
+          "name": "Broadview Ave at Jack Layton Way",
+          "lat": 43.666481,
+          "lon": -79.353132,
+          "dist_from_start_m": 1483,
+          "scheduled_from_start_s": 442,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 7,
+          "gtfs_stop_id": "1758",
+          "name": "Broadview Ave at Gerrard St East",
+          "lat": 43.665663,
+          "lon": -79.352794,
+          "dist_from_start_m": 1579,
+          "scheduled_from_start_s": 470,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 8,
+          "gtfs_stop_id": "9318",
+          "name": "Broadview Ave at Mountstephen St",
+          "lat": 43.664096,
+          "lon": -79.35214,
+          "dist_from_start_m": 1763,
+          "scheduled_from_start_s": 587,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 9,
+          "gtfs_stop_id": "1756",
+          "name": "Broadview Ave at Dundas St East",
+          "lat": 43.6626,
+          "lon": -79.351506,
+          "dist_from_start_m": 1938,
+          "scheduled_from_start_s": 706,
+          "corridor_stop_id": "ttc-stop-1756"
+        },
+        {
+          "seq": 10,
+          "gtfs_stop_id": "2127",
+          "name": "Dundas St East at River St",
+          "lat": 43.661284,
+          "lon": -79.358,
+          "dist_from_start_m": 2489,
+          "scheduled_from_start_s": 908,
+          "corridor_stop_id": "ttc-stop-2127"
+        },
+        {
+          "seq": 11,
+          "gtfs_stop_id": "15873",
+          "name": "Dundas St East at Regent Park Blvd",
+          "lat": 43.66045,
+          "lon": -79.361739,
+          "dist_from_start_m": 2803,
+          "scheduled_from_start_s": 1013,
+          "corridor_stop_id": "ttc-stop-15873"
+        },
+        {
+          "seq": 12,
+          "gtfs_stop_id": "2125",
+          "name": "Dundas St East at Parliament St",
+          "lat": 43.65951,
+          "lon": -79.365882,
+          "dist_from_start_m": 3153,
+          "scheduled_from_start_s": 1134,
+          "corridor_stop_id": "ttc-stop-2125"
+        },
+        {
+          "seq": 13,
+          "gtfs_stop_id": "2123",
+          "name": "Dundas St East at Ontario St",
+          "lat": 43.658961,
+          "lon": -79.368357,
+          "dist_from_start_m": 3362,
+          "scheduled_from_start_s": 1220,
+          "corridor_stop_id": "ttc-stop-2123"
+        },
+        {
+          "seq": 14,
+          "gtfs_stop_id": "2131",
+          "name": "Dundas St East at Sherbourne St",
+          "lat": 43.658406,
+          "lon": -79.370878,
+          "dist_from_start_m": 3575,
+          "scheduled_from_start_s": 1305,
+          "corridor_stop_id": "ttc-stop-2131"
+        },
+        {
+          "seq": 15,
+          "gtfs_stop_id": "2119",
+          "name": "Dundas St East at Jarvis St",
+          "lat": 43.657162,
+          "lon": -79.374377,
+          "dist_from_start_m": 3908,
+          "scheduled_from_start_s": 1441,
+          "corridor_stop_id": "ttc-stop-2119"
+        },
+        {
+          "seq": 16,
+          "gtfs_stop_id": "2117",
+          "name": "Dundas St East at Church St",
+          "lat": 43.656583,
+          "lon": -79.376993,
+          "dist_from_start_m": 4129,
+          "scheduled_from_start_s": 1530,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 17,
+          "gtfs_stop_id": "2136",
+          "name": "Dundas St East at Yonge St - Dundas Station",
+          "lat": 43.656426,
+          "lon": -79.380755,
+          "dist_from_start_m": 4446,
+          "scheduled_from_start_s": 1670,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 18,
+          "gtfs_stop_id": "2143",
+          "name": "Dundas St West at Bay St",
+          "lat": 43.655845,
+          "lon": -79.383493,
+          "dist_from_start_m": 4676,
+          "scheduled_from_start_s": 1787,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 19,
+          "gtfs_stop_id": "2154",
+          "name": "Dundas St West at Chestnut St",
+          "lat": 43.655337,
+          "lon": -79.385866,
+          "dist_from_start_m": 4876,
+          "scheduled_from_start_s": 1887,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 20,
+          "gtfs_stop_id": "2194",
+          "name": "Dundas St West at University Ave - St Patrick Station",
+          "lat": 43.654919,
+          "lon": -79.387813,
+          "dist_from_start_m": 5040,
+          "scheduled_from_start_s": 1968,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 21,
+          "gtfs_stop_id": "2174",
+          "name": "Dundas St West at Mccaul St",
+          "lat": 43.65441,
+          "lon": -79.391209,
+          "dist_from_start_m": 5319,
+          "scheduled_from_start_s": 2109,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 22,
+          "gtfs_stop_id": "2147",
+          "name": "Dundas St West at Beverley St",
+          "lat": 43.653887,
+          "lon": -79.393723,
+          "dist_from_start_m": 5530,
+          "scheduled_from_start_s": 2214,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 23,
+          "gtfs_stop_id": "2190",
+          "name": "Dundas St West at Spadina Ave",
+          "lat": 43.653063,
+          "lon": -79.397708,
+          "dist_from_start_m": 5863,
+          "scheduled_from_start_s": 2381,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 24,
+          "gtfs_stop_id": "2157",
+          "name": "Dundas St West at Denison Ave",
+          "lat": 43.652113,
+          "lon": -79.402165,
+          "dist_from_start_m": 6238,
+          "scheduled_from_start_s": 2521,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 25,
+          "gtfs_stop_id": "2141",
+          "name": "Dundas St West at Bathurst St - Toronto Western Hospital",
+          "lat": 43.652424,
+          "lon": -79.405874,
+          "dist_from_start_m": 6564,
+          "scheduled_from_start_s": 2634,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 26,
+          "gtfs_stop_id": "15355",
+          "name": "Dundas St West at Manning Ave",
+          "lat": 43.651375,
+          "lon": -79.410818,
+          "dist_from_start_m": 6979,
+          "scheduled_from_start_s": 2737,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 27,
+          "gtfs_stop_id": "2166",
+          "name": "Dundas St West at Grace St",
+          "lat": 43.650776,
+          "lon": -79.413806,
+          "dist_from_start_m": 7228,
+          "scheduled_from_start_s": 2797,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 28,
+          "gtfs_stop_id": "15356",
+          "name": "Dundas St West at Shaw St",
+          "lat": 43.649911,
+          "lon": -79.418123,
+          "dist_from_start_m": 7588,
+          "scheduled_from_start_s": 2884,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 29,
+          "gtfs_stop_id": "2176",
+          "name": "Dundas St West at Ossington Ave",
+          "lat": 43.64943,
+          "lon": -79.420489,
+          "dist_from_start_m": 7786,
+          "scheduled_from_start_s": 2932,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 30,
+          "gtfs_stop_id": "2159",
+          "name": "Dundas St West at Dovercourt Rd",
+          "lat": 43.649513,
+          "lon": -79.424553,
+          "dist_from_start_m": 8114,
+          "scheduled_from_start_s": 3047,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 31,
+          "gtfs_stop_id": "2183",
+          "name": "Dundas St West at Rusholme Rd",
+          "lat": 43.649541,
+          "lon": -79.42655,
+          "dist_from_start_m": 8274,
+          "scheduled_from_start_s": 3101,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 32,
+          "gtfs_stop_id": "2165",
+          "name": "Dundas St West at Gladstone Ave",
+          "lat": 43.649633,
+          "lon": -79.429626,
+          "dist_from_start_m": 8522,
+          "scheduled_from_start_s": 3190,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 33,
+          "gtfs_stop_id": "2161",
+          "name": "Dundas St West at Dufferin St",
+          "lat": 43.649679,
+          "lon": -79.431281,
+          "dist_from_start_m": 8655,
+          "scheduled_from_start_s": 3238,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 34,
+          "gtfs_stop_id": "2152",
+          "name": "Dundas St West at Brock Ave",
+          "lat": 43.649937,
+          "lon": -79.4355,
+          "dist_from_start_m": 8997,
+          "scheduled_from_start_s": 3357,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 35,
+          "gtfs_stop_id": "2171",
+          "name": "Dundas St West at Lansdowne Ave",
+          "lat": 43.650206,
+          "lon": -79.43948,
+          "dist_from_start_m": 9318,
+          "scheduled_from_start_s": 3470,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 36,
+          "gtfs_stop_id": "990",
+          "name": "Dundas St West at Sterling Rd",
+          "lat": 43.650684,
+          "lon": -79.442777,
+          "dist_from_start_m": 9590,
+          "scheduled_from_start_s": 3544,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 37,
+          "gtfs_stop_id": "988",
+          "name": "Dundas St West at Sorauren Ave",
+          "lat": 43.651197,
+          "lon": -79.445012,
+          "dist_from_start_m": 9779,
+          "scheduled_from_start_s": 3591,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 38,
+          "gtfs_stop_id": "986",
+          "name": "Dundas St West at Howard Park Ave",
+          "lat": 43.651921,
+          "lon": -79.447458,
+          "dist_from_start_m": 9993,
+          "scheduled_from_start_s": 3645,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 39,
+          "gtfs_stop_id": "2182",
+          "name": "Dundas St West at Roncesvalles Ave",
+          "lat": 43.653685,
+          "lon": -79.451357,
+          "dist_from_start_m": 10363,
+          "scheduled_from_start_s": 3765,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 40,
+          "gtfs_stop_id": "2150",
+          "name": "Dundas St West at Bloor St West",
+          "lat": 43.6561,
+          "lon": -79.45233,
+          "dist_from_start_m": 10652,
+          "scheduled_from_start_s": 3847,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 41,
+          "gtfs_stop_id": "13702",
+          "name": "Dundas St West at Dundas West Outer Platform",
+          "lat": 43.656768,
+          "lon": -79.453253,
+          "dist_from_start_m": 10805,
+          "scheduled_from_start_s": 3890,
+          "corridor_stop_id": null
+        },
+        {
+          "seq": 42,
+          "gtfs_stop_id": "14666",
+          "name": "Dundas West Station at Bay 5",
+          "lat": 43.656698,
+          "lon": -79.45346,
+          "dist_from_start_m": 10824,
+          "scheduled_from_start_s": 3900,
+          "corridor_stop_id": null
+        }
+      ],
+      "patterns": [
+        {
+          "shape_id": "shp-505-59",
+          "headsign": "West - 505 Dundas towards Dundas West Station",
+          "first_stop": "Broadview Station at Bay 6",
+          "last_stop": "Dundas West Station at Bay 5",
+          "stop_count": 42,
+          "trips": {
+            "weekday": 107,
+            "saturday": 153,
+            "sunday": 143
+          }
+        },
+        {
+          "shape_id": "shp-505-60",
+          "headsign": "West - 505 Dundas towards Dundas West Station",
+          "first_stop": "Broadview Station at Bay 6",
+          "last_stop": "Dundas West Station at Bay 5",
+          "stop_count": 42,
+          "trips": {
+            "weekday": 54,
+            "saturday": 0,
+            "sunday": 0
+          }
+        },
+        {
+          "shape_id": "shp-505-52",
+          "headsign": "West - 505 Dundas towards Dundas West Station",
+          "first_stop": "Broadview Ave at Danforth Ave",
+          "last_stop": "Dundas St West at Bloor St West",
+          "stop_count": 40,
+          "trips": {
+            "weekday": 10,
+            "saturday": 7,
+            "sunday": 0
+          }
+        },
+        {
+          "shape_id": "shp-505-57",
+          "headsign": "West - 505 Dundas Short Turn towards Broadview Ave",
+          "first_stop": "Broadview Station at Bay 6",
+          "last_stop": "Broadview Ave at Dundas St East",
+          "stop_count": 9,
+          "trips": {
+            "weekday": 10,
+            "saturday": 8,
+            "sunday": 7
+          }
+        },
+        {
+          "shape_id": "shp-505-61",
+          "headsign": "West - 505 Dundas towards Dundas West Station",
+          "first_stop": "Dundas St East at River St",
+          "last_stop": "Dundas West Station at Bay 5",
+          "stop_count": 33,
+          "trips": {
+            "weekday": 5,
+            "saturday": 6,
+            "sunday": 5
+          }
+        },
+        {
+          "shape_id": "shp-505-51",
+          "headsign": "West - 505 Dundas towards Dundas West Station",
+          "first_stop": "Dundas St East at River St",
+          "last_stop": "Dundas St West at Bloor St West",
+          "stop_count": 31,
+          "trips": {
+            "weekday": 0,
+            "saturday": 3,
+            "sunday": 0
+          }
+        }
+      ]
+    }
+  ],
+  "source_ids": [
+    "ttc-gtfs"
+  ]
+}

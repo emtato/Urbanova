@@ -6,7 +6,7 @@
  * routes calls to the backend on /api.
  */
 
-import { sampleComparison } from '../data'
+import { sampleComparison } from './sampleComparison'
 import type { Comparison, Corridor, ReplayEvent, Scenario } from './types'
 
 // Check environment variable; defaults to true if not explicitly set to 'false'
@@ -99,7 +99,7 @@ export async function fetchCorridor(corridorId?: string): Promise<Corridor> {
  */
 export async function fetchReplayStream(runId?: string): Promise<ReplayEvent[]> {
   if (runtimeUseFixture) {
-    return cloneFixture((sampleComparison as unknown as Comparison).replay_stream || [])
+    return cloneFixture((sampleComparison as unknown as Comparison).replay?.events || [])
   }
 
   const endpoint = runId

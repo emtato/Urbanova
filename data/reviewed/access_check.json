@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-17T06:59:45.819784+00:00",
+  "database": {
+    "status": "ok",
+    "postgis_version": "3.6 USE_GEOS=1 USE_PROJ=1 USE_STATS=1"
+  },
+  "gemini": {
+    "status": "ok",
+    "model": "gemini-3.8-flash",
+    "response": {
+      "status": "ok",
+      "origin": "futureproof-access-check"
+    }
+  },
+  "gate_passed": true
+}

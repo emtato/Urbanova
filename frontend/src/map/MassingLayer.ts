@@ -91,13 +91,38 @@ export function generateSurroundingMassingGeoJSON(corridor: Corridor): FeatureCo
   return { type: 'FeatureCollection', features }
 }
 
+export const DEV_COORDINATES: Record<string, [number, number]> = {
+  'toronto-app-22-124214-ste-13-oz': [-79.3727167, 43.6577766], // 239 Dundas St E (630 units)
+  'toronto-app-26-122451-ste-13-oz': [-79.3642039, 43.6600907], // 500 Dundas St E (413 units)
+  'toronto-app-25-236949-ste-13-oz': [-79.3563946, 43.6612908], // 761 Dundas St E (1197 units)
+}
+
+export const DEV_PHASES: Record<string, number> = {
+  'toronto-app-22-124214-ste-13-oz': 1,
+  'toronto-app-26-122451-ste-13-oz': 2,
+  'toronto-app-25-236949-ste-13-oz': 2,
+}
+
+export function getDevelopmentCoordinates(dev: Development): [number, number] {
+  if (dev.footprint && dev.footprint.coordinates[0]?.[0]) {
+    return dev.footprint.coordinates[0][0]
+  }
+  return DEV_COORDINATES[dev.dev_id] || [-79.365, 43.660]
+}
+
+export function getDevelopmentPhase(dev: Development): number {
+  return DEV_PHASES[dev.dev_id] || 2
+}
+
 /**
  * Builds GeoJSON features for development proposal towers
  */
 export function generateDevelopmentsGeoJSON(developments: Development[]): FeatureCollection {
   const features: Feature[] = developments.map((dev) => {
-    const [lon, lat] = dev.coordinates
-    const size = 0.0008 // roughly 60m x 60m tower footprint
+    const [lon, lat] = getDevelopmentCoordinates(dev)
+    const phase = getDevelopmentPhase(dev)
+    const size = 0.0006 // ~45m x 45m footprint
+    const height_m = Math.round(Math.max(45, Math.min(180, dev.units * 0.12)))
 
     return {
       type: 'Feature',
@@ -106,8 +131,8 @@ export function generateDevelopmentsGeoJSON(developments: Development[]): Featur
         name: dev.address,
         units: dev.units,
         stage: dev.stage,
-        phase: dev.phase,
-        height_m: dev.height_m || Math.max(35, Math.min(180, dev.units * 0.18)),
+        phase: phase,
+        height_m: height_m,
         kind: dev.kind,
       },
       geometry: {
@@ -137,6 +162,8 @@ export function generateWalkCatchmentsGeoJSON(
   const features: Feature[] = []
 
   developments.forEach((dev) => {
+    const coords = getDevelopmentCoordinates(dev)
+    const phase = getDevelopmentPhase(dev)
     dev.access.forEach((acc) => {
       const stop = stopMap.get(acc.stop_id)
       if (stop) {
@@ -146,11 +173,11 @@ export function generateWalkCatchmentsGeoJSON(
             dev_id: dev.dev_id,
             stop_id: stop.stop_id,
             walk_m: acc.walk_m,
-            phase: dev.phase,
+            phase: phase,
           },
           geometry: {
             type: 'LineString',
-            coordinates: [dev.coordinates, [stop.lon, stop.lat]],
+            coordinates: [coords, [stop.lon, stop.lat]],
           },
         })
       }
@@ -176,7 +203,7 @@ export function generateCorridorLinksGeoJSON(corridor: Corridor): FeatureCollect
     features: [
       {
         type: 'Feature',
-        properties: { corridor_id: corridor.corridor_id, name: corridor.name },
+        properties: { corridor_id: corridor.corridor_id, name: `Route ${corridor.route_pattern} (${corridor.direction})` },
         geometry: {
           type: 'LineString',
           coordinates,

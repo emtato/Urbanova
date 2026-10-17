@@ -10,6 +10,7 @@ import type { Corridor, Development, Stop } from '../lib/types'
 import {
   setupCorridorMapLayers,
   updateDevelopmentsPhase,
+  getDevelopmentCoordinates,
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
 } from './MassingLayer'
@@ -26,6 +27,7 @@ export interface CorridorMapProps {
 }
 
 // 100% Free, NO-API-KEY Esri World Dark Gray Canvas with official MapLibre demo glyphs
+// maxzoom: 16 ensures MapLibre smoothly overscales tiles when zooming in, preventing "Map data is unavailable"
 const DARK_RASTER_STYLE: StyleSpecification = {
   version: 8,
   glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
@@ -36,6 +38,7 @@ const DARK_RASTER_STYLE: StyleSpecification = {
         'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
       ],
       tileSize: 256,
+      maxzoom: 16,
       attribution: 'Esri, © OpenStreetMap contributors, and the GIS user community',
     },
     'esri-dark-reference': {
@@ -44,6 +47,7 @@ const DARK_RASTER_STYLE: StyleSpecification = {
         'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
       ],
       tileSize: 256,
+      maxzoom: 16,
     },
   },
   layers: [
@@ -52,14 +56,14 @@ const DARK_RASTER_STYLE: StyleSpecification = {
       type: 'raster',
       source: 'esri-dark-base',
       minzoom: 0,
-      maxzoom: 20,
+      maxzoom: 22,
     },
     {
       id: 'esri-dark-reference-tiles',
       type: 'raster',
       source: 'esri-dark-reference',
       minzoom: 0,
-      maxzoom: 20,
+      maxzoom: 22,
     },
   ],
 }
@@ -200,8 +204,9 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     if (!mapRef.current || !selectedDevId) return
     const dev = developments.find((d) => d.dev_id === selectedDevId)
     if (dev) {
+      const coords = getDevelopmentCoordinates(dev)
       mapRef.current.flyTo({
-        center: [dev.coordinates[0], dev.coordinates[1]],
+        center: [coords[0], coords[1]],
         zoom: 16,
         speed: 1.2,
       })

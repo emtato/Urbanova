@@ -1,0 +1,1606 @@
+{
+  "$defs": {
+    "Access": {
+      "additionalProperties": false,
+      "properties": {
+        "stop_id": {
+          "minLength": 1,
+          "title": "Stop Id",
+          "type": "string"
+        },
+        "walk_m": {
+          "minimum": 0,
+          "title": "Walk M",
+          "type": "number"
+        },
+        "status": {
+          "enum": [
+            "estimated",
+            "reviewed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stop_id",
+        "walk_m",
+        "status",
+        "source_ids"
+      ],
+      "title": "Access",
+      "type": "object"
+    },
+    "AllowedRange": {
+      "additionalProperties": false,
+      "properties": {
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "low",
+        "high"
+      ],
+      "title": "AllowedRange",
+      "type": "object"
+    },
+    "Assumption": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "unit": {
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        },
+        "meaning": {
+          "minLength": 1,
+          "title": "Meaning",
+          "type": "string"
+        },
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "central": {
+          "title": "Central",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        },
+        "allowed_range": {
+          "$ref": "#/$defs/AllowedRange"
+        },
+        "status": {
+          "enum": [
+            "sourced",
+            "assumed",
+            "user_selected"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "unit",
+        "meaning",
+        "low",
+        "central",
+        "high",
+        "allowed_range",
+        "status",
+        "source_ids"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "CaseResult": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "minLength": 1,
+          "title": "Case Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "current",
+            "growth",
+            "supported_growth"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "package_id": {
+          "minLength": 1,
+          "title": "Package Id",
+          "type": "string"
+        },
+        "phase_id": {
+          "minLength": 1,
+          "title": "Phase Id",
+          "type": "string"
+        },
+        "demand_case": {
+          "enum": [
+            "low",
+            "central",
+            "high"
+          ],
+          "title": "Demand Case",
+          "type": "string"
+        },
+        "stops": {
+          "items": {
+            "$ref": "#/$defs/StopResult"
+          },
+          "title": "Stops",
+          "type": "array"
+        },
+        "runs": {
+          "items": {
+            "$ref": "#/$defs/Run"
+          },
+          "minItems": 1,
+          "title": "Runs",
+          "type": "array"
+        },
+        "per_run_mean_wait_s": {
+          "items": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Per Run Mean Wait S",
+          "type": "array"
+        },
+        "per_run_p95_wait_s": {
+          "items": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Per Run P95 Wait S",
+          "type": "array"
+        },
+        "per_run_denied_share": {
+          "items": {
+            "anyOf": [
+              {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Per Run Denied Share",
+          "type": "array"
+        },
+        "per_run_unresolved_passengers": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "title": "Per Run Unresolved Passengers",
+          "type": "array"
+        },
+        "run_count": {
+          "minimum": 1,
+          "title": "Run Count",
+          "type": "integer"
+        },
+        "unresolved_passengers": {
+          "minimum": 0,
+          "title": "Unresolved Passengers",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "case_id",
+        "kind",
+        "package_id",
+        "phase_id",
+        "demand_case",
+        "stops",
+        "runs",
+        "per_run_mean_wait_s",
+        "per_run_p95_wait_s",
+        "per_run_denied_share",
+        "per_run_unresolved_passengers",
+        "run_count",
+        "unresolved_passengers"
+      ],
+      "title": "CaseResult",
+      "type": "object"
+    },
+    "Corridor": {
+      "additionalProperties": false,
+      "properties": {
+        "corridor_id": {
+          "minLength": 1,
+          "title": "Corridor Id",
+          "type": "string"
+        },
+        "route_pattern": {
+          "minLength": 1,
+          "title": "Route Pattern",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "streetcar",
+            "bus"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "eastbound",
+            "westbound",
+            "northbound",
+            "southbound"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "crs": {
+          "const": "EPSG:4326",
+          "title": "Crs",
+          "type": "string"
+        },
+        "metric_crs": {
+          "const": "EPSG:26917",
+          "title": "Metric Crs",
+          "type": "string"
+        },
+        "peak_window": {
+          "$ref": "#/$defs/PeakWindow"
+        },
+        "stops": {
+          "items": {
+            "$ref": "#/$defs/Stop"
+          },
+          "minItems": 2,
+          "title": "Stops",
+          "type": "array"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "berths_per_stop": {
+          "additionalProperties": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": "Berths Per Stop",
+          "type": "object"
+        },
+        "incoming_load": {
+          "$ref": "#/$defs/Assumption"
+        },
+        "source_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "corridor_id",
+        "route_pattern",
+        "mode",
+        "direction",
+        "crs",
+        "metric_crs",
+        "peak_window",
+        "stops",
+        "links",
+        "berths_per_stop",
+        "incoming_load",
+        "source_ids"
+      ],
+      "title": "Corridor",
+      "type": "object"
+    },
+    "CostRange": {
+      "additionalProperties": false,
+      "properties": {
+        "low": {
+          "minimum": 0,
+          "title": "Low",
+          "type": "number"
+        },
+        "central": {
+          "minimum": 0,
+          "title": "Central",
+          "type": "number"
+        },
+        "high": {
+          "minimum": 0,
+          "title": "High",
+          "type": "number"
+        },
+        "currency": {
+          "const": "CAD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "price_year": {
+          "title": "Price Year",
+          "type": "integer"
+        },
+        "scope": {
+          "minLength": 1,
+          "title": "Scope",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "CAD",
+            "CAD/year"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "sourced",
+            "assumed",
+            "user_selected"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "low",
+        "central",
+        "high",
+        "currency",
+        "price_year",
+        "scope",
+        "unit",
+        "status",
+        "source_ids"
+      ],
+      "title": "CostRange",
+      "type": "object"
+    },
+    "Development": {
+      "additionalProperties": false,
+      "properties": {
+        "dev_id": {
+          "minLength": 1,
+          "title": "Dev Id",
+          "type": "string"
+        },
+        "pipeline_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Pipeline Ref"
+        },
+        "address": {
+          "minLength": 1,
+          "title": "Address",
+          "type": "string"
+        },
+        "units": {
+          "minimum": 0,
+          "title": "Units",
+          "type": "integer"
+        },
+        "stage": {
+          "minLength": 1,
+          "title": "Stage",
+          "type": "string"
+        },
+        "record_date": {
+          "format": "date",
+          "title": "Record Date",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "proposal",
+            "hypothetical"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "footprint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Footprint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "footprint_status": {
+          "enum": [
+            "sourced",
+            "unavailable"
+          ],
+          "title": "Footprint Status",
+          "type": "string"
+        },
+        "access": {
+          "items": {
+            "$ref": "#/$defs/Access"
+          },
+          "minItems": 1,
+          "title": "Access",
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dev_id",
+        "pipeline_ref",
+        "address",
+        "units",
+        "stage",
+        "record_date",
+        "kind",
+        "footprint",
+        "footprint_status",
+        "access",
+        "source_ids"
+      ],
+      "title": "Development",
+      "type": "object"
+    },
+    "DevelopmentPhase": {
+      "additionalProperties": false,
+      "properties": {
+        "phase_id": {
+          "minLength": 1,
+          "title": "Phase Id",
+          "type": "string"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        },
+        "development_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Development Ids",
+          "type": "array"
+        },
+        "occupied_share": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Occupied Share",
+          "type": "number"
+        }
+      },
+      "required": [
+        "phase_id",
+        "year",
+        "development_ids",
+        "occupied_share"
+      ],
+      "title": "DevelopmentPhase",
+      "type": "object"
+    },
+    "Diagnostics": {
+      "additionalProperties": false,
+      "properties": {
+        "passengers_created": {
+          "minimum": 0,
+          "title": "Passengers Created",
+          "type": "integer"
+        },
+        "passengers_arrived": {
+          "minimum": 0,
+          "title": "Passengers Arrived",
+          "type": "integer"
+        },
+        "passengers_waiting": {
+          "minimum": 0,
+          "title": "Passengers Waiting",
+          "type": "integer"
+        },
+        "passengers_onboard": {
+          "minimum": 0,
+          "title": "Passengers Onboard",
+          "type": "integer"
+        },
+        "conservation": {
+          "title": "Conservation",
+          "type": "boolean"
+        },
+        "unresolved_passengers": {
+          "minimum": 0,
+          "title": "Unresolved Passengers",
+          "type": "integer"
+        },
+        "runtime_s": {
+          "minimum": 0,
+          "title": "Runtime S",
+          "type": "number"
+        }
+      },
+      "required": [
+        "passengers_created",
+        "passengers_arrived",
+        "passengers_waiting",
+        "passengers_onboard",
+        "conservation",
+        "unresolved_passengers",
+        "runtime_s"
+      ],
+      "title": "Diagnostics",
+      "type": "object"
+    },
+    "Footprint": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "Polygon",
+          "title": "Type",
+          "type": "string"
+        },
+        "coordinates": {
+          "items": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "title": "Coordinates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "coordinates"
+      ],
+      "title": "Footprint",
+      "type": "object"
+    },
+    "InitialQueue": {
+      "additionalProperties": false,
+      "properties": {
+        "stop_id": {
+          "minLength": 1,
+          "title": "Stop Id",
+          "type": "string"
+        },
+        "rider_group": {
+          "enum": [
+            "existing",
+            "new"
+          ],
+          "title": "Rider Group",
+          "type": "string"
+        },
+        "count": {
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "stop_id",
+        "rider_group",
+        "count"
+      ],
+      "title": "InitialQueue",
+      "type": "object"
+    },
+    "Intervention": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "priority_lane",
+            "extra_service"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "link_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Link Ids",
+          "type": "array"
+        },
+        "headway_s": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Headway S"
+        },
+        "capital_cost": {
+          "$ref": "#/$defs/CostRange"
+        },
+        "operating_cost": {
+          "$ref": "#/$defs/CostRange"
+        },
+        "extra_vehicles": {
+          "minimum": 0,
+          "title": "Extra Vehicles",
+          "type": "integer"
+        },
+        "earliest_phase": {
+          "minLength": 1,
+          "title": "Earliest Phase",
+          "type": "string"
+        },
+        "effect": {
+          "$ref": "#/$defs/Assumption"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "link_ids",
+        "headway_s",
+        "capital_cost",
+        "operating_cost",
+        "extra_vehicles",
+        "earliest_phase",
+        "effect"
+      ],
+      "title": "Intervention",
+      "type": "object"
+    },
+    "Link": {
+      "additionalProperties": false,
+      "properties": {
+        "link_id": {
+          "minLength": 1,
+          "title": "Link Id",
+          "type": "string"
+        },
+        "from_stop": {
+          "minLength": 1,
+          "title": "From Stop",
+          "type": "string"
+        },
+        "to_stop": {
+          "minLength": 1,
+          "title": "To Stop",
+          "type": "string"
+        },
+        "length_m": {
+          "exclusiveMinimum": 0,
+          "title": "Length M",
+          "type": "number"
+        },
+        "base_time_s": {
+          "exclusiveMinimum": 0,
+          "title": "Base Time S",
+          "type": "number"
+        },
+        "source_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "link_id",
+        "from_stop",
+        "to_stop",
+        "length_m",
+        "base_time_s",
+        "source_ids"
+      ],
+      "title": "Link",
+      "type": "object"
+    },
+    "Package": {
+      "additionalProperties": false,
+      "properties": {
+        "package_id": {
+          "minLength": 1,
+          "title": "Package Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "intervention_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Intervention Ids",
+          "type": "array"
+        },
+        "evaluations": {
+          "items": {
+            "$ref": "#/$defs/PackageEvaluation"
+          },
+          "minItems": 1,
+          "title": "Evaluations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "package_id",
+        "label",
+        "intervention_ids",
+        "evaluations"
+      ],
+      "title": "Package",
+      "type": "object"
+    },
+    "PackageEvaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "phase_id": {
+          "minLength": 1,
+          "title": "Phase Id",
+          "type": "string"
+        },
+        "demand_case": {
+          "enum": [
+            "low",
+            "central",
+            "high"
+          ],
+          "title": "Demand Case",
+          "type": "string"
+        },
+        "case_id": {
+          "minLength": 1,
+          "title": "Case Id",
+          "type": "string"
+        },
+        "feasible": {
+          "title": "Feasible",
+          "type": "boolean"
+        },
+        "feasibility_reasons": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Feasibility Reasons",
+          "type": "array"
+        },
+        "criterion_met": {
+          "title": "Criterion Met",
+          "type": "boolean"
+        },
+        "criterion_reasons": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Criterion Reasons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "phase_id",
+        "demand_case",
+        "case_id",
+        "feasible",
+        "feasibility_reasons",
+        "criterion_met",
+        "criterion_reasons"
+      ],
+      "title": "PackageEvaluation",
+      "type": "object"
+    },
+    "PeakWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "start_s": {
+          "minimum": 0,
+          "title": "Start S",
+          "type": "integer"
+        },
+        "end_s": {
+          "minimum": 0,
+          "title": "End S",
+          "type": "integer"
+        },
+        "timezone": {
+          "const": "America/Toronto",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "service_date": {
+          "format": "date",
+          "title": "Service Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start_s",
+        "end_s",
+        "timezone",
+        "service_date"
+      ],
+      "title": "PeakWindow",
+      "type": "object"
+    },
+    "PlanningCriterion": {
+      "additionalProperties": false,
+      "properties": {
+        "max_p95_wait_s": {
+          "minimum": 0,
+          "title": "Max P95 Wait S",
+          "type": "number"
+        },
+        "max_denied_share": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Max Denied Share",
+          "type": "number"
+        },
+        "max_unresolved_passengers": {
+          "minimum": 0,
+          "title": "Max Unresolved Passengers",
+          "type": "integer"
+        },
+        "meaning": {
+          "minLength": 1,
+          "title": "Meaning",
+          "type": "string"
+        }
+      },
+      "required": [
+        "max_p95_wait_s",
+        "max_denied_share",
+        "max_unresolved_passengers",
+        "meaning"
+      ],
+      "title": "PlanningCriterion",
+      "type": "object"
+    },
+    "ReplayEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "t_s": {
+          "minimum": 0,
+          "title": "T S",
+          "type": "number"
+        },
+        "kind": {
+          "enum": [
+            "dispatch",
+            "arrive",
+            "alight",
+            "board",
+            "deny",
+            "depart"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "vehicle_id": {
+          "minLength": 1,
+          "title": "Vehicle Id",
+          "type": "string"
+        },
+        "stop_id": {
+          "minLength": 1,
+          "title": "Stop Id",
+          "type": "string"
+        },
+        "count": {
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "load_after": {
+          "minimum": 0,
+          "title": "Load After",
+          "type": "integer"
+        },
+        "rider_group": {
+          "anyOf": [
+            {
+              "enum": [
+                "existing",
+                "new"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rider Group"
+        }
+      },
+      "required": [
+        "run_id",
+        "t_s",
+        "kind",
+        "vehicle_id",
+        "stop_id",
+        "count",
+        "load_after",
+        "rider_group"
+      ],
+      "title": "ReplayEvent",
+      "type": "object"
+    },
+    "ReplayStream": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "horizon_s": {
+          "exclusiveMinimum": 0,
+          "title": "Horizon S",
+          "type": "number"
+        },
+        "vehicle_capacity": {
+          "additionalProperties": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "title": "Vehicle Capacity",
+          "type": "object"
+        },
+        "initial_queues": {
+          "items": {
+            "$ref": "#/$defs/InitialQueue"
+          },
+          "title": "Initial Queues",
+          "type": "array"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/ReplayEvent"
+          },
+          "minItems": 1,
+          "title": "Events",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "horizon_s",
+        "vehicle_capacity",
+        "initial_queues",
+        "events"
+      ],
+      "title": "ReplayStream",
+      "type": "object"
+    },
+    "Run": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scenario_version": {
+          "minimum": 1,
+          "title": "Scenario Version",
+          "type": "integer"
+        },
+        "package": {
+          "minLength": 1,
+          "title": "Package",
+          "type": "string"
+        },
+        "model_version": {
+          "minLength": 1,
+          "title": "Model Version",
+          "type": "string"
+        },
+        "data_version": {
+          "minLength": 1,
+          "title": "Data Version",
+          "type": "string"
+        },
+        "seed_ids": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "title": "Seed Ids",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/Diagnostics"
+        }
+      },
+      "required": [
+        "run_id",
+        "scenario_version",
+        "package",
+        "model_version",
+        "data_version",
+        "seed_ids",
+        "status",
+        "diagnostics"
+      ],
+      "title": "Run",
+      "type": "object"
+    },
+    "Scenario": {
+      "additionalProperties": false,
+      "properties": {
+        "scenario_id": {
+          "minLength": 1,
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "developments": {
+          "items": {
+            "$ref": "#/$defs/Development"
+          },
+          "title": "Developments",
+          "type": "array"
+        },
+        "phases": {
+          "items": {
+            "$ref": "#/$defs/DevelopmentPhase"
+          },
+          "minItems": 1,
+          "title": "Phases",
+          "type": "array"
+        },
+        "demand_case": {
+          "enum": [
+            "low",
+            "central",
+            "high"
+          ],
+          "title": "Demand Case",
+          "type": "string"
+        },
+        "interventions": {
+          "items": {
+            "$ref": "#/$defs/Intervention"
+          },
+          "title": "Interventions",
+          "type": "array"
+        },
+        "intervention_availability": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Intervention Availability",
+          "type": "object"
+        },
+        "capital_budget_cad": {
+          "minimum": 0,
+          "title": "Capital Budget Cad",
+          "type": "number"
+        },
+        "annual_operating_budget_cad": {
+          "minimum": 0,
+          "title": "Annual Operating Budget Cad",
+          "type": "number"
+        },
+        "budget_price_year": {
+          "title": "Budget Price Year",
+          "type": "integer"
+        },
+        "fleet_allowance": {
+          "minimum": 0,
+          "title": "Fleet Allowance",
+          "type": "integer"
+        },
+        "planning_criterion": {
+          "$ref": "#/$defs/PlanningCriterion"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "version",
+        "developments",
+        "phases",
+        "demand_case",
+        "interventions",
+        "intervention_availability",
+        "capital_budget_cad",
+        "annual_operating_budget_cad",
+        "budget_price_year",
+        "fleet_allowance",
+        "planning_criterion"
+      ],
+      "title": "Scenario",
+      "type": "object"
+    },
+    "SensitivityResult": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_key": {
+          "minLength": 1,
+          "title": "Assumption Key",
+          "type": "string"
+        },
+        "case_id": {
+          "minLength": 1,
+          "title": "Case Id",
+          "type": "string"
+        },
+        "tested_values": {
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "title": "Tested Values",
+          "type": "array"
+        },
+        "metric": {
+          "enum": [
+            "mean_wait_s",
+            "p95_wait_s",
+            "denied_share",
+            "unresolved_passengers"
+          ],
+          "title": "Metric",
+          "type": "string"
+        },
+        "outcomes": {
+          "items": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "title": "Outcomes",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "fixture",
+            "modelled"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "interpretation": {
+          "minLength": 1,
+          "title": "Interpretation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assumption_key",
+        "case_id",
+        "tested_values",
+        "metric",
+        "outcomes",
+        "status",
+        "interpretation"
+      ],
+      "title": "SensitivityResult",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        },
+        "publisher": {
+          "minLength": 1,
+          "title": "Publisher",
+          "type": "string"
+        },
+        "retrieved_at": {
+          "format": "date-time",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "licence": {
+          "minLength": 1,
+          "title": "Licence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "title",
+        "url",
+        "publisher",
+        "retrieved_at",
+        "version",
+        "licence"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "Stop": {
+      "additionalProperties": false,
+      "properties": {
+        "stop_id": {
+          "minLength": 1,
+          "title": "Stop Id",
+          "type": "string"
+        },
+        "gtfs_stop_id": {
+          "minLength": 1,
+          "title": "Gtfs Stop Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "seq": {
+          "minimum": 0,
+          "title": "Seq",
+          "type": "integer"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        },
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "source_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stop_id",
+        "gtfs_stop_id",
+        "name",
+        "seq",
+        "lon",
+        "lat",
+        "source_ids"
+      ],
+      "title": "Stop",
+      "type": "object"
+    },
+    "StopResult": {
+      "additionalProperties": false,
+      "properties": {
+        "stop_id": {
+          "minLength": 1,
+          "title": "Stop Id",
+          "type": "string"
+        },
+        "rider_group": {
+          "enum": [
+            "existing",
+            "new"
+          ],
+          "title": "Rider Group",
+          "type": "string"
+        },
+        "passengers": {
+          "minimum": 0,
+          "title": "Passengers",
+          "type": "integer"
+        },
+        "completed_passengers": {
+          "minimum": 0,
+          "title": "Completed Passengers",
+          "type": "integer"
+        },
+        "mean_wait_s": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mean Wait S"
+        },
+        "p95_wait_s": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "P95 Wait S"
+        },
+        "denied_at_least_once_share": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Denied At Least Once Share"
+        },
+        "remaining_queue": {
+          "minimum": 0,
+          "title": "Remaining Queue",
+          "type": "integer"
+        },
+        "headway_cv": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Headway Cv"
+        }
+      },
+      "required": [
+        "stop_id",
+        "rider_group",
+        "passengers",
+        "completed_passengers",
+        "mean_wait_s",
+        "p95_wait_s",
+        "denied_at_least_once_share",
+        "remaining_queue",
+        "headway_cv"
+      ],
+      "title": "StopResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "comparison_id": {
+      "minLength": 1,
+      "title": "Comparison Id",
+      "type": "string"
+    },
+    "fixture": {
+      "title": "Fixture",
+      "type": "boolean"
+    },
+    "product_label": {
+      "const": "scenario experiment",
+      "title": "Product Label",
+      "type": "string"
+    },
+    "scenario": {
+      "$ref": "#/$defs/Scenario"
+    },
+    "corridor": {
+      "$ref": "#/$defs/Corridor"
+    },
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/CaseResult"
+      },
+      "minItems": 3,
+      "title": "Cases",
+      "type": "array"
+    },
+    "packages": {
+      "items": {
+        "$ref": "#/$defs/Package"
+      },
+      "minItems": 1,
+      "title": "Packages",
+      "type": "array"
+    },
+    "sensitivity": {
+      "items": {
+        "$ref": "#/$defs/SensitivityResult"
+      },
+      "title": "Sensitivity",
+      "type": "array"
+    },
+    "assumptions": {
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceRef"
+      },
+      "minItems": 1,
+      "title": "Sources",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "replay": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReplayStream"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "contract_version",
+    "comparison_id",
+    "fixture",
+    "product_label",
+    "scenario",
+    "corridor",
+    "cases",
+    "packages",
+    "sensitivity",
+    "assumptions",
+    "sources",
+    "warnings",
+    "replay"
+  ],
+  "title": "Comparison",
+  "type": "object"
+}

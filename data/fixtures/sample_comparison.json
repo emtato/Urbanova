@@ -1,324 +1,2903 @@
 {
+  "contract_version": "1.0.0",
+  "comparison_id": "fixture-505-broadview-jarvis",
   "fixture": true,
-  "generated_at": "2026-10-17T05:25:00Z",
+  "product_label": "scenario experiment",
   "scenario": {
-    "scenario_id": "scen_505_dundas_am_peak",
-    "version": "1.0.0",
-    "name": "505 Dundas Streetcar: Broadview Station to Yonge-Dundas (AM Peak)",
-    "developments_per_phase": {
-      "1": ["dev_regent_park_phase4", "dev_church_dundas_tower"],
-      "2": ["dev_jarvis_dundas_highrise"]
-    },
-    "occupied_share": 0.94,
+    "scenario_id": "fixture-505-west",
+    "version": 1,
+    "developments": [
+      {
+        "dev_id": "toronto-app-22-124214-ste-13-oz",
+        "pipeline_ref": "22 124214 STE 13 OZ",
+        "address": "239 DUNDAS ST E",
+        "units": 630,
+        "stage": "Active",
+        "record_date": "2022-03-18",
+        "kind": "proposal",
+        "footprint": null,
+        "footprint_status": "unavailable",
+        "access": [
+          {
+            "stop_id": "ttc-stop-2119",
+            "walk_m": 271.7,
+            "status": "estimated",
+            "source_ids": [
+              "toronto-development-pipeline",
+              "toronto-address-796104",
+              "ttc-gtfs",
+              "osm-walk-239"
+            ]
+          }
+        ],
+        "source_ids": [
+          "toronto-development-pipeline",
+          "toronto-address-796104",
+          "ttc-gtfs",
+          "osm-walk-239"
+        ]
+      },
+      {
+        "dev_id": "toronto-app-26-122451-ste-13-oz",
+        "pipeline_ref": "26 122451 STE 13 OZ",
+        "address": "500 DUNDAS ST E",
+        "units": 413,
+        "stage": "Under Review",
+        "record_date": "2026-02-27",
+        "kind": "proposal",
+        "footprint": null,
+        "footprint_status": "unavailable",
+        "access": [
+          {
+            "stop_id": "ttc-stop-2125",
+            "walk_m": 229.13,
+            "status": "estimated",
+            "source_ids": [
+              "toronto-development-pipeline",
+              "toronto-address-30009862",
+              "ttc-gtfs",
+              "osm-walk-500"
+            ]
+          }
+        ],
+        "source_ids": [
+          "toronto-development-pipeline",
+          "toronto-address-30009862",
+          "ttc-gtfs",
+          "osm-walk-500"
+        ]
+      },
+      {
+        "dev_id": "toronto-app-25-236949-ste-13-oz",
+        "pipeline_ref": "25 236949 STE 13 OZ",
+        "address": "761 DUNDAS ST E",
+        "units": 1197,
+        "stage": "Under Review",
+        "record_date": "2025-10-08",
+        "kind": "proposal",
+        "footprint": null,
+        "footprint_status": "unavailable",
+        "access": [
+          {
+            "stop_id": "ttc-stop-2127",
+            "walk_m": 269.63,
+            "status": "estimated",
+            "source_ids": [
+              "toronto-development-pipeline",
+              "toronto-address-7667205",
+              "ttc-gtfs",
+              "osm-walk-761"
+            ]
+          }
+        ],
+        "source_ids": [
+          "toronto-development-pipeline",
+          "toronto-address-7667205",
+          "ttc-gtfs",
+          "osm-walk-761"
+        ]
+      }
+    ],
+    "phases": [
+      {
+        "phase_id": "phase-1",
+        "year": 2030,
+        "development_ids": [
+          "toronto-app-22-124214-ste-13-oz",
+          "toronto-app-26-122451-ste-13-oz",
+          "toronto-app-25-236949-ste-13-oz"
+        ],
+        "occupied_share": 0.5
+      }
+    ],
     "demand_case": "central",
+    "interventions": [
+      {
+        "id": "fixture-extra-service",
+        "type": "extra_service",
+        "link_ids": [],
+        "headway_s": 30,
+        "capital_cost": {
+          "low": 0,
+          "central": 0,
+          "high": 0,
+          "currency": "CAD",
+          "price_year": 2026,
+          "scope": "Fixture assumes an existing spare vehicle; excludes vehicle purchase.",
+          "unit": "CAD",
+          "status": "assumed",
+          "source_ids": []
+        },
+        "operating_cost": {
+          "low": 80000,
+          "central": 100000,
+          "high": 120000,
+          "currency": "CAD",
+          "price_year": 2026,
+          "scope": "Invented annual incremental operating cost for contract testing only.",
+          "unit": "CAD/year",
+          "status": "assumed",
+          "source_ids": []
+        },
+        "extra_vehicles": 1,
+        "earliest_phase": "phase-1",
+        "effect": {
+          "key": "extra_service_headway",
+          "unit": "s",
+          "meaning": "Fixture dispatches 0/30/60 instead of 0/60; no fleet-cycle feasibility claim.",
+          "low": 30,
+          "central": 30,
+          "high": 60,
+          "allowed_range": {
+            "low": 1,
+            "high": 1800
+          },
+          "status": "assumed",
+          "source_ids": []
+        }
+      }
+    ],
     "intervention_availability": {
-      "int_dundas_transit_priority": 1,
-      "int_dundas_505_frequency": 2
+      "fixture-extra-service": "phase-1"
     },
-    "capital_budget": 8500000,
-    "operating_budget": 3200000,
-    "fleet_allowance": 5,
+    "capital_budget_cad": 0,
+    "annual_operating_budget_cad": 120000,
+    "budget_price_year": 2026,
+    "fleet_allowance": 1,
     "planning_criterion": {
-      "max_mean_wait_s": 300,
-      "max_denied_share": 0.05
+      "max_p95_wait_s": 300,
+      "max_denied_share": 0.65,
+      "max_unresolved_passengers": 0,
+      "meaning": "Illustrative criterion applied to every run; not a TTC service standard."
     }
   },
   "corridor": {
-    "corridor_id": "corr_505_dundas_wb",
-    "name": "505 Dundas Streetcar (Broadview Station to Yonge-Dundas)",
-    "route_pattern": "505 Westbound AM Peak",
-    "direction": "Westbound",
-    "peak_window": "07:30 - 08:30 Weekday AM",
+    "corridor_id": "ttc-505-west-broadview-jarvis",
+    "route_pattern": "505:1:shp-505-60",
+    "mode": "streetcar",
+    "direction": "westbound",
+    "crs": "EPSG:4326",
+    "metric_crs": "EPSG:26917",
+    "peak_window": {
+      "start_s": 25200,
+      "end_s": 32400,
+      "timezone": "America/Toronto",
+      "service_date": "2026-10-16"
+    },
     "stops": [
-      { "stop_id": "stop_01", "gtfs_stop_id": "15101", "name": "Broadview Station Subway Loop", "seq": 1, "lon": -79.3585, "lat": 43.6769 },
-      { "stop_id": "stop_02", "gtfs_stop_id": "15102", "name": "Broadview Ave at Gerrard St E", "seq": 2, "lon": -79.3538, "lat": 43.6661 },
-      { "stop_id": "stop_03", "gtfs_stop_id": "15103", "name": "Broadview Ave at Dundas St E", "seq": 3, "lon": -79.3524, "lat": 43.6627 },
-      { "stop_id": "stop_04", "gtfs_stop_id": "15104", "name": "Dundas St E at River St", "seq": 4, "lon": -79.3562, "lat": 43.6608 },
-      { "stop_id": "stop_05", "gtfs_stop_id": "15105", "name": "Dundas St E at Sumach St (Regent Park)", "seq": 5, "lon": -79.3608, "lat": 43.6593 },
-      { "stop_id": "stop_06", "gtfs_stop_id": "15106", "name": "Dundas St E at Sackville St", "seq": 6, "lon": -79.3644, "lat": 43.6582 },
-      { "stop_id": "stop_07", "gtfs_stop_id": "15107", "name": "Dundas St E at Parliament St", "seq": 7, "lon": -79.3676, "lat": 43.6572 },
-      { "stop_id": "stop_08", "gtfs_stop_id": "15108", "name": "Dundas St E at Sherbourne St", "seq": 8, "lon": -79.3718, "lat": 43.6558 },
-      { "stop_id": "stop_09", "gtfs_stop_id": "15109", "name": "Dundas St E at Jarvis St", "seq": 9, "lon": -79.3752, "lat": 43.6547 },
-      { "stop_id": "stop_10", "gtfs_stop_id": "15110", "name": "Dundas St E at Church St (TMU)", "seq": 10, "lon": -79.3789, "lat": 43.6553 },
-      { "stop_id": "stop_11", "gtfs_stop_id": "15111", "name": "Yonge St at Dundas Station (Line 1)", "seq": 11, "lon": -79.3807, "lat": 43.6565 }
+      {
+        "stop_id": "ttc-stop-1756",
+        "gtfs_stop_id": "1756",
+        "name": "Broadview Ave at Dundas St East",
+        "seq": 0,
+        "lon": -79.351506,
+        "lat": 43.6626,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "stop_id": "ttc-stop-2127",
+        "gtfs_stop_id": "2127",
+        "name": "Dundas St East at River St",
+        "seq": 1,
+        "lon": -79.358,
+        "lat": 43.661284,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "stop_id": "ttc-stop-15873",
+        "gtfs_stop_id": "15873",
+        "name": "Dundas St East at Regent Park Blvd",
+        "seq": 2,
+        "lon": -79.361739,
+        "lat": 43.66045,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "stop_id": "ttc-stop-2125",
+        "gtfs_stop_id": "2125",
+        "name": "Dundas St East at Parliament St",
+        "seq": 3,
+        "lon": -79.365882,
+        "lat": 43.65951,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "stop_id": "ttc-stop-2123",
+        "gtfs_stop_id": "2123",
+        "name": "Dundas St East at Ontario St",
+        "seq": 4,
+        "lon": -79.368357,
+        "lat": 43.658961,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "stop_id": "ttc-stop-2131",
+        "gtfs_stop_id": "2131",
+        "name": "Dundas St East at Sherbourne St",
+        "seq": 5,
+        "lon": -79.370878,
+        "lat": 43.658406,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "stop_id": "ttc-stop-2119",
+        "gtfs_stop_id": "2119",
+        "name": "Dundas St East at Jarvis St",
+        "seq": 6,
+        "lon": -79.374377,
+        "lat": 43.657162,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      }
     ],
     "links": [
-      { "link_id": "link_1_2", "from_stop": "stop_01", "to_stop": "stop_02", "length_m": 1250, "base_time_s": 220 },
-      { "link_id": "link_2_3", "from_stop": "stop_02", "to_stop": "stop_03", "length_m": 420, "base_time_s": 85 },
-      { "link_id": "link_3_4", "from_stop": "stop_03", "to_stop": "stop_04", "length_m": 480, "base_time_s": 95 },
-      { "link_id": "link_4_5", "from_stop": "stop_04", "to_stop": "stop_05", "length_m": 410, "base_time_s": 80 },
-      { "link_id": "link_5_6", "from_stop": "stop_05", "to_stop": "stop_06", "length_m": 350, "base_time_s": 70 },
-      { "link_id": "link_6_7", "from_stop": "stop_06", "to_stop": "stop_07", "length_m": 290, "base_time_s": 65 },
-      { "link_id": "link_7_8", "from_stop": "stop_07", "to_stop": "stop_08", "length_m": 380, "base_time_s": 80 },
-      { "link_id": "link_8_9", "from_stop": "stop_08", "to_stop": "stop_09", "length_m": 310, "base_time_s": 75 },
-      { "link_id": "link_9_10", "from_stop": "stop_09", "to_stop": "stop_10", "length_m": 330, "base_time_s": 80 },
-      { "link_id": "link_10_11", "from_stop": "stop_10", "to_stop": "stop_11", "length_m": 220, "base_time_s": 60 }
+      {
+        "link_id": "ttc-505-west-broadview-jarvis-link-1",
+        "from_stop": "ttc-stop-1756",
+        "to_stop": "ttc-stop-2127",
+        "length_m": 551.76,
+        "base_time_s": 175,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-jarvis-link-2",
+        "from_stop": "ttc-stop-2127",
+        "to_stop": "ttc-stop-15873",
+        "length_m": 315.45,
+        "base_time_s": 90,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-jarvis-link-3",
+        "from_stop": "ttc-stop-15873",
+        "to_stop": "ttc-stop-2125",
+        "length_m": 350.06,
+        "base_time_s": 104,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-jarvis-link-4",
+        "from_stop": "ttc-stop-2125",
+        "to_stop": "ttc-stop-2123",
+        "length_m": 209.84,
+        "base_time_s": 85,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-jarvis-link-5",
+        "from_stop": "ttc-stop-2123",
+        "to_stop": "ttc-stop-2131",
+        "length_m": 213.47,
+        "base_time_s": 85,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      },
+      {
+        "link_id": "ttc-505-west-broadview-jarvis-link-6",
+        "from_stop": "ttc-stop-2131",
+        "to_stop": "ttc-stop-2119",
+        "length_m": 333.3,
+        "base_time_s": 136,
+        "source_ids": [
+          "ttc-gtfs"
+        ]
+      }
     ],
-    "berths_per_stop": 1,
-    "incoming_load": 32
+    "berths_per_stop": {
+      "ttc-stop-1756": 1,
+      "ttc-stop-2127": 1,
+      "ttc-stop-15873": 1,
+      "ttc-stop-2125": 1,
+      "ttc-stop-2123": 1,
+      "ttc-stop-2131": 1,
+      "ttc-stop-2119": 1
+    },
+    "incoming_load": {
+      "key": "incoming_load",
+      "unit": "passengers/vehicle",
+      "meaning": "Fixture cars enter empty; actual Broadview occupancy is unknown.",
+      "low": 0,
+      "central": 0,
+      "high": 0,
+      "allowed_range": {
+        "low": 0,
+        "high": 300
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    "source_ids": [
+      "ttc-gtfs"
+    ]
   },
-  "developments": [
+  "cases": [
     {
-      "dev_id": "dev_regent_park_phase4",
-      "pipeline_ref": "23-228190-OZ",
-      "address": "375 Dundas St E",
-      "units": 980,
-      "stage": "Under Construction",
-      "record_date": "2025-10-18",
-      "kind": "proposal",
-      "coordinates": [-79.3622, 43.6588],
-      "height_m": 88,
-      "phase": 1,
-      "access": [
-        { "stop_id": "stop_05", "walk_m": 85 },
-        { "stop_id": "stop_06", "walk_m": 160 }
+      "case_id": "fixture-current",
+      "kind": "current",
+      "package_id": "baseline",
+      "phase_id": "phase-1",
+      "demand_case": "central",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 12,
+          "p95_wait_s": 60,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
       ],
-      "source_ids": ["src_dev_pipeline_2025", "src_city_open_data"]
+      "runs": [
+        {
+          "run_id": "fixture-run-current",
+          "scenario_version": 1,
+          "package": "baseline",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 5,
+            "passengers_arrived": 5,
+            "passengers_waiting": 0,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 0,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        12.0
+      ],
+      "per_run_p95_wait_s": [
+        60
+      ],
+      "per_run_denied_share": [
+        0.2
+      ],
+      "per_run_unresolved_passengers": [
+        0
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 0
     },
     {
-      "dev_id": "dev_church_dundas_tower",
-      "pipeline_ref": "24-109402-OZ",
-      "address": "241 Church St",
-      "units": 560,
-      "stage": "Site Plan Approved",
-      "record_date": "2025-11-20",
-      "kind": "proposal",
-      "coordinates": [-79.3779, 43.6558],
-      "height_m": 154,
-      "phase": 1,
-      "access": [
-        { "stop_id": "stop_10", "walk_m": 60 },
-        { "stop_id": "stop_11", "walk_m": 280 }
+      "case_id": "fixture-growth",
+      "kind": "growth",
+      "package_id": "baseline",
+      "phase_id": "phase-1",
+      "demand_case": "central",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 12,
+          "p95_wait_s": 60,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 5,
+          "completed_passengers": 3,
+          "mean_wait_s": 235,
+          "p95_wait_s": 235,
+          "denied_at_least_once_share": 1,
+          "remaining_queue": 2,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
       ],
-      "source_ids": ["src_dev_pipeline_2025"]
+      "runs": [
+        {
+          "run_id": "fixture-run-growth",
+          "scenario_version": 1,
+          "package": "baseline",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 10,
+            "passengers_arrived": 8,
+            "passengers_waiting": 2,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 2,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        95.625
+      ],
+      "per_run_p95_wait_s": [
+        235
+      ],
+      "per_run_denied_share": [
+        0.6
+      ],
+      "per_run_unresolved_passengers": [
+        2
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 2
     },
     {
-      "dev_id": "dev_jarvis_dundas_highrise",
-      "pipeline_ref": "25-174820-OZ",
-      "address": "181 Dundas St E",
-      "units": 680,
-      "stage": "Application Submitted",
-      "record_date": "2026-01-14",
-      "kind": "proposal",
-      "coordinates": [-79.3745, 43.6549],
-      "height_m": 128,
-      "phase": 2,
-      "access": [
-        { "stop_id": "stop_09", "walk_m": 70 },
-        { "stop_id": "stop_10", "walk_m": 310 }
+      "case_id": "fixture-supported_growth",
+      "kind": "supported_growth",
+      "package_id": "extra-service",
+      "phase_id": "phase-1",
+      "demand_case": "central",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 6,
+          "p95_wait_s": 30,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 217.0,
+          "p95_wait_s": 235,
+          "denied_at_least_once_share": 1,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
       ],
-      "source_ids": ["src_dev_pipeline_2025"]
+      "runs": [
+        {
+          "run_id": "fixture-run-supported_growth",
+          "scenario_version": 1,
+          "package": "extra-service",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 10,
+            "passengers_arrived": 10,
+            "passengers_waiting": 0,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 0,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        111.5
+      ],
+      "per_run_p95_wait_s": [
+        235
+      ],
+      "per_run_denied_share": [
+        0.6
+      ],
+      "per_run_unresolved_passengers": [
+        0
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 0
+    },
+    {
+      "case_id": "fixture-current-low",
+      "kind": "current",
+      "package_id": "baseline",
+      "phase_id": "phase-1",
+      "demand_case": "low",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 12,
+          "p95_wait_s": 60,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "fixture-run-current-low",
+          "scenario_version": 1,
+          "package": "baseline",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 5,
+            "passengers_arrived": 5,
+            "passengers_waiting": 0,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 0,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        12.0
+      ],
+      "per_run_p95_wait_s": [
+        60
+      ],
+      "per_run_denied_share": [
+        0.2
+      ],
+      "per_run_unresolved_passengers": [
+        0
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 0
+    },
+    {
+      "case_id": "fixture-growth-low",
+      "kind": "growth",
+      "package_id": "baseline",
+      "phase_id": "phase-1",
+      "demand_case": "low",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 12,
+          "p95_wait_s": 60,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 3,
+          "completed_passengers": 3,
+          "mean_wait_s": 235,
+          "p95_wait_s": 235,
+          "denied_at_least_once_share": 1,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "fixture-run-growth-low",
+          "scenario_version": 1,
+          "package": "baseline",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 8,
+            "passengers_arrived": 8,
+            "passengers_waiting": 0,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 0,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        95.625
+      ],
+      "per_run_p95_wait_s": [
+        235
+      ],
+      "per_run_denied_share": [
+        0.5
+      ],
+      "per_run_unresolved_passengers": [
+        0
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 0
+    },
+    {
+      "case_id": "fixture-supported_growth-low",
+      "kind": "supported_growth",
+      "package_id": "extra-service",
+      "phase_id": "phase-1",
+      "demand_case": "low",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 6,
+          "p95_wait_s": 30,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 3,
+          "completed_passengers": 3,
+          "mean_wait_s": 205.0,
+          "p95_wait_s": 205,
+          "denied_at_least_once_share": 1,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "fixture-run-supported_growth-low",
+          "scenario_version": 1,
+          "package": "extra-service",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 8,
+            "passengers_arrived": 8,
+            "passengers_waiting": 0,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 0,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        80.625
+      ],
+      "per_run_p95_wait_s": [
+        205
+      ],
+      "per_run_denied_share": [
+        0.5
+      ],
+      "per_run_unresolved_passengers": [
+        0
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 0
+    },
+    {
+      "case_id": "fixture-current-high",
+      "kind": "current",
+      "package_id": "baseline",
+      "phase_id": "phase-1",
+      "demand_case": "high",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 12,
+          "p95_wait_s": 60,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "fixture-run-current-high",
+          "scenario_version": 1,
+          "package": "baseline",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 5,
+            "passengers_arrived": 5,
+            "passengers_waiting": 0,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 0,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        12.0
+      ],
+      "per_run_p95_wait_s": [
+        60
+      ],
+      "per_run_denied_share": [
+        0.2
+      ],
+      "per_run_unresolved_passengers": [
+        0
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 0
+    },
+    {
+      "case_id": "fixture-growth-high",
+      "kind": "growth",
+      "package_id": "baseline",
+      "phase_id": "phase-1",
+      "demand_case": "high",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 12,
+          "p95_wait_s": 60,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 7,
+          "completed_passengers": 3,
+          "mean_wait_s": 235,
+          "p95_wait_s": 235,
+          "denied_at_least_once_share": 1,
+          "remaining_queue": 4,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "fixture-run-growth-high",
+          "scenario_version": 1,
+          "package": "baseline",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 12,
+            "passengers_arrived": 8,
+            "passengers_waiting": 4,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 4,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        95.625
+      ],
+      "per_run_p95_wait_s": [
+        235
+      ],
+      "per_run_denied_share": [
+        0.6666666666666666
+      ],
+      "per_run_unresolved_passengers": [
+        4
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 4
+    },
+    {
+      "case_id": "fixture-supported_growth-high",
+      "kind": "supported_growth",
+      "package_id": "extra-service",
+      "phase_id": "phase-1",
+      "demand_case": "high",
+      "stops": [
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "existing",
+          "passengers": 5,
+          "completed_passengers": 5,
+          "mean_wait_s": 6,
+          "p95_wait_s": 30,
+          "denied_at_least_once_share": 0.2,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-1756",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2127",
+          "rider_group": "new",
+          "passengers": 7,
+          "completed_passengers": 7,
+          "mean_wait_s": 222.14285714285714,
+          "p95_wait_s": 235,
+          "denied_at_least_once_share": 1,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-15873",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2125",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2123",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2131",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "existing",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        },
+        {
+          "stop_id": "ttc-stop-2119",
+          "rider_group": "new",
+          "passengers": 0,
+          "completed_passengers": 0,
+          "mean_wait_s": null,
+          "p95_wait_s": null,
+          "denied_at_least_once_share": null,
+          "remaining_queue": 0,
+          "headway_cv": 0
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "fixture-run-supported_growth-high",
+          "scenario_version": 1,
+          "package": "extra-service",
+          "model_version": "hand-fixture-v1",
+          "data_version": "ttc-S1000542-505-west-pipeline-20261008",
+          "seed_ids": [
+            0
+          ],
+          "status": "completed",
+          "diagnostics": {
+            "passengers_created": 12,
+            "passengers_arrived": 12,
+            "passengers_waiting": 0,
+            "passengers_onboard": 0,
+            "conservation": true,
+            "unresolved_passengers": 0,
+            "runtime_s": 0
+          }
+        }
+      ],
+      "per_run_mean_wait_s": [
+        132.08333333333334
+      ],
+      "per_run_p95_wait_s": [
+        235
+      ],
+      "per_run_denied_share": [
+        0.6666666666666666
+      ],
+      "per_run_unresolved_passengers": [
+        0
+      ],
+      "run_count": 1,
+      "unresolved_passengers": 0
     }
   ],
-  "cases": {
-    "current": {
-      "case_id": "current",
-      "case_label": "Baseline (Today)",
-      "stop_results": {
-        "stop_01": { "stop_id": "stop_01", "stop_name": "Broadview Station Subway Loop", "existing_riders": { "mean_wait_s": 180, "p95_wait_s": 330, "share_denied": 0.01, "remaining_queue": 2 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 180, "p95_wait_s": 330, "share_denied": 0.01, "remaining_queue": 2 }, "headway_cv": 0.22, "bunched_trips_share": 0.06 },
-        "stop_05": { "stop_id": "stop_05", "stop_name": "Dundas St E at Sumach St (Regent Park)", "existing_riders": { "mean_wait_s": 240, "p95_wait_s": 460, "share_denied": 0.04, "remaining_queue": 8 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 240, "p95_wait_s": 460, "share_denied": 0.04, "remaining_queue": 8 }, "headway_cv": 0.28, "bunched_trips_share": 0.09 },
-        "stop_07": { "stop_id": "stop_07", "stop_name": "Dundas St E at Parliament St", "existing_riders": { "mean_wait_s": 270, "p95_wait_s": 510, "share_denied": 0.05, "remaining_queue": 12 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 270, "p95_wait_s": 510, "share_denied": 0.05, "remaining_queue": 12 }, "headway_cv": 0.31, "bunched_trips_share": 0.11 },
-        "stop_10": { "stop_id": "stop_10", "stop_name": "Dundas St E at Church St (TMU)", "existing_riders": { "mean_wait_s": 290, "p95_wait_s": 550, "share_denied": 0.06, "remaining_queue": 14 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 290, "p95_wait_s": 550, "share_denied": 0.06, "remaining_queue": 14 }, "headway_cv": 0.33, "bunched_trips_share": 0.12 }
-      },
-      "summary": { "mean_wait_s": 245, "p95_wait_s": 480, "total_denied_share": 0.041, "max_queue": 14, "total_boardings": 1250 },
-      "run_count": 20,
-      "unresolved_passengers": 0
-    },
-    "growth": {
-      "case_id": "growth",
-      "case_label": "Unmitigated Housing Growth (Phase 1+2 Towers)",
-      "stop_results": {
-        "stop_01": { "stop_id": "stop_01", "stop_name": "Broadview Station Subway Loop", "existing_riders": { "mean_wait_s": 210, "p95_wait_s": 390, "share_denied": 0.02, "remaining_queue": 4 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 210, "p95_wait_s": 390, "share_denied": 0.02, "remaining_queue": 4 }, "headway_cv": 0.26, "bunched_trips_share": 0.08 },
-        "stop_05": { "stop_id": "stop_05", "stop_name": "Dundas St E at Sumach St (Regent Park)", "existing_riders": { "mean_wait_s": 490, "p95_wait_s": 980, "share_denied": 0.18, "remaining_queue": 34 }, "new_riders": { "mean_wait_s": 520, "p95_wait_s": 1040, "share_denied": 0.22, "remaining_queue": 46 }, "total_riders": { "mean_wait_s": 506, "p95_wait_s": 1010, "share_denied": 0.201, "remaining_queue": 80 }, "headway_cv": 0.44, "bunched_trips_share": 0.21 },
-        "stop_07": { "stop_id": "stop_07", "stop_name": "Dundas St E at Parliament St", "existing_riders": { "mean_wait_s": 580, "p95_wait_s": 1150, "share_denied": 0.24, "remaining_queue": 44 }, "new_riders": { "mean_wait_s": 610, "p95_wait_s": 1210, "share_denied": 0.27, "remaining_queue": 58 }, "total_riders": { "mean_wait_s": 596, "p95_wait_s": 1180, "share_denied": 0.256, "remaining_queue": 102 }, "headway_cv": 0.51, "bunched_trips_share": 0.26 },
-        "stop_10": { "stop_id": "stop_10", "stop_name": "Dundas St E at Church St (TMU)", "existing_riders": { "mean_wait_s": 650, "p95_wait_s": 1310, "share_denied": 0.29, "remaining_queue": 52 }, "new_riders": { "mean_wait_s": 680, "p95_wait_s": 1360, "share_denied": 0.32, "remaining_queue": 64 }, "total_riders": { "mean_wait_s": 666, "p95_wait_s": 1335, "share_denied": 0.306, "remaining_queue": 116 }, "headway_cv": 0.56, "bunched_trips_share": 0.31 }
-      },
-      "summary": { "mean_wait_s": 562, "p95_wait_s": 1120, "total_denied_share": 0.218, "max_queue": 116, "total_boardings": 2480 },
-      "run_count": 20,
-      "unresolved_passengers": 34
-    },
-    "supported_growth": {
-      "case_id": "supported_growth",
-      "case_label": "Supported Growth (Streetcar Priority + Frequency Boost)",
-      "stop_results": {
-        "stop_01": { "stop_id": "stop_01", "stop_name": "Broadview Station Subway Loop", "existing_riders": { "mean_wait_s": 150, "p95_wait_s": 270, "share_denied": 0.005, "remaining_queue": 1 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 150, "p95_wait_s": 270, "share_denied": 0.005, "remaining_queue": 1 }, "headway_cv": 0.14, "bunched_trips_share": 0.03 },
-        "stop_05": { "stop_id": "stop_05", "stop_name": "Dundas St E at Sumach St (Regent Park)", "existing_riders": { "mean_wait_s": 195, "p95_wait_s": 360, "share_denied": 0.02, "remaining_queue": 6 }, "new_riders": { "mean_wait_s": 205, "p95_wait_s": 380, "share_denied": 0.025, "remaining_queue": 8 }, "total_riders": { "mean_wait_s": 200, "p95_wait_s": 370, "share_denied": 0.023, "remaining_queue": 14 }, "headway_cv": 0.17, "bunched_trips_share": 0.04 },
-        "stop_07": { "stop_id": "stop_07", "stop_name": "Dundas St E at Parliament St", "existing_riders": { "mean_wait_s": 220, "p95_wait_s": 410, "share_denied": 0.03, "remaining_queue": 8 }, "new_riders": { "mean_wait_s": 235, "p95_wait_s": 430, "share_denied": 0.035, "remaining_queue": 10 }, "total_riders": { "mean_wait_s": 228, "p95_wait_s": 420, "share_denied": 0.033, "remaining_queue": 18 }, "headway_cv": 0.19, "bunched_trips_share": 0.04 },
-        "stop_10": { "stop_id": "stop_10", "stop_name": "Dundas St E at Church St (TMU)", "existing_riders": { "mean_wait_s": 240, "p95_wait_s": 440, "share_denied": 0.035, "remaining_queue": 10 }, "new_riders": { "mean_wait_s": 250, "p95_wait_s": 460, "share_denied": 0.04, "remaining_queue": 12 }, "total_riders": { "mean_wait_s": 245, "p95_wait_s": 450, "share_denied": 0.038, "remaining_queue": 22 }, "headway_cv": 0.20, "bunched_trips_share": 0.05 }
-      },
-      "summary": { "mean_wait_s": 218, "p95_wait_s": 405, "total_denied_share": 0.028, "max_queue": 22, "total_boardings": 2480 },
-      "run_count": 20,
-      "unresolved_passengers": 0
-    }
-  },
   "packages": [
     {
-      "package_id": "pkg_status_quo",
-      "name": "Package 0: Status Quo (Do Nothing)",
-      "interventions": [],
-      "is_feasible": true,
-      "infeasibility_reasons": [],
-      "capital_cost": 0,
-      "operating_cost_annual": 0,
-      "extra_vehicles": 0,
-      "criterion_met": { "phase_1": false, "phase_2": false },
-      "rank": 4
+      "package_id": "baseline",
+      "label": "No additional service",
+      "intervention_ids": [],
+      "evaluations": [
+        {
+          "phase_id": "phase-1",
+          "demand_case": "central",
+          "case_id": "fixture-growth",
+          "feasible": true,
+          "feasibility_reasons": [
+            "Fixture high-bound costs fit the budgets; availability and fleet allowance fit."
+          ],
+          "criterion_met": false,
+          "criterion_reasons": [
+            "Fixture unresolved or denied-share limit exceeded."
+          ]
+        },
+        {
+          "phase_id": "phase-1",
+          "demand_case": "low",
+          "case_id": "fixture-growth-low",
+          "feasible": true,
+          "feasibility_reasons": [
+            "Fixture high-bound costs fit the budgets; availability and fleet allowance fit."
+          ],
+          "criterion_met": true,
+          "criterion_reasons": [
+            "All fixture limits pass."
+          ]
+        },
+        {
+          "phase_id": "phase-1",
+          "demand_case": "high",
+          "case_id": "fixture-growth-high",
+          "feasible": true,
+          "feasibility_reasons": [
+            "Fixture high-bound costs fit the budgets; availability and fleet allowance fit."
+          ],
+          "criterion_met": false,
+          "criterion_reasons": [
+            "Fixture unresolved or denied-share limit exceeded."
+          ]
+        }
+      ]
     },
     {
-      "package_id": "pkg_priority_only",
-      "name": "Package 1: Dundas Transit Signal Priority & Left-Turn Restrictions",
-      "interventions": ["int_dundas_transit_priority"],
-      "is_feasible": true,
-      "infeasibility_reasons": [],
-      "capital_cost": 2800000,
-      "operating_cost_annual": 180000,
-      "extra_vehicles": 0,
-      "criterion_met": { "phase_1": true, "phase_2": false },
-      "rank": 2
-    },
-    {
-      "package_id": "pkg_frequency_only",
-      "name": "Package 2: Peak Frequency Boost (6m -> 3.5m Headway)",
-      "interventions": ["int_dundas_505_frequency"],
-      "is_feasible": true,
-      "infeasibility_reasons": [],
-      "capital_cost": 0,
-      "operating_cost_annual": 2400000,
-      "extra_vehicles": 3,
-      "criterion_met": { "phase_1": true, "phase_2": false },
-      "rank": 3
-    },
-    {
-      "package_id": "pkg_combined",
-      "name": "Package 3: Full Readiness (Streetcar Priority Corridor + Frequency Boost)",
-      "interventions": ["int_dundas_transit_priority", "int_dundas_505_frequency"],
-      "is_feasible": true,
-      "infeasibility_reasons": [],
-      "capital_cost": 2800000,
-      "operating_cost_annual": 2580000,
-      "extra_vehicles": 3,
-      "criterion_met": { "phase_1": true, "phase_2": true },
-      "rank": 1
+      "package_id": "extra-service",
+      "label": "Illustrative extra streetcar",
+      "intervention_ids": [
+        "fixture-extra-service"
+      ],
+      "evaluations": [
+        {
+          "phase_id": "phase-1",
+          "demand_case": "central",
+          "case_id": "fixture-supported_growth",
+          "feasible": true,
+          "feasibility_reasons": [
+            "Fixture high-bound costs fit the budgets; availability and fleet allowance fit."
+          ],
+          "criterion_met": true,
+          "criterion_reasons": [
+            "All fixture limits pass."
+          ]
+        },
+        {
+          "phase_id": "phase-1",
+          "demand_case": "low",
+          "case_id": "fixture-supported_growth-low",
+          "feasible": true,
+          "feasibility_reasons": [
+            "Fixture high-bound costs fit the budgets; availability and fleet allowance fit."
+          ],
+          "criterion_met": true,
+          "criterion_reasons": [
+            "All fixture limits pass."
+          ]
+        },
+        {
+          "phase_id": "phase-1",
+          "demand_case": "high",
+          "case_id": "fixture-supported_growth-high",
+          "feasible": true,
+          "feasibility_reasons": [
+            "Fixture high-bound costs fit the budgets; availability and fleet allowance fit."
+          ],
+          "criterion_met": false,
+          "criterion_reasons": [
+            "Fixture unresolved or denied-share limit exceeded."
+          ]
+        }
+      ]
     }
   ],
-  "sensitivity": {
-    "demand_cases": {
-      "low": { "preferred_package": "pkg_priority_only", "worst_stops": ["stop_10"] },
-      "central": { "preferred_package": "pkg_combined", "worst_stops": ["stop_07", "stop_10"] },
-      "high": { "preferred_package": "pkg_combined", "worst_stops": ["stop_05", "stop_07", "stop_10"] }
-    },
-    "upgrade_delay": {
-      "preferred_package": "pkg_combined",
-      "impact": "A 1-year transit upgrade delay during Phase 2 occupancy causes severe stop queue spikes (+260%) at Dundas & Parliament and TMU."
+  "sensitivity": [
+    {
+      "assumption_key": "vehicle_capacity",
+      "case_id": "fixture-growth",
+      "tested_values": [
+        4,
+        5,
+        6
+      ],
+      "metric": "unresolved_passengers",
+      "outcomes": [
+        2,
+        0,
+        0
+      ],
+      "status": "fixture",
+      "interpretation": "Hand arithmetic only, holding demand fixed. Not a fleet recommendation."
     }
-  },
+  ],
   "assumptions": [
     {
-      "key": "transit_mode_share",
-      "unit": "%",
-      "meaning": "Share of new residential development peak-hour outbound trips taken by 505 streetcar",
-      "low": 0.52,
-      "central": 0.65,
-      "high": 0.78,
-      "allowed_range": [0.30, 0.95],
-      "status": "sourced",
-      "source_ids": ["src_tts_2016", "src_city_open_data"]
-    },
-    {
-      "key": "occupancy_residents_per_unit",
-      "unit": "persons/unit",
-      "meaning": "Average residential density for downtown condominium towers along Dundas East",
-      "low": 1.35,
-      "central": 1.62,
-      "high": 1.95,
-      "allowed_range": [1.0, 3.0],
-      "status": "sourced",
-      "source_ids": ["src_statcan_census_2021"]
-    },
-    {
-      "key": "streetcar_all_door_boarding_rate",
-      "unit": "s/passenger",
-      "meaning": "Average all-door PRESTO tap boarding time on Bombardier Flexity streetcars",
-      "low": 1.4,
-      "central": 1.9,
-      "high": 2.8,
-      "allowed_range": [1.0, 4.5],
+      "key": "incoming_load",
+      "unit": "passengers/vehicle",
+      "meaning": "Fixture cars enter empty; actual Broadview occupancy is unknown.",
+      "low": 0,
+      "central": 0,
+      "high": 0,
+      "allowed_range": {
+        "low": 0,
+        "high": 300
+      },
       "status": "assumed",
-      "source_ids": ["src_tcrp_report_165"]
+      "source_ids": []
     },
     {
-      "key": "transit_priority_speedup_factor",
-      "unit": "multiplier",
-      "meaning": "Travel time speedup from transit signal priority and left-turn restrictions on mixed-traffic track",
-      "low": 0.88,
-      "central": 0.82,
-      "high": 0.76,
-      "allowed_range": [0.65, 0.95],
-      "status": "sourced",
-      "source_ids": ["src_king_street_study"]
+      "key": "vehicle_capacity",
+      "unit": "passengers/vehicle",
+      "meaning": "FOUR places for hand arithmetic only; not a TTC streetcar capacity.",
+      "low": 4,
+      "central": 4,
+      "high": 6,
+      "allowed_range": {
+        "low": 1,
+        "high": 300
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "baseline_headway",
+      "unit": "s",
+      "meaning": "Synthetic two-car dispatch separation; not the observed or scheduled 505 headway.",
+      "low": 60,
+      "central": 60,
+      "high": 60,
+      "allowed_range": {
+        "low": 1,
+        "high": 1800
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "dwell",
+      "unit": "s/stop",
+      "meaning": "Zero-dwell arithmetic fixture, not a calibrated boarding model.",
+      "low": 0,
+      "central": 0,
+      "high": 0,
+      "allowed_range": {
+        "low": 0,
+        "high": 300
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "berths",
+      "unit": "vehicles/stop",
+      "meaning": "One berth per stop; fixture arrivals never overlap at a stop.",
+      "low": 1,
+      "central": 1,
+      "high": 1,
+      "allowed_range": {
+        "low": 1,
+        "high": 4
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "occupied_share",
+      "unit": "share",
+      "meaning": "Illustrative future occupied share; no observed completion dates.",
+      "low": 0.25,
+      "central": 0.5,
+      "high": 0.75,
+      "allowed_range": {
+        "low": 0,
+        "high": 1
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "extra_service_headway",
+      "unit": "s",
+      "meaning": "Fixture dispatches 0/30/60 instead of 0/60; no fleet-cycle feasibility claim.",
+      "low": 30,
+      "central": 30,
+      "high": 60,
+      "allowed_range": {
+        "low": 1,
+        "high": 1800
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "new_arrivals",
+      "unit": "passengers/window",
+      "meaning": "Synthetic new-rider counts for low/central/high demand; not derived from proposed units.",
+      "low": 3,
+      "central": 5,
+      "high": 7,
+      "allowed_range": {
+        "low": 0,
+        "high": 20
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "existing_arrivals",
+      "unit": "passengers/window",
+      "meaning": "Five existing riders at Broadview, waiting from zero; no observed ridership claim.",
+      "low": 5,
+      "central": 5,
+      "high": 5,
+      "allowed_range": {
+        "low": 0,
+        "high": 20
+      },
+      "status": "assumed",
+      "source_ids": []
     }
   ],
   "sources": [
     {
-      "source_id": "src_king_street_study",
-      "title": "King Street Transit Priority Corridor Pilot Study & Monitoring Reports",
-      "url": "https://www.toronto.ca/city-government/planning-development/planning-studies-approvals/king-street-transit-pilot/",
-      "publisher": "City of Toronto Transportation Services & TTC",
-      "retrieved_at": "2026-10-15",
-      "version": "2024-Update",
-      "licence": "Open Government Licence - Toronto"
+      "source_id": "ttc-gtfs",
+      "title": "Merged GTFS - TTC Routes and Schedules",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/b811ead4-6eaf-4adb-8408-d389fb5a069c/resource/c920e221-7a1c-488b-8c5b-6d8cd4e85eaf/download/completegtfs.zip",
+      "publisher": "Toronto Transit Commission / City of Toronto",
+      "version": "S1000542",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T07:16:38.249018+00:00"
     },
     {
-      "source_id": "src_dev_pipeline_2025",
-      "title": "Toronto Development Pipeline (Downtown East Active Applications & Approvals)",
-      "url": "https://open.toronto.ca/dataset/development-pipeline/",
-      "publisher": "City Planning Division",
-      "retrieved_at": "2026-10-15",
-      "version": "2025-Q3",
-      "licence": "Open Government Licence - Toronto"
+      "source_id": "toronto-development-pipeline",
+      "title": "Development Pipeline",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/a7a327c5-4e25-4881-816d-c8b145e02832/resource/dc28845a-299f-4562-b605-27b6fefc17e0/download/development-pipeline.csv",
+      "publisher": "City of Toronto / City Planning",
+      "version": "2026-10-08T07:24:47.445084",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T07:16:38.486930+00:00"
     },
     {
-      "source_id": "src_statcan_census_2021",
-      "title": "Census Profile, 2021 Census of Population (Toronto Centre)",
-      "url": "https://www12.statcan.gc.ca/census-recensement/2021/",
-      "publisher": "Statistics Canada",
-      "retrieved_at": "2026-10-14",
-      "version": "2021-A",
-      "licence": "Statistics Canada Open Licence"
+      "source_id": "toronto-address-796104",
+      "title": "Toronto One Address Repository: 239 Dundas St E",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22239+Dundas+St+E%22%7D&limit=100",
+      "publisher": "City of Toronto",
+      "version": "retrieved snapshot",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T07:16:46.963362+00:00"
+    },
+    {
+      "source_id": "toronto-address-30009862",
+      "title": "Toronto One Address Repository: 500 Dundas St E",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22500+Dundas+St+E%22%7D&limit=100",
+      "publisher": "City of Toronto",
+      "version": "retrieved snapshot",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T07:16:47.596485+00:00"
+    },
+    {
+      "source_id": "toronto-address-7667205",
+      "title": "Toronto One Address Repository: 761 Dundas St E",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22761+Dundas+St+E%22%7D&limit=100",
+      "publisher": "City of Toronto",
+      "version": "retrieved snapshot",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T07:16:48.209778+00:00"
+    },
+    {
+      "source_id": "toronto-address-7650832",
+      "title": "Toronto One Address Repository: 401 Dundas St E",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22401+Dundas+St+E%22%7D&limit=100",
+      "publisher": "City of Toronto",
+      "version": "retrieved snapshot",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T07:16:48.780402+00:00"
+    },
+    {
+      "source_id": "toronto-address-796099",
+      "title": "Toronto One Address Repository: 218 Dundas St E",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22218+Dundas+St+E%22%7D&limit=100",
+      "publisher": "City of Toronto",
+      "version": "retrieved snapshot",
+      "licence": "https://open.toronto.ca/open-data-licence/",
+      "retrieved_at": "2026-10-17T07:16:49.313870+00:00"
+    },
+    {
+      "source_id": "osm-walk-239",
+      "title": "OpenStreetMap pedestrian map around 239 DUNDAS ST E",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.375,43.6565,-79.3705,43.659",
+      "publisher": "OpenStreetMap contributors",
+      "version": "retrieved snapshot",
+      "licence": "https://www.openstreetmap.org/copyright",
+      "retrieved_at": "2026-10-17T07:16:50.822391+00:00"
+    },
+    {
+      "source_id": "osm-walk-500",
+      "title": "OpenStreetMap pedestrian map around 500 DUNDAS ST E",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.3675,43.658,-79.3615,43.662",
+      "publisher": "OpenStreetMap contributors",
+      "version": "retrieved snapshot",
+      "licence": "https://www.openstreetmap.org/copyright",
+      "retrieved_at": "2026-10-17T07:16:52.140645+00:00"
+    },
+    {
+      "source_id": "osm-walk-761",
+      "title": "OpenStreetMap pedestrian map around 761 DUNDAS ST E",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.361,43.6595,-79.354,43.663",
+      "publisher": "OpenStreetMap contributors",
+      "version": "retrieved snapshot",
+      "licence": "https://www.openstreetmap.org/copyright",
+      "retrieved_at": "2026-10-17T07:16:53.004185+00:00"
     }
   ],
   "warnings": [
-    "Fixture data enabled: 505 Dundas Streetcar corridor calibrated baseline for testing UI and replay rendering.",
-    "Unmitigated Phase 2 tower occupancy causes passenger denials exceeding 30% at Parliament and Church St stops."
+    "FIXTURE: synthetic passengers, costs, service, budgets and results; not a real 505 forecast.",
+    "Real GTFS geometry and proposed units do not validate the fixture demand. Housing totals are identical across packages.",
+    "Walking entrances/crossings need manual review; footprints unavailable, not invented.",
+    "Wait statistics include completed riders only; unresolved riders are separately reported. P95 uses nearest rank.",
+    "Fixture time starts at zero, representing 07:00 local; two illustrative dispatches do not represent the full AM service.",
+    "Zero dwell, empty incoming vehicles, four-place capacity and fleet-cycle feasibility are fixture assumptions."
   ],
-  "replay_stream": [
-    { "run_id": "run_01", "t_s": 0, "kind": "dispatch", "vehicle_id": "car_4401", "stop_id": "stop_01", "count": 32, "load_after": 32 },
-    { "run_id": "run_01", "t_s": 20, "kind": "board", "vehicle_id": "car_4401", "stop_id": "stop_01", "count": 18, "load_after": 50, "rider_group": "existing" },
-    { "run_id": "run_01", "t_s": 35, "kind": "depart", "vehicle_id": "car_4401", "stop_id": "stop_01", "count": 0, "load_after": 50 },
-    { "run_id": "run_01", "t_s": 255, "kind": "arrive", "vehicle_id": "car_4401", "stop_id": "stop_02", "count": 0, "load_after": 50 },
-    { "run_id": "run_01", "t_s": 270, "kind": "board", "vehicle_id": "car_4401", "stop_id": "stop_02", "count": 12, "load_after": 62, "rider_group": "existing" },
-    { "run_id": "run_01", "t_s": 285, "kind": "depart", "vehicle_id": "car_4401", "stop_id": "stop_02", "count": 0, "load_after": 62 },
-    { "run_id": "run_01", "t_s": 370, "kind": "arrive", "vehicle_id": "car_4401", "stop_id": "stop_03", "count": 0, "load_after": 62 },
-    { "run_id": "run_01", "t_s": 385, "kind": "board", "vehicle_id": "car_4401", "stop_id": "stop_03", "count": 8, "load_after": 70, "rider_group": "existing" },
-    { "run_id": "run_01", "t_s": 395, "kind": "depart", "vehicle_id": "car_4401", "stop_id": "stop_03", "count": 0, "load_after": 70 },
-    { "run_id": "run_01", "t_s": 490, "kind": "arrive", "vehicle_id": "car_4401", "stop_id": "stop_05", "count": 0, "load_after": 70 },
-    { "run_id": "run_01", "t_s": 505, "kind": "alight", "vehicle_id": "car_4401", "stop_id": "stop_05", "count": 6, "load_after": 64 },
-    { "run_id": "run_01", "t_s": 525, "kind": "board", "vehicle_id": "car_4401", "stop_id": "stop_05", "count": 28, "load_after": 92, "rider_group": "new" },
-    { "run_id": "run_01", "t_s": 545, "kind": "deny", "vehicle_id": "car_4401", "stop_id": "stop_05", "count": 8, "load_after": 92, "rider_group": "existing" },
-    { "run_id": "run_01", "t_s": 555, "kind": "depart", "vehicle_id": "car_4401", "stop_id": "stop_05", "count": 0, "load_after": 92 },
-    { "run_id": "run_01", "t_s": 690, "kind": "arrive", "vehicle_id": "car_4401", "stop_id": "stop_07", "count": 0, "load_after": 92 },
-    { "run_id": "run_01", "t_s": 710, "kind": "board", "vehicle_id": "car_4401", "stop_id": "stop_07", "count": 18, "load_after": 110, "rider_group": "new" },
-    { "run_id": "run_01", "t_s": 730, "kind": "deny", "vehicle_id": "car_4401", "stop_id": "stop_07", "count": 14, "load_after": 110, "rider_group": "existing" },
-    { "run_id": "run_01", "t_s": 740, "kind": "depart", "vehicle_id": "car_4401", "stop_id": "stop_07", "count": 0, "load_after": 110 },
-    { "run_id": "run_01", "t_s": 900, "kind": "arrive", "vehicle_id": "car_4401", "stop_id": "stop_10", "count": 0, "load_after": 110 },
-    { "run_id": "run_01", "t_s": 915, "kind": "board", "vehicle_id": "car_4401", "stop_id": "stop_10", "count": 12, "load_after": 122, "rider_group": "new" },
-    { "run_id": "run_01", "t_s": 930, "kind": "deny", "vehicle_id": "car_4401", "stop_id": "stop_10", "count": 18, "load_after": 122, "rider_group": "existing" },
-    { "run_id": "run_01", "t_s": 940, "kind": "depart", "vehicle_id": "car_4401", "stop_id": "stop_10", "count": 0, "load_after": 122 },
-    { "run_id": "run_01", "t_s": 1000, "kind": "arrive", "vehicle_id": "car_4401", "stop_id": "stop_11", "count": 0, "load_after": 122 },
-    { "run_id": "run_01", "t_s": 1015, "kind": "alight", "vehicle_id": "car_4401", "stop_id": "stop_11", "count": 110, "load_after": 12 },
-    { "run_id": "run_01", "t_s": 1040, "kind": "depart", "vehicle_id": "car_4401", "stop_id": "stop_11", "count": 0, "load_after": 12 },
-    { "run_id": "run_01", "t_s": 360, "kind": "dispatch", "vehicle_id": "car_4402", "stop_id": "stop_01", "count": 28, "load_after": 28 },
-    { "run_id": "run_01", "t_s": 380, "kind": "board", "vehicle_id": "car_4402", "stop_id": "stop_01", "count": 22, "load_after": 50, "rider_group": "existing" },
-    { "run_id": "run_01", "t_s": 400, "kind": "depart", "vehicle_id": "car_4402", "stop_id": "stop_01", "count": 0, "load_after": 50 }
-  ]
+  "replay": {
+    "run_id": "fixture-run-growth",
+    "horizon_s": 735,
+    "vehicle_capacity": {
+      "fixture-car-1": 4,
+      "fixture-car-2": 4
+    },
+    "initial_queues": [
+      {
+        "stop_id": "ttc-stop-1756",
+        "rider_group": "existing",
+        "count": 5
+      },
+      {
+        "stop_id": "ttc-stop-2127",
+        "rider_group": "new",
+        "count": 5
+      }
+    ],
+    "events": [
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 0,
+        "kind": "dispatch",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-1756",
+        "count": 0,
+        "load_after": 0,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 0,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-1756",
+        "count": 0,
+        "load_after": 0,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 0,
+        "kind": "board",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-1756",
+        "count": 4,
+        "load_after": 4,
+        "rider_group": "existing"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 0,
+        "kind": "deny",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-1756",
+        "count": 1,
+        "load_after": 4,
+        "rider_group": "existing"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 0,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-1756",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 60,
+        "kind": "dispatch",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-1756",
+        "count": 0,
+        "load_after": 0,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 60,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-1756",
+        "count": 0,
+        "load_after": 0,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 60,
+        "kind": "board",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-1756",
+        "count": 1,
+        "load_after": 1,
+        "rider_group": "existing"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 60,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-1756",
+        "count": 0,
+        "load_after": 1,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 175,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2127",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 175,
+        "kind": "deny",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2127",
+        "count": 5,
+        "load_after": 4,
+        "rider_group": "new"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 175,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2127",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 235,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2127",
+        "count": 0,
+        "load_after": 1,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 235,
+        "kind": "board",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2127",
+        "count": 3,
+        "load_after": 4,
+        "rider_group": "new"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 235,
+        "kind": "deny",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2127",
+        "count": 2,
+        "load_after": 4,
+        "rider_group": "new"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 235,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2127",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 265,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-15873",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 265,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-15873",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 325,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-15873",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 325,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-15873",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 369,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2125",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 369,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2125",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 429,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2125",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 429,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2125",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 454,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2123",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 454,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2123",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 514,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2123",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 514,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2123",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 539,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2131",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 539,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2131",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 599,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2131",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 599,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2131",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 675,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2119",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 675,
+        "kind": "alight",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2119",
+        "count": 4,
+        "load_after": 0,
+        "rider_group": "existing"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 675,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-1",
+        "stop_id": "ttc-stop-2119",
+        "count": 0,
+        "load_after": 0,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 735,
+        "kind": "arrive",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2119",
+        "count": 0,
+        "load_after": 4,
+        "rider_group": null
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 735,
+        "kind": "alight",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2119",
+        "count": 1,
+        "load_after": 3,
+        "rider_group": "existing"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 735,
+        "kind": "alight",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2119",
+        "count": 3,
+        "load_after": 0,
+        "rider_group": "new"
+      },
+      {
+        "run_id": "fixture-run-growth",
+        "t_s": 735,
+        "kind": "depart",
+        "vehicle_id": "fixture-car-2",
+        "stop_id": "ttc-stop-2119",
+        "count": 0,
+        "load_after": 0,
+        "rider_group": null
+      }
+    ]
+  }
 }
