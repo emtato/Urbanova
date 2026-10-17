@@ -1,80 +1,63 @@
 /**
- * FutureProof & Urbanova Design System
- * Cinematic typography (Instrument Serif + Inter), deep navy palette,
- * and high-end liquid-glass styling.
+ * Urbanova® Design Tokens & Cinematic Theme
+ *
+ * Minimalist, cinematic glassmorphism with Instrument Serif & Inter.
  */
 
 :root {
   /* =========================================================================
-     1. Typography
+     1. Fonts
      ========================================================================= */
-  --font-display: 'Instrument Serif', Georgia, serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
 
-  --text-2xs: 0.6875rem; /* 11px */
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.875rem;   /* 14px */
-  --text-base: 1rem;     /* 16px */
-  --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
-  --text-4xl: 2.25rem;   /* 36px */
-  --text-5xl: 3rem;      /* 48px */
-
   /* =========================================================================
-     2. Color Theme (dark, HSL values for CSS variables)
+     2. Color Theme (HSL Values)
      ========================================================================= */
   --background: 201 100% 13%; /* deep navy blue */
   --foreground: 0 0% 100%;    /* white */
   --muted-foreground: 240 4% 66%; /* muted gray */
+
   --primary: 0 0% 100%;
   --primary-foreground: 0 0% 4%;
+
   --secondary: 0 0% 10%;
   --muted: 0 0% 10%;
   --accent: 0 0% 10%;
+
   --border: 0 0% 18%;
   --input: 0 0% 18%;
 
-  /* Backwards compatibility aliases */
+  /* Concrete color references */
   --bg-app: hsl(var(--background));
   --text-primary: hsl(var(--foreground));
   --text-secondary: hsl(var(--muted-foreground));
-  --text-muted: rgba(255, 255, 255, 0.45);
 
-  --border-subtle: hsl(var(--border));
-  --border-medium: rgba(255, 255, 255, 0.22);
-  --border-strong: rgba(255, 255, 255, 0.45);
-
-  /* Transit & Phase Accents */
-  --color-ttc-red: #ef4444;
+  /* Phase Accents */
   --phase-today: #94a3b8;
-  --phase-1: #38bdf8;
-  --phase-2: #fbbf24;
+  --phase-1: #06b6d4;
+  --phase-2: #f59e0b;
 
-  /* Metric Performance */
-  --metric-good: #34d399;
-  --metric-warn: #fbbf24;
-  --metric-danger: #f87171;
+  /* Status Tokens */
+  --status-sourced: #10b981;
+  --status-sourced-bg: rgba(16, 185, 129, 0.12);
+  --status-sourced-border: #059669;
 
-  /* Status Colors */
-  --status-sourced: #34d399;
-  --status-assumed: #c084fc;
-  --status-user: #60a5fa;
+  --status-assumed: #8b5cf6;
+  --status-assumed-bg: rgba(139, 92, 246, 0.14);
+  --status-assumed-border: #7c3aed;
 
-  /* Radii */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-full: 9999px;
+  --status-user: #3b82f6;
+  --status-user-bg: rgba(59, 130, 246, 0.14);
+  --status-user-border: #2563eb;
+
+  --metric-danger: #ef4444;
 }
 
 /* =========================================================================
-   3. Liquid Glass Effect (Exact CSS specification with border masked gradient)
+   3. Liquid Glass Effect
    ========================================================================= */
-
 .liquid-glass {
   background: rgba(255, 255, 255, 0.01);
   background-blend-mode: luminosity;
@@ -92,66 +75,29 @@
   inset: 0;
   border-radius: inherit;
   padding: 1.4px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.45) 0%,
-    rgba(255, 255, 255, 0.15) 20%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0.15) 80%,
-    rgba(255, 255, 255, 0.45) 100%
-  );
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
 }
 
-/* Elevated variant for high-contrast inspection cards over 3D map */
-.liquid-glass-elevated {
-  background: rgba(4, 21, 38, 0.68);
-  background-blend-mode: luminosity;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: none;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 16px 40px rgba(0, 0, 0, 0.55);
+/* Subtler panel variation */
+.liquid-glass-panel {
+  background: rgba(4, 21, 38, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
   position: relative;
-  overflow: hidden;
-}
-
-.liquid-glass-elevated::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.4px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.45) 0%,
-    rgba(255, 255, 255, 0.15) 20%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0.15) 80%,
-    rgba(255, 255, 255, 0.45) 100%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* Interactive hover state for liquid-glass buttons */
-.liquid-glass-button {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
-}
-.liquid-glass-button:hover {
-  transform: scale(1.03);
 }
 
 /* =========================================================================
-   4. Animations (Exact CSS keyframes + classes)
+   4. Animations
    ========================================================================= */
-
 @keyframes fade-rise {
   from {
     opacity: 0;
@@ -176,92 +122,93 @@
 }
 
 /* =========================================================================
-   5. Accessible Status Chips & Badges
+   5. Accessible Status Chips & Phase Pills
    ========================================================================= */
-
 .status-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.15rem 0.55rem;
-  border-radius: var(--radius-full);
-  font-size: var(--text-2xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.status-chip-sourced {
-  background: rgba(52, 211, 153, 0.15);
-  color: #a7f3d0;
-  border: 1px solid rgba(52, 211, 153, 0.4);
-}
-.status-chip-sourced::before {
-  content: '●';
-  color: #34d399;
-}
-
-.status-chip-assumed {
-  background: rgba(192, 132, 252, 0.15);
-  color: #e9d5ff;
-  border: 1px solid rgba(192, 132, 252, 0.4);
-}
-.status-chip-assumed::before {
-  content: '▲';
-  color: #c084fc;
-}
-
-.status-chip-user {
-  background: rgba(96, 165, 250, 0.15);
-  color: #bfdbfe;
-  border: 1px solid rgba(96, 165, 250, 0.4);
-}
-.status-chip-user::before {
-  content: '◆';
-  color: #60a5fa;
-}
-
-/* Phase badges */
-.phase-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.15rem 0.6rem;
-  border-radius: var(--radius-full);
-  font-size: var(--text-2xs);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  border-radius: 4px;
 }
 
-.phase-pill-0 {
+.status-chip-sourced {
+  background: var(--status-sourced-bg);
+  color: var(--status-sourced);
+  border: 1px solid var(--status-sourced-border);
+}
+.status-chip-sourced::before {
+  content: '●';
+  font-size: 0.5rem;
+}
+
+.status-chip-assumed {
+  background: var(--status-assumed-bg);
+  color: var(--status-assumed);
+  border: 1px dashed var(--status-assumed-border);
+}
+.status-chip-assumed::before {
+  content: '▲';
+  font-size: 0.45rem;
+}
+
+.status-chip-user {
+  background: var(--status-user-bg);
+  color: var(--status-user);
+  border: 1px dotted var(--status-user-border);
+}
+.status-chip-user::before {
+  content: '◆';
+  font-size: 0.45rem;
+}
+
+.phase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.phase-pill-today {
   background: rgba(148, 163, 184, 0.15);
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--phase-today);
+  border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
 .phase-pill-1 {
-  background: rgba(56, 189, 248, 0.15);
-  color: #bae6fd;
-  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--phase-1);
+  border: 1px solid rgba(6, 182, 212, 0.5);
 }
 
 .phase-pill-2 {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fde68a;
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--phase-2);
+  border: 1px solid rgba(245, 158, 11, 0.5);
 }
 
-/* Subtle fixture mode badge */
+/* Fixture Mode Banner */
 .fixture-banner {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(180, 83, 9, 0.85);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #fde68a;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
-  padding: 0.35rem 1.25rem;
-  font-size: var(--text-xs);
+  color: #fff;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 50;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.4);
+  z-index: 1000;
 }

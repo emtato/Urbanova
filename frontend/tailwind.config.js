@@ -1,34 +1,34 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
+          DEFAULT: "hsl(var(--secondary))",
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
+          DEFAULT: "hsl(var(--accent))",
         },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
       },
       fontFamily: {
-        display: ['var(--font-display)', "'Instrument Serif'", 'serif'],
-        body: ['var(--font-body)', "'Inter'", 'sans-serif'],
+        display: ["var(--font-display)"],
+        body: ["var(--font-body)"],
       },
       keyframes: {
         'fade-rise': {
