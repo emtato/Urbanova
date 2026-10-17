@@ -34,6 +34,10 @@ Because the 500 m building inventory extends north toward the **506 College/Carl
 - **`40%–60%` of the way (midway buffer zone):** **50%** of generated commuters use the 505 filter, and the remaining **50%** are assumed to use the parallel 501 Queen or 506 College streetcar (ignored in this single-corridor simulation).
 - **`> 60%` of the way:** **0%** use the 505 (assumed to use the closer parallel streetcar, ignored).
 
+## Incoming streetcar load at Broadview
+
+Because westbound 505 streetcars originate at Broadview Station (Danforth) and serve stops along Broadview Avenue before turning onto Dundas Street East, each streetcar spawning at `Broadview Ave at Dundas St East` (`ttc-stop-1756`) is seeded with **12–24 already-onboard passengers** (`INCOMING_BROADVIEW_LOAD_RANGE = (12, 24)` in `backend/simulation/runner.py`). These riders are recorded in both `passengers` (`rider_group="existing"`, `status="onboard"` at spawn) and the `"generate"` event in `sim_log`, with downstream destinations sampled using `sample_streetcar_trip`.
+
 ## What the employment data supports
 
 The **2025 Toronto Employment Survey** reports 664,650 jobs in the City's official Downtown area out of 1,623,710 citywide: **40.9% inside Downtown and approximately 959,060 jobs (59.1%) elsewhere in Toronto**. These figures exclude surrounding municipalities and are not a count for a custom sample boundary.

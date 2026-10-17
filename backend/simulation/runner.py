@@ -122,6 +122,57 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
     return passengers
 
 
+# Assumed number of passengers already onboard a westbound 505 streetcar when it
+# arrives at Broadview & Dundas (from Broadview Station / Broadview Ave north of Dundas).
+INCOMING_BROADVIEW_LOAD_RANGE = (12, 24)
+
+
+def seed_incoming_passengers(
+    inputs: SimulationInput,
+    streetcar: Streetcar,
+    passengers: dict[str, Passenger],
+    incoming_rng: Random,
+    time_s: float,
+) -> None:
+    """Place 12-24 already-onboard riders onto a new streetcar entering at Broadview.
+
+    Uses `sample_streetcar_trip` (from commute.py) at the entry stop (`inputs.stops[0]`)
+    so each incoming rider gets a realistic downstream alighting stop (or `None` if
+    riding past TMU).
+    """
+    entry_stop = inputs.stops[0]
+    valid_stop_ids = {stop.id for stop in inputs.stops}
+    low, high = INCOMING_BROADVIEW_LOAD_RANGE
+    incoming_count = min(incoming_rng.randint(low, high), streetcar.capacity)
+
+    for _ in range(incoming_count):
+        # Sample downstream 505 destinations from the entry stop (Broadview & Dundas).
+        destination_stop_id: str | None = None
+        for _attempt in range(25):
+            trip = sample_streetcar_trip(
+                entry_stop.latitude,
+                entry_stop.longitude,
+                incoming_rng,
+                accessible_stop_ids=(entry_stop.id,),
+            )
+            if trip is not None and (trip.alight_stop_id is None or trip.alight_stop_id in valid_stop_ids):
+                destination_stop_id = trip.alight_stop_id
+                break
+
+        passenger_id = f"passenger-{len(passengers) + 1}"
+        passengers[passenger_id] = Passenger(
+            id=passenger_id,
+            origin_stop_id=entry_stop.id,
+            destination_stop_id=destination_stop_id,
+            get_to_stop_time=time_s,
+            rider_group="existing",
+            status="onboard",
+            streetcar_id=streetcar.id,
+            boarding_time_s=time_s,
+        )
+        streetcar.onboard_passenger_ids.append(passenger_id)
+
+
 def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | None = None) -> dict:
     """Run streetcars and passengers and return their activity and final state as JSON-ready data.
 
@@ -164,6 +215,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
 
     # Generate passengers from housing inputs via commute.py's sample_streetcar_trip
     # unless the caller explicitly passed a custom passengers dict (e.g. in unit tests).
+    use_incoming_broadview_load = passengers is None and bool(inputs.existing_residences or inputs.developments)
     if passengers is None:
         for stop in inputs.stops:
             stop.waiting_passenger_ids.clear()
@@ -181,8 +233,9 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     entry_times = streetcar_entry_times(inputs)
     next_entry_s = next(entry_times, None)
 
-    # Give link travel times a repeatable random stream separate from entry timing.
+    # Give link travel times and incoming Broadview loads repeatable random streams.
     travel_rng = Random(f"{inputs.seed}:link_travel_times")
+    incoming_rng = Random(f"{inputs.seed}:incoming_loads")
 
     # Preserve each action's state in the shared history for saving and replaying the run.
     def record(time_s: int, action: SimAction, streetcar: Streetcar) -> None:
@@ -233,6 +286,9 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
         # Introduce cars whose entry time has been reached while the entry window is open.
         while elapsed_s < entry_end_s and next_entry_s is not None and elapsed_s >= next_entry_s:
             streetcar = generate_streetcar(inputs, f"streetcar-{len(streetcars) + 1}")
+            if use_incoming_broadview_load:
+                # Seed 12-24 riders already onboard from north of Broadview & Dundas.
+                seed_incoming_passengers(inputs, streetcar, passengers, incoming_rng, elapsed_s)
             streetcars.append(streetcar)
             active_streetcars[streetcar.id] = streetcar
             record(elapsed_s, "generate", streetcar)

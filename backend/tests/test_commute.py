@@ -179,9 +179,14 @@ def test_run_simulation_generates_passengers_via_commute_helper():
         end_time_s=2400,
     )
     result = run_simulation(inputs)
-    assert len(result["passengers"]) > 0
-    assert all(p["origin_stop_id"] == "ttc-stop-2125" for p in result["passengers"])
-    assert all(p["rider_group"] == "new" and p["development_id"] == "dev-500-dundas" for p in result["passengers"])
+    generate_events = [e for e in result["sim_log"] if e["action"] == "generate"]
+    assert generate_events
+    assert all(12 <= len(e["streetcar"]["onboard_passenger_ids"]) <= 24 for e in generate_events)
+    new_riders = [p for p in result["passengers"] if p["rider_group"] == "new"]
+    incoming_riders = [p for p in result["passengers"] if p["rider_group"] == "existing"]
+    assert len(new_riders) > 0 and len(incoming_riders) >= 12 * len(generate_events)
+    assert all(p["origin_stop_id"] == "ttc-stop-2125" and p["development_id"] == "dev-500-dundas" for p in new_riders)
+    assert all(p["origin_stop_id"] == "ttc-stop-1756" for p in incoming_riders)
     assert any(p["status"] in ("arrived", "beyond_segment") for p in result["passengers"])
 
 
