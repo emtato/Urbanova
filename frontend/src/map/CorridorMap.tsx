@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState, type FC } from 'react'
-import { Map as MapLibreMap, NavigationControl, LngLatBounds, type MapLayerMouseEvent } from 'maplibre-gl'
+import {
+  Map as MapLibreMap,
+  NavigationControl,
+  LngLatBounds,
+  type MapLayerMouseEvent,
+  type StyleSpecification,
+} from 'maplibre-gl'
 import type { Corridor, Development, Stop } from '../lib/types'
 import {
   setupCorridorMapLayers,
@@ -19,8 +25,33 @@ export interface CorridorMapProps {
   className?: string
 }
 
-// OpenFreeMap Dark: free, fast CDN, dark theme vector tiles specifically built for MapLibre
-const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark'
+// Bulletproof self-contained dark raster style (zero external font/shader dependencies)
+const DARK_RASTER_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    'carto-dark-base': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    },
+  },
+  layers: [
+    {
+      id: 'carto-dark-tiles',
+      type: 'raster',
+      source: 'carto-dark-base',
+      minzoom: 0,
+      maxzoom: 20,
+    },
+  ],
+}
 
 export const CorridorMap: FC<CorridorMapProps> = ({
   corridor,
@@ -36,111 +67,113 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   const mapRef = useRef<MapLibreMap | null>(null)
   const [is3D, setIs3D] = useState(true)
   const [currentPhase, setCurrentPhase] = useState(activePhase)
-  const [mapLoaded, setMapLoaded] = useState(false)
+  const [statusMessage, setStatusMessage] = useState<string>('Initializing 3D Map...')
 
   // Map initialization
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return
+    if (!mapContainerRef.current) return
+    if (mapRef.current) return // Prevent multiple instances
 
-    // Center coordinates for Dundas East / Regent Park area
     const defaultCenter: [number, number] = [-79.367, 43.661]
 
-    const map = new MapLibreMap({
-      container: mapContainerRef.current,
-      style: BASE_STYLE_URL,
-      center: defaultCenter,
-      zoom: 14.2,
-      pitch: 55,
-      bearing: -25,
-    })
+    try {
+      const map = new MapLibreMap({
+        container: mapContainerRef.current,
+        style: DARK_RASTER_STYLE,
+        center: defaultCenter,
+        zoom: 14.2,
+        pitch: 55,
+        bearing: -25,
+      })
 
-    map.addControl(new NavigationControl({ showCompass: true }), 'top-right')
+      map.addControl(new NavigationControl({ showCompass: true }), 'top-right')
 
-    map.on('error', (e) => {
-      console.warn('MapLibre event warning:', e)
-    })
+      map.on('error', (e) => {
+        console.warn('MapLibre event:', e)
+      })
 
-    map.on('load', () => {
-      console.log('MapLibre style loaded successfully')
-      map.resize()
+      map.on('load', () => {
+        setStatusMessage('')
+        map.resize()
 
-      try {
-        setupCorridorMapLayers(map, corridor, developments)
-        updateDevelopmentsPhase(map, currentPhase)
-        fitToCorridor(map, corridor.stops)
-      } catch (err) {
-        console.error('Error adding corridor layers:', err)
-      }
+        try {
+          setupCorridorMapLayers(map, corridor, developments)
+          updateDevelopmentsPhase(map, currentPhase)
+          fitToCorridor(map, corridor.stops)
+        } catch (err) {
+          console.error('Error adding corridor layers:', err)
+          setStatusMessage(`Layer load issue: ${err instanceof Error ? err.message : String(err)}`)
+        }
+      })
 
-      setMapLoaded(true)
-    })
+      // Click handler for stops
+      map.on('click', LAYER_STOPS_CIRCLE, (e: MapLayerMouseEvent) => {
+        if (!e.features || e.features.length === 0) return
+        const feature = e.features[0]
+        const stopId = feature.properties?.stop_id
+        const stop = corridor.stops.find((s) => s.stop_id === stopId)
+        if (stop && onSelectStop) {
+          onSelectStop(stop)
+        }
+      })
 
-    // Click handler for stops
-    map.on('click', LAYER_STOPS_CIRCLE, (e: MapLayerMouseEvent) => {
-      if (!e.features || e.features.length === 0) return
-      const feature = e.features[0]
-      const stopId = feature.properties?.stop_id
-      const stop = corridor.stops.find((s) => s.stop_id === stopId)
-      if (stop && onSelectStop) {
-        onSelectStop(stop)
-      }
-    })
+      // Click handler for developments
+      map.on('click', LAYER_DEVELOPMENTS_EXTRUSION, (e: MapLayerMouseEvent) => {
+        if (!e.features || e.features.length === 0) return
+        const feature = e.features[0]
+        const devId = feature.properties?.dev_id
+        const dev = developments.find((d) => d.dev_id === devId)
+        if (dev && onSelectDevelopment) {
+          onSelectDevelopment(dev)
+        }
+      })
 
-    // Click handler for developments
-    map.on('click', LAYER_DEVELOPMENTS_EXTRUSION, (e: MapLayerMouseEvent) => {
-      if (!e.features || e.features.length === 0) return
-      const feature = e.features[0]
-      const devId = feature.properties?.dev_id
-      const dev = developments.find((d) => d.dev_id === devId)
-      if (dev && onSelectDevelopment) {
-        onSelectDevelopment(dev)
-      }
-    })
+      // Hover cursor
+      map.on('mouseenter', LAYER_STOPS_CIRCLE, () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', LAYER_STOPS_CIRCLE, () => {
+        map.getCanvas().style.cursor = ''
+      })
+      map.on('mouseenter', LAYER_DEVELOPMENTS_EXTRUSION, () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', LAYER_DEVELOPMENTS_EXTRUSION, () => {
+        map.getCanvas().style.cursor = ''
+      })
 
-    // Change cursor on hover
-    map.on('mouseenter', LAYER_STOPS_CIRCLE, () => {
-      map.getCanvas().style.cursor = 'pointer'
-    })
-    map.on('mouseleave', LAYER_STOPS_CIRCLE, () => {
-      map.getCanvas().style.cursor = ''
-    })
-    map.on('mouseenter', LAYER_DEVELOPMENTS_EXTRUSION, () => {
-      map.getCanvas().style.cursor = 'pointer'
-    })
-    map.on('mouseleave', LAYER_DEVELOPMENTS_EXTRUSION, () => {
-      map.getCanvas().style.cursor = ''
-    })
+      mapRef.current = map
 
-    mapRef.current = map
-
-    // Resize observer to ensure canvas matches container bounding box
-    const resizeObserver = new ResizeObserver(() => {
-      if (mapRef.current) {
-        mapRef.current.resize()
-      }
-    })
-    if (mapContainerRef.current) {
+      // Resize observer to ensure canvas matches container bounding box
+      const resizeObserver = new ResizeObserver(() => {
+        if (mapRef.current) {
+          mapRef.current.resize()
+        }
+      })
       resizeObserver.observe(mapContainerRef.current)
-    }
 
-    return () => {
-      resizeObserver.disconnect()
-      map.remove()
-      mapRef.current = null
+      return () => {
+        resizeObserver.disconnect()
+        map.remove()
+        mapRef.current = null
+      }
+    } catch (err) {
+      console.error('MapLibre creation error:', err)
+      setStatusMessage(`WebGL / Map error: ${err instanceof Error ? err.message : String(err)}`)
     }
   }, [corridor, developments])
 
   // React to phase changes
   useEffect(() => {
-    if (mapRef.current && mapLoaded) {
+    if (mapRef.current && mapRef.current.isStyleLoaded()) {
       updateDevelopmentsPhase(mapRef.current, activePhase)
       setCurrentPhase(activePhase)
     }
-  }, [activePhase, mapLoaded])
+  }, [activePhase])
 
   // Center camera when selected stop changes
   useEffect(() => {
-    if (!mapRef.current || !mapLoaded || !selectedStopId) return
+    if (!mapRef.current || !selectedStopId) return
     const stop = corridor.stops.find((s) => s.stop_id === selectedStopId)
     if (stop) {
       mapRef.current.flyTo({
@@ -149,11 +182,11 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         speed: 1.2,
       })
     }
-  }, [selectedStopId, corridor.stops, mapLoaded])
+  }, [selectedStopId, corridor.stops])
 
   // Center camera when selected development changes
   useEffect(() => {
-    if (!mapRef.current || !mapLoaded || !selectedDevId) return
+    if (!mapRef.current || !selectedDevId) return
     const dev = developments.find((d) => d.dev_id === selectedDevId)
     if (dev) {
       mapRef.current.flyTo({
@@ -162,7 +195,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         speed: 1.2,
       })
     }
-  }, [selectedDevId, developments, mapLoaded])
+  }, [selectedDevId, developments])
 
   // Fit bounds helper
   const fitToCorridor = (map: MapLibreMap, stops: Stop[]) => {
@@ -186,7 +219,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
   const handlePhaseChange = (phase: number) => {
     setCurrentPhase(phase)
-    if (mapRef.current && mapLoaded) {
+    if (mapRef.current && mapRef.current.isStyleLoaded()) {
       updateDevelopmentsPhase(mapRef.current, phase)
     }
   }
@@ -201,6 +234,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         bottom: 0,
         width: '100%',
         height: '100%',
+        backgroundColor: '#080c14',
       }}
       className={className}
     >
@@ -217,6 +251,28 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           height: '100%',
         }}
       />
+
+      {/* Status or Error Banner if map is initializing */}
+      {statusMessage && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid var(--border-medium)',
+            padding: '1rem 1.5rem',
+            borderRadius: 'var(--radius-md)',
+            color: 'var(--text-secondary)',
+            fontSize: 'var(--text-sm)',
+            zIndex: 100,
+            textAlign: 'center',
+          }}
+        >
+          {statusMessage}
+        </div>
+      )}
 
       {/* Floating Map Controls Overlay */}
       <div
