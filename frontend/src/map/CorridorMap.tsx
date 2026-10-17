@@ -35,6 +35,7 @@ export interface CorridorMapProps {
   corridor: Corridor | any
   developments: any[]
   selectedStopId?: string | null
+  platformViewRequest?: { stopId: string; requestId: number } | null
   selectedDevId?: string | null
   activePhase?: number
   visibleDevIds?: string[]
@@ -77,6 +78,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   corridor,
   developments,
   selectedStopId,
+  platformViewRequest,
   selectedDevId,
   activePhase = 2,
   visibleDevIds,
@@ -193,6 +195,8 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         style: MAPBOX_STANDARD_STYLE,
         center: defaultCenter,
         zoom: 14.6,
+        maxZoom: 24,
+        maxPitch: 70,
         pitch: 55,
         bearing: -20,
       })
@@ -209,6 +213,13 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           console.warn('Mapbox Standard basemap config note:', e)
         }
       })
+
+      // Allow a near-horizontal gaze at street scale; keep wider views manageable.
+      const updatePitchLimit = () => {
+        const limit = map.getZoom() >= 19 ? 85 : 70
+        if (map.getMaxPitch() !== limit) map.setMaxPitch(limit)
+      }
+      map.on('zoom', updatePitchLimit)
 
       // Track pitch angle reactively on all camera pitch, rotation, and move events
       const updatePitch = () => {
@@ -367,6 +378,34 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       })
     }
   }, [selectedStopId, corridor.stops])
+
+  // An explicit request can revisit the same stop after the user pans away.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !platformViewRequest) return
+    const rawStop = corridor.stops.find((stop: any) =>
+      normalizeStop(stop).stop_id === platformViewRequest.stopId)
+    if (!rawStop) return
+    const stop = normalizeStop(rawStop)
+    map.stop()
+    map.setMaxPitch(85)
+    // Reset camera padding so the inspector offset cannot raise the viewpoint.
+    map.jumpTo({
+      center: [stop.lon, stop.lat],
+      zoom: 22,
+      pitch: 85,
+      bearing: 270,
+      padding: { top: 0, bottom: 0, left: 0, right: 0 },
+    })
+    const camera = map.getFreeCameraOptions()
+    // Position the camera itself at the stop, 1.7 m above ground (eye level).
+    const groundElevation = map.queryTerrainElevation([stop.lon, stop.lat]) ?? 0
+    camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
+      [stop.lon, stop.lat], groundElevation + 1.7)
+    camera.setPitchBearing(85, 270)
+    map.setFreeCameraOptions(camera)
+
+  }, [platformViewRequest, corridor.stops])
 
   // Center camera when selected development changes
   useEffect(() => {

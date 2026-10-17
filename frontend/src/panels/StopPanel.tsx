@@ -17,6 +17,7 @@ export interface StopPanelProps {
   supportedCase?: CaseResult | any
   berths?: number
   onClose: () => void
+  onViewPlatform?: () => void
   onSelectDevelopment?: (dev: CorridorDevelopment) => void
   isMinimized?: boolean
   onToggleMinimize?: () => void
@@ -149,6 +150,7 @@ export const StopPanel: FC<StopPanelProps> = ({
   supportedCase,
   berths = 1,
   onClose,
+  onViewPlatform,
   onSelectDevelopment,
   isMinimized = false,
   onToggleMinimize,
@@ -171,7 +173,6 @@ export const StopPanel: FC<StopPanelProps> = ({
   const growthMetrics = extractStopMetrics(growthCase, stop.stop_id)
   const supportedMetrics = extractStopMetrics(supportedCase, stop.stop_id)
 
-  const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${stop.lat},${stop.lon}`
   const totalStopsCount = stops.length > 0 ? stops.length : 7
   const stopIndex = stop.seq + 1
 
@@ -292,27 +293,21 @@ export const StopPanel: FC<StopPanelProps> = ({
           {stop.name}
         </h2>
         <div className="text-xs text-muted-foreground mt-0.5 flex flex-col gap-0.5 font-mono">
-          <span>Sequence {stopIndex} of {totalStopsCount} · Inbound Westbound</span>
-          <span>Coordinates: {stop.lat.toFixed(4)}, {stop.lon.toFixed(4)}</span>
+          <span>Sequence {stopIndex} of {totalStopsCount} · Westbound</span>
         </div>
       </div>
 
-      {/* Street View Link */}
-      <a
-        href={streetViewUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-testid="street-view-link"
-        className="liquid-glass rounded-xl px-3 py-2 text-xs text-foreground hover:scale-[1.01] transition-transform flex items-center justify-between font-medium group"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-amber-400">📍</span>
-          <span>See stop platform today (Street View)</span>
-        </div>
-        <span className="text-muted-foreground group-hover:text-foreground transition-colors text-[10px]">
-          ↗
-        </span>
-      </a>
+      {/* Move the existing map camera to the stop. */}
+      {onViewPlatform && (
+        <button
+          type="button"
+          onClick={onViewPlatform}
+          className="liquid-glass inline-flex items-center justify-center gap-2 self-start min-h-11 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:brightness-110 transition-all cursor-pointer"
+        >
+          <span aria-hidden="true">📍</span>
+          <span>View stop in 3D</span>
+        </button>
+      )}
 
       {/* Bottleneck Warning Banner if Capacity Exceeded */}
       {hasBottleneck && (

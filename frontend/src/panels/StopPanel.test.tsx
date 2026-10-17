@@ -97,7 +97,7 @@ describe('D5: StopPanel Component Tests', () => {
     expect(html).toContain('streetcar berth')
   })
 
-  it('renders Google Street View link with exact stop coordinates', () => {
+  it('renders an in-map 3D button without coordinates or an external link', () => {
     const stop1756 = stops.find((s) => s.stop_id === 'ttc-stop-1756')!
     const raw = renderToString(
       <StopPanel
@@ -109,12 +109,16 @@ describe('D5: StopPanel Component Tests', () => {
         supportedCase={supportedCase}
         berths={1}
         onClose={() => {}}
+        onViewPlatform={() => {}}
       />
     )
 
-    expect(raw).toContain('https://www.google.com/maps/@?api=1&amp;map_action=pano&amp;viewpoint=')
-    expect(raw).toContain('43.6626')
-    expect(raw).toContain('-79.351506')
+    const html = cleanHtml(raw)
+    expect(html).toContain('View stop in 3D')
+    expect(html).toContain('Westbound')
+    expect(html).not.toContain('Inbound')
+    expect(html).not.toContain('Coordinates:')
+    expect(html).not.toContain('google.com/maps')
   })
 
   it('renders minimized pill state with pulse indicator and expand button', () => {

@@ -36,6 +36,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [comparison, setComparison] = useState<Comparison | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [platformViewRequest, setPlatformViewRequest] = useState<{ stopId: string; requestId: number } | null>(null)
   const [selectedStop, setSelectedStop] = useState<CorridorStop | null>(null)
   const [selectedDev, setSelectedDev] = useState<CorridorDevelopment | null>(null)
   const [usingFixture, setUsingFixtureState] = useState(isUsingFixture())
@@ -308,6 +309,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           corridor={comparison.corridor}
           developments={developments}
           selectedStopId={selectedStop?.stop_id}
+          platformViewRequest={platformViewRequest}
           selectedDevId={selectedDev?.dev_id}
           activePhase={activePhase}
           shadowsEnabled={shadowsEnabled}
@@ -435,6 +437,10 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           <div className="!absolute top-6 right-6 z-30">
             <StopPanel
               stop={selectedStop}
+              onViewPlatform={() => setPlatformViewRequest(previous => ({
+                stopId: selectedStop.stop_id,
+                requestId: (previous?.requestId ?? 0) + 1,
+              }))}
               stops={stops}
               developments={developments}
               currentCase={currentCase}
