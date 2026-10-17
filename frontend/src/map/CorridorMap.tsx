@@ -10,10 +10,17 @@ import {
   setupCorridorMapLayers,
   updateDevelopmentsPhase,
   updateCorridorMapData,
+  updateShadowTimeAndVisibility,
   getDevelopmentCoordinates,
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
 } from './MassingLayer'
+import {
+  SEASONS,
+  TIMES_OF_DAY,
+  getShadowSlot,
+  type ShadowSlot,
+} from '../data/shadow_metadata'
 
 export interface CorridorMapProps {
   corridor: Corridor
@@ -43,6 +50,15 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   const [is3D, setIs3D] = useState(true)
   const [currentPhase, setCurrentPhase] = useState(activePhase)
   const [statusMessage, setStatusMessage] = useState<string>('Initializing Mapbox Standard 3D Scene...')
+
+  // Sunlight and Precomputed Shadow State (Contract 1.0.0 / Lane C)
+  const [shadowsEnabled, setShadowsEnabled] = useState(false)
+  const [selectedSeason, setSelectedSeason] = useState<string>('summer_solstice')
+  const [selectedTimeStr, setSelectedTimeStr] = useState<string>('12:00')
+
+  const currentSlot: ShadowSlot =
+    getShadowSlot(selectedSeason, selectedTimeStr) ||
+    getShadowSlot('summer_solstice', '12:00')!
 
   // Mapbox token state (checks env, then localStorage)
   const [mapboxToken, setMapboxToken] = useState<string>(() => {
@@ -181,6 +197,28 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     }
   }, [corridor, developments, activePhase])
 
+  // Synchronize analytical ground shadows and ambient sunlight with map
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.isStyleLoaded()) {
+      updateShadowTimeAndVisibility(mapRef.current, {
+        enabled: shadowsEnabled,
+        localTime: currentSlot.local_time,
+        activePhase: currentPhase,
+      })
+
+      // Synchronize Mapbox Standard lighting preset with solar time of day
+      try {
+        if (shadowsEnabled && currentSlot.lightPreset) {
+          mapRef.current.setConfigProperty('basemap', 'lightPreset', currentSlot.lightPreset)
+        } else {
+          mapRef.current.setConfigProperty('basemap', 'lightPreset', 'dusk')
+        }
+      } catch (e) {
+        // Fallback gracefully if style doesn't support lightPreset config
+      }
+    }
+  }, [shadowsEnabled, currentSlot, currentPhase])
+
   // Center camera when selected stop changes
   useEffect(() => {
     if (!mapRef.current || !selectedStopId) return
@@ -242,6 +280,11 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     setCurrentPhase(phase)
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
       updateDevelopmentsPhase(mapRef.current, phase)
+      updateShadowTimeAndVisibility(mapRef.current, {
+        enabled: shadowsEnabled,
+        localTime: currentSlot.local_time,
+        activePhase: phase,
+      })
     }
   }
 
@@ -329,43 +372,69 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
       {/* Floating Map Controls Overlay (Top Left) */}
       <div className="!absolute top-5 left-6 flex flex-col gap-2.5 z-20">
-        {/* Phase Toggle Controls */}
-        <div className="liquid-glass rounded-full px-4 py-1.5 flex items-center gap-2 text-xs">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-1">
-            Phase:
-          </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Phase Toggle Controls */}
+          <div className="liquid-glass rounded-full px-4 py-1.5 flex items-center gap-2 text-xs">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-1">
+              Phase:
+            </span>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-full text-xs transition-all cursor-pointer ${
+                currentPhase === 0
+                  ? 'bg-white/20 text-white font-medium shadow-sm'
+                  : 'text-muted-foreground hover:text-white'
+              }`}
+              onClick={() => handlePhaseChange(0)}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-full text-xs transition-all cursor-pointer ${
+                currentPhase === 1
+                  ? 'bg-cyan-500/25 text-cyan-300 font-medium border border-cyan-500/50 shadow-sm'
+                  : 'text-muted-foreground hover:text-cyan-300'
+              }`}
+              onClick={() => handlePhaseChange(1)}
+            >
+              Phase 1
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-full text-xs transition-all cursor-pointer ${
+                currentPhase === 2
+                  ? 'bg-amber-500/25 text-amber-300 font-medium border border-amber-500/50 shadow-sm'
+                  : 'text-muted-foreground hover:text-amber-300'
+              }`}
+              onClick={() => handlePhaseChange(2)}
+            >
+              Phase 2
+            </button>
+          </div>
+
+          {/* Sunlight Impact Toggle Button (Contract 1.0.0 / Lane C) */}
           <button
             type="button"
-            className={`px-3 py-1 rounded-full text-xs transition-all ${
-              currentPhase === 0
-                ? 'bg-white/20 text-white font-medium shadow-sm'
+            onClick={() => setShadowsEnabled((prev) => !prev)}
+            className={`liquid-glass rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs transition-all cursor-pointer ${
+              shadowsEnabled
+                ? 'bg-amber-500/25 text-amber-200 border-amber-400/50 shadow-md font-medium'
                 : 'text-muted-foreground hover:text-white'
             }`}
-            onClick={() => handlePhaseChange(0)}
+            title="Toggle precomputed sunlight impact & ground shadows (Contract 1.0.0 / Lane C)"
           >
-            Today
-          </button>
-          <button
-            type="button"
-            className={`px-3 py-1 rounded-full text-xs transition-all ${
-              currentPhase === 1
-                ? 'bg-cyan-500/25 text-cyan-300 font-medium border border-cyan-500/50 shadow-sm'
-                : 'text-muted-foreground hover:text-cyan-300'
-            }`}
-            onClick={() => handlePhaseChange(1)}
-          >
-            Phase 1
-          </button>
-          <button
-            type="button"
-            className={`px-3 py-1 rounded-full text-xs transition-all ${
-              currentPhase === 2
-                ? 'bg-amber-500/25 text-amber-300 font-medium border border-amber-500/50 shadow-sm'
-                : 'text-muted-foreground hover:text-amber-300'
-            }`}
-            onClick={() => handlePhaseChange(2)}
-          >
-            Phase 2
+            <span className="text-amber-400">☀️</span>
+            <span>Sunlight Impact</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono uppercase ${
+                shadowsEnabled
+                  ? 'bg-amber-400 text-black font-semibold'
+                  : 'bg-white/10 text-muted-foreground'
+              }`}
+            >
+              {shadowsEnabled ? 'ON' : 'OFF'}
+            </span>
           </button>
         </div>
 
@@ -374,7 +443,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           <button
             type="button"
             onClick={togglePitch}
-            className={`px-2.5 py-1 rounded-full transition-colors ${
+            className={`px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
               is3D ? 'text-rose-400 font-medium' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -384,7 +453,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           <button
             type="button"
             onClick={() => mapRef.current && fitToCorridor(mapRef.current, corridor.stops)}
-            className="px-2.5 py-1 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+            className="px-2.5 py-1 rounded-full text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             Fit Corridor
           </button>
@@ -392,12 +461,95 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           <button
             type="button"
             onClick={() => setShowTokenPrompt(true)}
-            className="px-2.5 py-1 rounded-full text-muted-foreground hover:text-cyan-300 transition-colors"
+            className="px-2.5 py-1 rounded-full text-muted-foreground hover:text-cyan-300 transition-colors cursor-pointer"
             title="Configure Mapbox Token"
           >
             Token
           </button>
         </div>
+
+        {/* Interactive Solar Impact Analysis Panel (Lane C) */}
+        {shadowsEnabled && (
+          <div className="liquid-glass-panel rounded-2xl p-4 shadow-2xl flex flex-col gap-3 max-w-sm animate-fade-rise backdrop-blur-md border border-amber-500/30">
+            <div className="flex items-center justify-between text-xs border-b border-border/30 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]" />
+                <span className="font-semibold text-foreground tracking-tight">Solar Impact Analysis</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground font-mono">
+                NOAA 505 Corridor
+              </span>
+            </div>
+
+            {/* Season Selector */}
+            <div className="flex items-center gap-1 bg-black/30 p-1 rounded-xl">
+              {SEASONS.map((season) => (
+                <button
+                  key={season.id}
+                  type="button"
+                  onClick={() => setSelectedSeason(season.id)}
+                  className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
+                    selectedSeason === season.id
+                      ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <div>{season.name.split(' ')[0]}</div>
+                  <div className="text-[9px] text-muted-foreground/80">{season.date}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Time of Day Slots */}
+            <div className="flex items-center gap-1 bg-black/30 p-1 rounded-xl">
+              {TIMES_OF_DAY.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setSelectedTimeStr(t)}
+                  className={`flex-1 py-1 text-xs font-mono font-medium rounded-lg transition-all cursor-pointer ${
+                    selectedTimeStr === t
+                      ? 'bg-cyan-500/25 text-cyan-200 border border-cyan-500/40 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {/* Live Net Impact Metrics */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-2.5">
+                <div className="text-[10px] text-amber-300 uppercase tracking-wider font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-sm bg-orange-500 shrink-0" />
+                  <span>Sunlight Lost</span>
+                </div>
+                <div className="text-base font-mono font-semibold text-orange-300 mt-1">
+                  {currentPhase === 0 ? '0 m² (Today)' : `+${currentSlot.added_m2.toLocaleString()} m²`}
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">New tower shade</div>
+              </div>
+
+              <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-2.5">
+                <div className="text-[10px] text-emerald-300 uppercase tracking-wider font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-sm bg-emerald-500 shrink-0" />
+                  <span>Sunlight Gained</span>
+                </div>
+                <div className="text-base font-mono font-semibold text-emerald-300 mt-1">
+                  {currentPhase === 0 ? '0 m² (Today)' : `+${currentSlot.removed_m2.toLocaleString()} m²`}
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">Demolished parcel</div>
+              </div>
+            </div>
+
+            {/* Sun Angle Metrics */}
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t border-border/20 pt-1.5 px-0.5">
+              <span>Sun Altitude: <strong className="text-foreground">{currentSlot.sun_altitude_deg}°</strong></span>
+              <span>Azimuth: <strong className="text-foreground">{currentSlot.sun_azimuth_deg}°</strong></span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Legend Badge Bottom Left */}
@@ -425,6 +577,27 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           <span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>
           <span>Phase 2 Towers</span>
         </div>
+
+        {/* Sunlight Impact Legend */}
+        {shadowsEnabled && (
+          <div className="border-t border-border/40 pt-2 mt-1 flex flex-col gap-1.5 animate-fade-rise">
+            <div className="text-[10px] uppercase tracking-wider text-amber-300 font-semibold">
+              Sunlight &amp; Shadows
+            </div>
+            <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
+              <span className="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block opacity-85"></span>
+              <span>Sunlight Lost (Tower Shade)</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
+              <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block opacity-85"></span>
+              <span>Sunlight Gained (Open Sky)</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
+              <span className="w-2.5 h-2.5 rounded-sm bg-slate-900 border border-slate-700 inline-block opacity-65"></span>
+              <span>Baseline Building Shade</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

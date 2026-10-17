@@ -31,6 +31,7 @@ export const SOURCE_DEVELOPMENTS = 'source-developments'
 export const SOURCE_BUILDINGS = 'source-buildings'
 export const SOURCE_WALK_LINKS = 'source-walk-links'
 export const SOURCE_VEHICLES = 'source-vehicles'
+export const SOURCE_SHADOWS = 'source-shadows'
 
 // Layer IDs
 export const LAYER_LINKS_CASING = 'layer-links-casing'
@@ -42,6 +43,9 @@ export const LAYER_STOPS_GLOW = 'layer-stops-glow'
 export const LAYER_STOPS_CIRCLE = 'layer-stops-circle'
 export const LAYER_STOPS_LABEL = 'layer-stops-label'
 export const LAYER_VEHICLES = 'layer-vehicles'
+export const LAYER_SHADOWS_TODAY = 'layer-shadows-today'
+export const LAYER_SHADOWS_REMOVED = 'layer-shadows-removed'
+export const LAYER_SHADOWS_ADDED = 'layer-shadows-added'
 
 /**
  * Creates surrounding perimeter blocks (used in tests or fallback).
@@ -294,6 +298,75 @@ export function setupCorridorMapLayers(
     } as AnyLayer)
   }
 
+  // 2b. Precomputed Ground Shadows (Contract 1.0.0 / Lane C)
+  // Rendered in slot: 'middle' directly on terrain & streets, beneath 3D buildings
+  if (!map.getSource(SOURCE_SHADOWS)) {
+    map.addSource(SOURCE_SHADOWS, {
+      type: 'geojson',
+      data: '/data/shadows.geojson',
+    })
+
+    // Layer 1: Today - Baseline shaded open ground (Deep slate/grey)
+    map.addLayer({
+      id: LAYER_SHADOWS_TODAY,
+      type: 'fill',
+      source: SOURCE_SHADOWS,
+      slot: 'middle',
+      filter: [
+        'all',
+        ['==', ['get', 'local_time'], '2026-06-21T12:00'],
+        ['==', ['get', 'layer'], 'today'],
+      ],
+      layout: {
+        visibility: 'none',
+      },
+      paint: {
+        'fill-color': '#0f172a',
+        'fill-opacity': 0.38,
+      },
+    } as AnyLayer)
+
+    // Layer 2: Removed - Sunlight gained from cleared buildings (Emerald green)
+    map.addLayer({
+      id: LAYER_SHADOWS_REMOVED,
+      type: 'fill',
+      source: SOURCE_SHADOWS,
+      slot: 'middle',
+      filter: [
+        'all',
+        ['==', ['get', 'local_time'], '2026-06-21T12:00'],
+        ['==', ['get', 'layer'], 'removed'],
+      ],
+      layout: {
+        visibility: 'none',
+      },
+      paint: {
+        'fill-color': '#10b981',
+        'fill-opacity': 0.55,
+      },
+    } as AnyLayer)
+
+    // Layer 3: Added - Sunlight lost from new proposed towers (Vibrant orange)
+    map.addLayer({
+      id: LAYER_SHADOWS_ADDED,
+      type: 'fill',
+      source: SOURCE_SHADOWS,
+      slot: 'middle',
+      filter: [
+        'all',
+        ['==', ['get', 'local_time'], '2026-06-21T12:00'],
+        ['==', ['get', 'layer'], 'added'],
+      ],
+      layout: {
+        visibility: 'none',
+      },
+      paint: {
+        'fill-color': '#f97316',
+        'fill-opacity': 0.65,
+      },
+    } as AnyLayer)
+  }
+
   // 3. Proposed Development Towers (Luminous, non-approved design stylings)
   const devFeatures = generateDevelopmentsGeoJSON(developments)
   if (!map.getSource(SOURCE_DEVELOPMENTS)) {
@@ -499,6 +572,73 @@ export function updateVehiclePositions(
   }))
 
   source.setData({ type: 'FeatureCollection', features })
+}
+
+/**
+ * Toggles visibility and updates solar time filter for ground shadow layers
+ */
+export function updateShadowTimeAndVisibility(
+  map: MapboxMap,
+  options: {
+    enabled: boolean
+    localTime: string
+    activePhase: number
+  }
+): void {
+  const { enabled, localTime, activePhase } = options
+
+  const isLayerReady = (id: string) => !!map.getLayer(id)
+
+  if (!enabled) {
+    if (isLayerReady(LAYER_SHADOWS_TODAY)) {
+      map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'none')
+    }
+    if (isLayerReady(LAYER_SHADOWS_REMOVED)) {
+      map.setLayoutProperty(LAYER_SHADOWS_REMOVED, 'visibility', 'none')
+    }
+    if (isLayerReady(LAYER_SHADOWS_ADDED)) {
+      map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'none')
+    }
+    return
+  }
+
+  // When enabled, update filter and show baseline today shadows
+  if (isLayerReady(LAYER_SHADOWS_TODAY)) {
+    map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'visible')
+    map.setFilter(LAYER_SHADOWS_TODAY, [
+      'all',
+      ['==', ['get', 'local_time'], localTime],
+      ['==', ['get', 'layer'], 'today'],
+    ])
+  }
+
+  // In Phase 0 (Today), proposals are not built yet, so hide added/removed
+  if (activePhase === 0) {
+    if (isLayerReady(LAYER_SHADOWS_REMOVED)) {
+      map.setLayoutProperty(LAYER_SHADOWS_REMOVED, 'visibility', 'none')
+    }
+    if (isLayerReady(LAYER_SHADOWS_ADDED)) {
+      map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'none')
+    }
+  } else {
+    // In Phase 1 or 2, show sunlight gained and sunlight lost
+    if (isLayerReady(LAYER_SHADOWS_REMOVED)) {
+      map.setLayoutProperty(LAYER_SHADOWS_REMOVED, 'visibility', 'visible')
+      map.setFilter(LAYER_SHADOWS_REMOVED, [
+        'all',
+        ['==', ['get', 'local_time'], localTime],
+        ['==', ['get', 'layer'], 'removed'],
+      ])
+    }
+    if (isLayerReady(LAYER_SHADOWS_ADDED)) {
+      map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'visible')
+      map.setFilter(LAYER_SHADOWS_ADDED, [
+        'all',
+        ['==', ['get', 'local_time'], localTime],
+        ['==', ['get', 'layer'], 'added'],
+      ])
+    }
+  }
 }
 
 
