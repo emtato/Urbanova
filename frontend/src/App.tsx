@@ -151,22 +151,61 @@ export function App() {
             </p>
           </div>
 
-          {/* Quick Metrics Pills */}
-          <div className="animate-fade-rise-delay-2 flex items-center gap-6 text-xs pb-1">
-            <div>
-              <div className="text-[10px] tracking-wider uppercase text-muted-foreground">Peak Window</div>
-              <div className="font-mono font-medium text-foreground">
-                {comparison.corridor.peak_window ? '07:00–09:00' : '07:00–09:00'}
+          {/* Quick 3D Towers Selector and Metrics */}
+          <div className="animate-fade-rise-delay-2 flex flex-col md:flex-row items-start md:items-center gap-4">
+            {/* Quick 3D Tower Chips */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1 font-medium">
+                3D Towers:
+              </span>
+              {developments.map((dev) => {
+                const isSelected = selectedDev?.dev_id === dev.dev_id
+                const isP1 = dev.dev_id === 'toronto-app-22-124214-ste-13-oz'
+                return (
+                  <button
+                    key={dev.dev_id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDev(dev)
+                      setSelectedStop(null)
+                    }}
+                    className={`liquid-glass rounded-full px-3.5 py-1.5 text-xs transition-all flex items-center gap-2 ${
+                      isSelected
+                        ? isP1
+                          ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 shadow-lg scale-105 font-medium'
+                          : 'bg-amber-500/30 text-amber-200 border border-amber-400/60 shadow-lg scale-105 font-medium'
+                        : 'hover:scale-[1.02] text-foreground/90'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        isP1
+                          ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
+                          : 'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
+                      }`}
+                    />
+                    <span>{dev.address.replace(' DUNDAS ST E', ' Dundas')}</span>
+                    <span className="text-[10px] text-muted-foreground">({dev.units.toLocaleString()}u)</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Quick Metrics Pills */}
+            <div className="hidden lg:flex items-center gap-6 text-xs border-l border-border/40 pl-6">
+              <div>
+                <div className="text-[10px] tracking-wider uppercase text-muted-foreground">Peak Window</div>
+                <div className="font-mono font-medium text-foreground">07:00–09:00</div>
               </div>
-            </div>
-            <div className="border-l border-border/40 pl-6">
-              <div className="text-[10px] tracking-wider uppercase text-muted-foreground">New Homes (P1+P2)</div>
-              <div className="font-mono font-medium text-amber-300">{totalNewUnits.toLocaleString()} units</div>
-            </div>
-            <div className="border-l border-border/40 pl-6">
-              <div className="text-[10px] tracking-wider uppercase text-muted-foreground">Corridor Reach</div>
-              <div className="font-mono font-medium text-foreground">
-                {comparison.corridor.stops.length} stops · {comparison.corridor.links.length} links
+              <div className="border-l border-border/40 pl-6">
+                <div className="text-[10px] tracking-wider uppercase text-muted-foreground">New Homes (P1+P2)</div>
+                <div className="font-mono font-medium text-amber-300">{totalNewUnits.toLocaleString()} units</div>
+              </div>
+              <div className="border-l border-border/40 pl-6">
+                <div className="text-[10px] tracking-wider uppercase text-muted-foreground">Corridor Reach</div>
+                <div className="font-mono font-medium text-foreground">
+                  {comparison.corridor.stops.length} stops
+                </div>
               </div>
             </div>
           </div>

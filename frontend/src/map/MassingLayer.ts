@@ -420,6 +420,40 @@ export function updateDevelopmentsPhase(map: MapLibreMap, activePhase: number): 
 }
 
 /**
+ * Dynamically updates all corridor map sources when data changes
+ */
+export function updateCorridorMapData(
+  map: MapLibreMap,
+  corridor: Corridor,
+  developments: Development[]
+): void {
+  const buildingsSrc = map.getSource(SOURCE_BUILDINGS) as GeoJSONSource | undefined
+  if (buildingsSrc) {
+    buildingsSrc.setData(generateSurroundingMassingGeoJSON(corridor))
+  }
+
+  const walkSrc = map.getSource(SOURCE_WALK_LINKS) as GeoJSONSource | undefined
+  if (walkSrc) {
+    walkSrc.setData(generateWalkCatchmentsGeoJSON(developments, corridor.stops))
+  }
+
+  const devSrc = map.getSource(SOURCE_DEVELOPMENTS) as GeoJSONSource | undefined
+  if (devSrc) {
+    devSrc.setData(generateDevelopmentsGeoJSON(developments))
+  }
+
+  const linksSrc = map.getSource(SOURCE_CORRIDOR_LINKS) as GeoJSONSource | undefined
+  if (linksSrc) {
+    linksSrc.setData(generateCorridorLinksGeoJSON(corridor))
+  }
+
+  const stopsSrc = map.getSource(SOURCE_CORRIDOR_STOPS) as GeoJSONSource | undefined
+  if (stopsSrc) {
+    stopsSrc.setData(generateCorridorStopsGeoJSON(corridor.stops))
+  }
+}
+
+/**
  * Updates positions of simulated moving streetcars on the map
  */
 export function updateVehiclePositions(
@@ -437,3 +471,5 @@ export function updateVehiclePositions(
 
   source.setData({ type: 'FeatureCollection', features })
 }
+
+

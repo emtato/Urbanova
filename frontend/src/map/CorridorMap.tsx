@@ -3,6 +3,7 @@ import {
   Map as MapLibreMap,
   NavigationControl,
   LngLatBounds,
+  setWorkerUrl,
   type MapLayerMouseEvent,
   type StyleSpecification,
 } from 'maplibre-gl'
@@ -10,10 +11,16 @@ import type { Corridor, Development, Stop } from '../lib/types'
 import {
   setupCorridorMapLayers,
   updateDevelopmentsPhase,
+  updateCorridorMapData,
   getDevelopmentCoordinates,
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
 } from './MassingLayer'
+
+// Explicitly register MapLibre Web Worker URL for Vite environment
+// This enables GeoJSON parsing, 3D extruded polygon tessellation, and stop markers
+setWorkerUrl('/maplibre-gl-worker.mjs')
+
 
 export interface CorridorMapProps {
   corridor: Corridor
@@ -178,13 +185,14 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     }
   }, [corridor, developments])
 
-  // React to phase changes
+  // React to phase or dataset changes
   useEffect(() => {
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
+      updateCorridorMapData(mapRef.current, corridor, developments)
       updateDevelopmentsPhase(mapRef.current, activePhase)
       setCurrentPhase(activePhase)
     }
-  }, [activePhase])
+  }, [corridor, developments, activePhase])
 
   // Center camera when selected stop changes
   useEffect(() => {
@@ -193,11 +201,13 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     if (stop) {
       mapRef.current.flyTo({
         center: [stop.lon, stop.lat],
-        zoom: 15.5,
+        zoom: 15.8,
+        pitch: is3D ? 50 : 0,
+        bearing: is3D ? -20 : 0,
         speed: 1.2,
       })
     }
-  }, [selectedStopId, corridor.stops])
+  }, [selectedStopId, corridor.stops, is3D])
 
   // Center camera when selected development changes
   useEffect(() => {
@@ -207,18 +217,26 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       const coords = getDevelopmentCoordinates(dev)
       mapRef.current.flyTo({
         center: [coords[0], coords[1]],
-        zoom: 16,
+        zoom: 16.4,
+        pitch: is3D ? 60 : 0,
+        bearing: is3D ? -25 : 0,
         speed: 1.2,
       })
     }
-  }, [selectedDevId, developments])
+  }, [selectedDevId, developments, is3D])
 
-  // Fit bounds helper
+  // Fit bounds helper (preserves 3D pitch and adds right panel padding)
   const fitToCorridor = (map: MapLibreMap, stops: Stop[]) => {
     if (stops.length === 0) return
     const bounds = new LngLatBounds()
     stops.forEach((s) => bounds.extend([s.lon, s.lat]))
-    map.fitBounds(bounds, { padding: 70, maxZoom: 15.5, duration: 800 })
+    map.fitBounds(bounds, {
+      padding: { top: 90, bottom: 90, left: 100, right: 380 },
+      maxZoom: 15.6,
+      duration: 900,
+      pitch: is3D ? 55 : 0,
+      bearing: is3D ? -20 : 0,
+    })
   }
 
   // Toggle 2D / 3D tilt
