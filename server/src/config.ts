@@ -8,6 +8,6 @@ export const settings = {
   port: Number(process.env.PORT ?? 8010),
   databaseUrl: process.env.DATABASE_URL,
   model: process.env.GEMINI_MODEL ?? 'gemini-3.8-flash',
-  modelVersion: process.env.MODEL_VERSION ?? 'lane-c-fixture-v1',
+  modelVersion: process.env.MODEL_VERSION ?? 'lane-c-b11-v1',
   origins: process.env.CORS_ORIGINS ? JSON.parse(process.env.CORS_ORIGINS) as string[] : ['http://localhost:5173', 'http://127.0.0.1:5173'],
 };
