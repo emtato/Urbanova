@@ -1,0 +1,312 @@
+{
+  "fixture": true,
+  "generated_at": "2026-10-17T05:00:00Z",
+  "scenario": {
+    "scenario_id": "scen_eglinton_east_2026",
+    "version": "1.0.0",
+    "name": "Eglinton East / Kingston Rd AM Peak 2026-2030",
+    "developments_per_phase": {
+      "1": ["dev_kingston_morningside", "dev_guildwood_residences"],
+      "2": ["dev_highland_creek_towers"]
+    },
+    "occupied_share": 0.92,
+    "demand_case": "central",
+    "intervention_availability": {
+      "int_rapidto_gap_lane": 1,
+      "int_freq_boost_86": 2
+    },
+    "capital_budget": 15000000,
+    "operating_budget": 2400000,
+    "fleet_allowance": 6,
+    "planning_criterion": {
+      "max_mean_wait_s": 360,
+      "max_denied_share": 0.08
+    }
+  },
+  "corridor": {
+    "corridor_id": "corr_eglinton_east_wb",
+    "name": "Eglinton East / Kingston Rd (UTSC to Kennedy AM Peak)",
+    "route_pattern": "86/116 Westbound Peak",
+    "direction": "Westbound",
+    "peak_window": "07:30 - 08:30 Weekday AM",
+    "stops": [
+      { "stop_id": "stop_01", "gtfs_stop_id": "14120", "name": "UTSC Transit Loop", "seq": 1, "lon": -79.1874, "lat": 43.7841 },
+      { "stop_id": "stop_02", "gtfs_stop_id": "14121", "name": "Ellesmere Rd at Military Trail", "seq": 2, "lon": -79.1932, "lat": 43.7788 },
+      { "stop_id": "stop_03", "gtfs_stop_id": "14122", "name": "Kingston Rd at Morningside Ave", "seq": 3, "lon": -79.1985, "lat": 43.7712 },
+      { "stop_id": "stop_04", "gtfs_stop_id": "14123", "name": "Kingston Rd at Lawrence Ave E", "seq": 4, "lon": -79.2061, "lat": 43.7629 },
+      { "stop_id": "stop_05", "gtfs_stop_id": "14124", "name": "Kingston Rd at Guildwood Pkwy", "seq": 5, "lon": -79.2147, "lat": 43.7545 },
+      { "stop_id": "stop_06", "gtfs_stop_id": "14125", "name": "Kingston Rd at Celeste Dr", "seq": 6, "lon": -79.2229, "lat": 43.7481 },
+      { "stop_id": "stop_07", "gtfs_stop_id": "14126", "name": "Eglinton Ave E at Kingston Rd", "seq": 7, "lon": -79.2315, "lat": 43.7410 },
+      { "stop_id": "stop_08", "gtfs_stop_id": "14127", "name": "Eglinton Ave E at Markham Rd", "seq": 8, "lon": -79.2438, "lat": 43.7382 },
+      { "stop_id": "stop_09", "gtfs_stop_id": "14128", "name": "Eglinton Ave E at Bellamy Rd", "seq": 9, "lon": -79.2559, "lat": 43.7351 },
+      { "stop_id": "stop_10", "gtfs_stop_id": "14129", "name": "Kennedy Station Gateway", "seq": 10, "lon": -79.2638, "lat": 43.7324 }
+    ],
+    "links": [
+      { "link_id": "link_1_2", "from_stop": "stop_01", "to_stop": "stop_02", "length_m": 720, "base_time_s": 140 },
+      { "link_id": "link_2_3", "from_stop": "stop_02", "to_stop": "stop_03", "length_m": 890, "base_time_s": 175 },
+      { "link_id": "link_3_4", "from_stop": "stop_03", "to_stop": "stop_04", "length_m": 1100, "base_time_s": 220 },
+      { "link_id": "link_4_5", "from_stop": "stop_04", "to_stop": "stop_05", "length_m": 1150, "base_time_s": 240 },
+      { "link_id": "link_5_6", "from_stop": "stop_05", "to_stop": "stop_06", "length_m": 980, "base_time_s": 200 },
+      { "link_id": "link_6_7", "from_stop": "stop_06", "to_stop": "stop_07", "length_m": 1050, "base_time_s": 215 },
+      { "link_id": "link_7_8", "from_stop": "stop_07", "to_stop": "stop_08", "length_m": 1200, "base_time_s": 230 },
+      { "link_id": "link_8_9", "from_stop": "stop_08", "to_stop": "stop_09", "length_m": 1100, "base_time_s": 210 },
+      { "link_id": "link_9_10", "from_stop": "stop_09", "to_stop": "stop_10", "length_m": 850, "base_time_s": 160 }
+    ],
+    "berths_per_stop": 1,
+    "incoming_load": 18
+  },
+  "developments": [
+    {
+      "dev_id": "dev_kingston_morningside",
+      "pipeline_ref": "23-149208-OZ",
+      "address": "4525 Kingston Rd",
+      "units": 480,
+      "stage": "Under Construction",
+      "record_date": "2025-09-12",
+      "kind": "proposal",
+      "coordinates": [-79.1989, 43.7719],
+      "height_m": 68,
+      "phase": 1,
+      "access": [
+        { "stop_id": "stop_03", "walk_m": 120 },
+        { "stop_id": "stop_02", "walk_m": 680 }
+      ],
+      "source_ids": ["src_dev_pipeline_2025", "src_city_open_data"]
+    },
+    {
+      "dev_id": "dev_guildwood_residences",
+      "pipeline_ref": "24-118432-OZ",
+      "address": "3650 Kingston Rd",
+      "units": 320,
+      "stage": "Site Plan Approved",
+      "record_date": "2025-11-04",
+      "kind": "proposal",
+      "coordinates": [-79.2152, 43.7548],
+      "height_m": 42,
+      "phase": 1,
+      "access": [
+        { "stop_id": "stop_05", "walk_m": 95 },
+        { "stop_id": "stop_06", "walk_m": 720 }
+      ],
+      "source_ids": ["src_dev_pipeline_2025"]
+    },
+    {
+      "dev_id": "dev_highland_creek_towers",
+      "pipeline_ref": "25-201944-OZ",
+      "address": "3882 Kingston Rd",
+      "units": 750,
+      "stage": "Application Submitted",
+      "record_date": "2026-02-18",
+      "kind": "proposal",
+      "coordinates": [-79.2055, 43.7635],
+      "height_m": 94,
+      "phase": 2,
+      "access": [
+        { "stop_id": "stop_04", "walk_m": 140 },
+        { "stop_id": "stop_03", "walk_m": 880 }
+      ],
+      "source_ids": ["src_dev_pipeline_2025"]
+    }
+  ],
+  "cases": {
+    "current": {
+      "case_id": "current",
+      "case_label": "Baseline (Today)",
+      "stop_results": {
+        "stop_01": { "stop_id": "stop_01", "stop_name": "UTSC Transit Loop", "existing_riders": { "mean_wait_s": 240, "p95_wait_s": 420, "share_denied": 0.02, "remaining_queue": 2 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 240, "p95_wait_s": 420, "share_denied": 0.02, "remaining_queue": 2 }, "headway_cv": 0.18, "bunched_trips_share": 0.04 },
+        "stop_03": { "stop_id": "stop_03", "stop_name": "Kingston Rd at Morningside Ave", "existing_riders": { "mean_wait_s": 280, "p95_wait_s": 510, "share_denied": 0.04, "remaining_queue": 4 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 280, "p95_wait_s": 510, "share_denied": 0.04, "remaining_queue": 4 }, "headway_cv": 0.22, "bunched_trips_share": 0.06 },
+        "stop_04": { "stop_id": "stop_04", "stop_name": "Kingston Rd at Lawrence Ave E", "existing_riders": { "mean_wait_s": 310, "p95_wait_s": 580, "share_denied": 0.05, "remaining_queue": 6 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 310, "p95_wait_s": 580, "share_denied": 0.05, "remaining_queue": 6 }, "headway_cv": 0.24, "bunched_trips_share": 0.07 },
+        "stop_05": { "stop_id": "stop_05", "stop_name": "Kingston Rd at Guildwood Pkwy", "existing_riders": { "mean_wait_s": 320, "p95_wait_s": 610, "share_denied": 0.06, "remaining_queue": 7 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 320, "p95_wait_s": 610, "share_denied": 0.06, "remaining_queue": 7 }, "headway_cv": 0.26, "bunched_trips_share": 0.08 }
+      },
+      "summary": { "mean_wait_s": 285, "p95_wait_s": 530, "total_denied_share": 0.042, "max_queue": 8, "total_boardings": 680 },
+      "run_count": 20,
+      "unresolved_passengers": 0
+    },
+    "growth": {
+      "case_id": "growth",
+      "case_label": "Unmitigated Housing Growth (Phase 1+2)",
+      "stop_results": {
+        "stop_01": { "stop_id": "stop_01", "stop_name": "UTSC Transit Loop", "existing_riders": { "mean_wait_s": 260, "p95_wait_s": 470, "share_denied": 0.04, "remaining_queue": 3 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 260, "p95_wait_s": 470, "share_denied": 0.04, "remaining_queue": 3 }, "headway_cv": 0.21, "bunched_trips_share": 0.06 },
+        "stop_03": { "stop_id": "stop_03", "stop_name": "Kingston Rd at Morningside Ave", "existing_riders": { "mean_wait_s": 490, "p95_wait_s": 980, "share_denied": 0.19, "remaining_queue": 24 }, "new_riders": { "mean_wait_s": 520, "p95_wait_s": 1040, "share_denied": 0.22, "remaining_queue": 38 }, "total_riders": { "mean_wait_s": 508, "p95_wait_s": 1010, "share_denied": 0.208, "remaining_queue": 62 }, "headway_cv": 0.42, "bunched_trips_share": 0.18 },
+        "stop_04": { "stop_id": "stop_04", "stop_name": "Kingston Rd at Lawrence Ave E", "existing_riders": { "mean_wait_s": 580, "p95_wait_s": 1150, "share_denied": 0.24, "remaining_queue": 32 }, "new_riders": { "mean_wait_s": 610, "p95_wait_s": 1210, "share_denied": 0.27, "remaining_queue": 54 }, "total_riders": { "mean_wait_s": 598, "p95_wait_s": 1180, "share_denied": 0.258, "remaining_queue": 86 }, "headway_cv": 0.48, "bunched_trips_share": 0.22 },
+        "stop_05": { "stop_id": "stop_05", "stop_name": "Kingston Rd at Guildwood Pkwy", "existing_riders": { "mean_wait_s": 640, "p95_wait_s": 1280, "share_denied": 0.28, "remaining_queue": 40 }, "new_riders": { "mean_wait_s": 660, "p95_wait_s": 1310, "share_denied": 0.31, "remaining_queue": 46 }, "total_riders": { "mean_wait_s": 650, "p95_wait_s": 1295, "share_denied": 0.295, "remaining_queue": 86 }, "headway_cv": 0.52, "bunched_trips_share": 0.25 }
+      },
+      "summary": { "mean_wait_s": 542, "p95_wait_s": 1090, "total_denied_share": 0.224, "max_queue": 86, "total_boardings": 1390 },
+      "run_count": 20,
+      "unresolved_passengers": 28
+    },
+    "supported_growth": {
+      "case_id": "supported_growth",
+      "case_label": "Supported Growth (Priority Lane + Boosted Service)",
+      "stop_results": {
+        "stop_01": { "stop_id": "stop_01", "stop_name": "UTSC Transit Loop", "existing_riders": { "mean_wait_s": 190, "p95_wait_s": 340, "share_denied": 0.01, "remaining_queue": 1 }, "new_riders": { "mean_wait_s": 0, "p95_wait_s": 0, "share_denied": 0, "remaining_queue": 0 }, "total_riders": { "mean_wait_s": 190, "p95_wait_s": 340, "share_denied": 0.01, "remaining_queue": 1 }, "headway_cv": 0.12, "bunched_trips_share": 0.02 },
+        "stop_03": { "stop_id": "stop_03", "stop_name": "Kingston Rd at Morningside Ave", "existing_riders": { "mean_wait_s": 230, "p95_wait_s": 410, "share_denied": 0.03, "remaining_queue": 5 }, "new_riders": { "mean_wait_s": 245, "p95_wait_s": 430, "share_denied": 0.04, "remaining_queue": 7 }, "total_riders": { "mean_wait_s": 238, "p95_wait_s": 420, "share_denied": 0.035, "remaining_queue": 12 }, "headway_cv": 0.16, "bunched_trips_share": 0.03 },
+        "stop_04": { "stop_id": "stop_04", "stop_name": "Kingston Rd at Lawrence Ave E", "existing_riders": { "mean_wait_s": 260, "p95_wait_s": 470, "share_denied": 0.04, "remaining_queue": 6 }, "new_riders": { "mean_wait_s": 275, "p95_wait_s": 490, "share_denied": 0.05, "remaining_queue": 9 }, "total_riders": { "mean_wait_s": 269, "p95_wait_s": 482, "share_denied": 0.046, "remaining_queue": 15 }, "headway_cv": 0.18, "bunched_trips_share": 0.04 },
+        "stop_05": { "stop_id": "stop_05", "stop_name": "Kingston Rd at Guildwood Pkwy", "existing_riders": { "mean_wait_s": 275, "p95_wait_s": 490, "share_denied": 0.05, "remaining_queue": 7 }, "new_riders": { "mean_wait_s": 290, "p95_wait_s": 510, "share_denied": 0.06, "remaining_queue": 9 }, "total_riders": { "mean_wait_s": 283, "p95_wait_s": 500, "share_denied": 0.055, "remaining_queue": 16 }, "headway_cv": 0.19, "bunched_trips_share": 0.04 }
+      },
+      "summary": { "mean_wait_s": 248, "p95_wait_s": 445, "total_denied_share": 0.038, "max_queue": 16, "total_boardings": 1390 },
+      "run_count": 20,
+      "unresolved_passengers": 0
+    }
+  },
+  "packages": [
+    {
+      "package_id": "pkg_status_quo",
+      "name": "Package 0: Status Quo (Do Nothing)",
+      "interventions": [],
+      "is_feasible": true,
+      "infeasibility_reasons": [],
+      "capital_cost": 0,
+      "operating_cost_annual": 0,
+      "extra_vehicles": 0,
+      "criterion_met": { "phase_1": false, "phase_2": false },
+      "rank": 4
+    },
+    {
+      "package_id": "pkg_lane_only",
+      "name": "Package 1: RapidTO Priority Bus Lanes Gap-Fill",
+      "interventions": ["int_rapidto_gap_lane"],
+      "is_feasible": true,
+      "infeasibility_reasons": [],
+      "capital_cost": 4200000,
+      "operating_cost_annual": 120000,
+      "extra_vehicles": 0,
+      "criterion_met": { "phase_1": true, "phase_2": false },
+      "rank": 2
+    },
+    {
+      "package_id": "pkg_service_only",
+      "name": "Package 2: Peak Frequency Boost (Headway 6m -> 4m)",
+      "interventions": ["int_freq_boost_86"],
+      "is_feasible": true,
+      "infeasibility_reasons": [],
+      "capital_cost": 0,
+      "operating_cost_annual": 1850000,
+      "extra_vehicles": 4,
+      "criterion_met": { "phase_1": true, "phase_2": false },
+      "rank": 3
+    },
+    {
+      "package_id": "pkg_combined",
+      "name": "Package 3: Full Readiness (Priority Lane + Frequency Boost)",
+      "interventions": ["int_rapidto_gap_lane", "int_freq_boost_86"],
+      "is_feasible": true,
+      "infeasibility_reasons": [],
+      "capital_cost": 4200000,
+      "operating_cost_annual": 1970000,
+      "extra_vehicles": 4,
+      "criterion_met": { "phase_1": true, "phase_2": true },
+      "rank": 1
+    }
+  ],
+  "sensitivity": {
+    "demand_cases": {
+      "low": { "preferred_package": "pkg_lane_only", "worst_stops": ["stop_05"] },
+      "central": { "preferred_package": "pkg_combined", "worst_stops": ["stop_04", "stop_05"] },
+      "high": { "preferred_package": "pkg_combined", "worst_stops": ["stop_03", "stop_04", "stop_05"] }
+    },
+    "upgrade_delay": {
+      "preferred_package": "pkg_combined",
+      "impact": "1-year delay causes 3.4x spike in queue accumulation at Kingston/Guildwood during Phase 2 occupancy."
+    }
+  },
+  "assumptions": [
+    {
+      "key": "transit_mode_share",
+      "unit": "%",
+      "meaning": "Share of new development peak-hour outbound trips taken by TTC bus",
+      "low": 0.45,
+      "central": 0.58,
+      "high": 0.70,
+      "allowed_range": [0.20, 0.90],
+      "status": "sourced",
+      "source_ids": ["src_rapidto_eval_2021", "src_tts_2016"]
+    },
+    {
+      "key": "occupancy_residents_per_unit",
+      "unit": "persons/unit",
+      "meaning": "Average residential density for new multi-unit Scarborough developments",
+      "low": 1.45,
+      "central": 1.75,
+      "high": 2.10,
+      "allowed_range": [1.0, 3.5],
+      "status": "sourced",
+      "source_ids": ["src_statcan_census_2021"]
+    },
+    {
+      "key": "bus_door_dwell_boarding_rate",
+      "unit": "s/passenger",
+      "meaning": "Average passenger PRESTO tap-and-board time at crowded stops",
+      "low": 2.2,
+      "central": 3.1,
+      "high": 4.5,
+      "allowed_range": [1.5, 6.0],
+      "status": "assumed",
+      "source_ids": ["src_tcrp_report_165"]
+    },
+    {
+      "key": "priority_lane_speedup_factor",
+      "unit": "multiplier",
+      "meaning": "Travel time speedup on mixed-traffic links when RapidTO lane is installed",
+      "low": 0.85,
+      "central": 0.78,
+      "high": 0.72,
+      "allowed_range": [0.60, 0.95],
+      "status": "sourced",
+      "source_ids": ["src_rapidto_eval_2021"]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_rapidto_eval_2021",
+      "title": "RapidTO Eglinton East Bus Lanes: Baseline to Fall 2021 Monitoring Report",
+      "url": "https://www.toronto.ca/wp-content/uploads/2022/02/8bfe-RapidTO-DashboardBaseline-to-Sept-2021sm.pdf",
+      "publisher": "City of Toronto Transportation Services & TTC",
+      "retrieved_at": "2026-10-16",
+      "version": "2021-11",
+      "licence": "Open Government Licence - Toronto"
+    },
+    {
+      "source_id": "src_dev_pipeline_2025",
+      "title": "Toronto Development Pipeline (Active Applications & Approvals)",
+      "url": "https://open.toronto.ca/dataset/development-pipeline/",
+      "publisher": "City Planning Division",
+      "retrieved_at": "2026-10-15",
+      "version": "2025-Q3",
+      "licence": "Open Government Licence - Toronto"
+    },
+    {
+      "source_id": "src_statcan_census_2021",
+      "title": "Census Profile, 2021 Census of Population (Scarborough Guildwood)",
+      "url": "https://www12.statcan.gc.ca/census-recensement/2021/",
+      "publisher": "Statistics Canada",
+      "retrieved_at": "2026-10-14",
+      "version": "2021-A",
+      "licence": "Statistics Canada Open Licence"
+    }
+  ],
+  "warnings": [
+    "Fixture data enabled: All figures represent calibrated baseline approximations for testing UI and replay rendering.",
+    "Unmitigated growth under Phase 2 leaves an estimated 28 unresolved riders stranded past the 08:30 evaluation window."
+  ],
+  "replay_stream": [
+    { "run_id": "run_01", "t_s": 0, "kind": "dispatch", "vehicle_id": "bus_8601", "stop_id": "stop_01", "count": 18, "load_after": 18 },
+    { "run_id": "run_01", "t_s": 25, "kind": "board", "vehicle_id": "bus_8601", "stop_id": "stop_01", "count": 14, "load_after": 32, "rider_group": "existing" },
+    { "run_id": "run_01", "t_s": 40, "kind": "depart", "vehicle_id": "bus_8601", "stop_id": "stop_01", "count": 0, "load_after": 32 },
+    { "run_id": "run_01", "t_s": 180, "kind": "arrive", "vehicle_id": "bus_8601", "stop_id": "stop_02", "count": 0, "load_after": 32 },
+    { "run_id": "run_01", "t_s": 195, "kind": "board", "vehicle_id": "bus_8601", "stop_id": "stop_02", "count": 8, "load_after": 40, "rider_group": "existing" },
+    { "run_id": "run_01", "t_s": 210, "kind": "depart", "vehicle_id": "bus_8601", "stop_id": "stop_02", "count": 0, "load_after": 40 },
+    { "run_id": "run_01", "t_s": 385, "kind": "arrive", "vehicle_id": "bus_8601", "stop_id": "stop_03", "count": 0, "load_after": 40 },
+    { "run_id": "run_01", "t_s": 400, "kind": "alight", "vehicle_id": "bus_8601", "stop_id": "stop_03", "count": 4, "load_after": 36 },
+    { "run_id": "run_01", "t_s": 420, "kind": "board", "vehicle_id": "bus_8601", "stop_id": "stop_03", "count": 16, "load_after": 52, "rider_group": "new" },
+    { "run_id": "run_01", "t_s": 445, "kind": "deny", "vehicle_id": "bus_8601", "stop_id": "stop_03", "count": 6, "load_after": 52, "rider_group": "existing" },
+    { "run_id": "run_01", "t_s": 450, "kind": "depart", "vehicle_id": "bus_8601", "stop_id": "stop_03", "count": 0, "load_after": 52 },
+    { "run_id": "run_01", "t_s": 670, "kind": "arrive", "vehicle_id": "bus_8601", "stop_id": "stop_04", "count": 0, "load_after": 52 },
+    { "run_id": "run_01", "t_s": 690, "kind": "board", "vehicle_id": "bus_8601", "stop_id": "stop_04", "count": 3, "load_after": 55, "rider_group": "new" },
+    { "run_id": "run_01", "t_s": 710, "kind": "deny", "vehicle_id": "bus_8601", "stop_id": "stop_04", "count": 12, "load_after": 55, "rider_group": "existing" },
+    { "run_id": "run_01", "t_s": 715, "kind": "depart", "vehicle_id": "bus_8601", "stop_id": "stop_04", "count": 0, "load_after": 55 },
+    { "run_id": "run_01", "t_s": 360, "kind": "dispatch", "vehicle_id": "bus_8602", "stop_id": "stop_01", "count": 12, "load_after": 12 },
+    { "run_id": "run_01", "t_s": 380, "kind": "board", "vehicle_id": "bus_8602", "stop_id": "stop_01", "count": 16, "load_after": 28, "rider_group": "existing" },
+    { "run_id": "run_01", "t_s": 400, "kind": "depart", "vehicle_id": "bus_8602", "stop_id": "stop_01", "count": 0, "load_after": 28 }
+  ]
+}
