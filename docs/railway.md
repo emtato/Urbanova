@@ -1,4 +1,5 @@
 # Railway backend deployment
+For the new Lane C Express API, select `server/railway.json` as the Railway config file while keeping the repository root as Root Directory. See [Lane C deployment and limits](lane-c.md). The instructions below describe the existing FastAPI deployment, which remains the root-config default.
 The API runs on Railway; PostgreSQL and PostGIS remain in Tiger Data.
 The committed railway.json config uses Railpack, starts FastAPI on Railway's PORT, and checks /api/health.
 .python-version selects Python 3.11. Local development continues on port 8010.

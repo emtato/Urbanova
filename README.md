@@ -1,4 +1,5 @@
 # FutureProof
+Lane C Express API: [run, endpoint contracts, worker/storage and fixture limits](docs/lane-c.md). Start it with `npm ci --prefix server`, `npm run db:init --prefix server`, then `npm start --prefix server`. The existing FastAPI Railway deployment remains unchanged until selecting `server/railway.json`.
 FutureProof explores housing and transit readiness; this commit supplies the shared development foundation.
 Prerequisites: Python 3.11, Node 24 LTS, and a Tiger Data Shared (free) PostgreSQL service.
 Run the following commands from the repository root unless a command explicitly changes directories.

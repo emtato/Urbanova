@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+.venv
+.pytest_cache
+**/__pycache__
+data/cache
+data/raw
+Microsoft
+*.log
