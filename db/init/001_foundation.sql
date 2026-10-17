@@ -1,4 +1,4 @@
--- Repeatable Vultr Managed PostgreSQL schema bootstrap.
+-- Repeatable hosted PostgreSQL schema bootstrap.
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE TABLE IF NOT EXISTS saved_results (
