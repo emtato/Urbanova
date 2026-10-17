@@ -14,6 +14,7 @@ import {
 } from './types'
 import {
   setupCorridorMapLayers,
+  updateDevelopmentsPhase,
   updateDevelopmentsVisibility,
   updateDevelopmentsSelected,
   updateCorridorMapData,
@@ -21,6 +22,7 @@ import {
   getDevelopmentCoordinates,
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
+  LAYER_761_MODEL,
 } from './MassingLayer'
 import {
   SEASONS,
@@ -238,6 +240,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           const { corridor, developments, currentVisibleDevIds, selectedDevId,
             isShadowsActive, currentSlot, activePhase } = latestMapInputs.current
           setupCorridorMapLayers(map, corridor, developments)
+          updateDevelopmentsPhase(map, activePhase)
           updateDevelopmentsVisibility(map, currentVisibleDevIds)
           updateDevelopmentsSelected(map, selectedDevId)
           updateShadowTimeAndVisibility(map, {
@@ -275,6 +278,21 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         }
       })
 
+      // Click handler for 3D model (761 Dundas)
+      map.on('click', LAYER_761_MODEL, (e: MapLayerMouseEvent) => {
+        if (!e.features || e.features.length === 0) return
+        const feature = e.features[0]
+        const devId = feature.properties?.dev_id || 'toronto-app-25-236949-ste-13-oz'
+        const { developments, onSelectDevelopment } = latestMapInputs.current
+        const dev = developments.find((d: any) => {
+          const norm = normalizeDevelopment(d)
+          return norm.dev_id === devId || /761.*dundas/i.test(norm.address || norm.name || '')
+        })
+        if (dev && onSelectDevelopment) {
+          onSelectDevelopment(dev)
+        }
+      })
+
       // Hover cursor
       map.on('mouseenter', LAYER_STOPS_CIRCLE, () => {
         map.getCanvas().style.cursor = 'pointer'
@@ -286,6 +304,12 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         map.getCanvas().style.cursor = 'pointer'
       })
       map.on('mouseleave', LAYER_DEVELOPMENTS_EXTRUSION, () => {
+        map.getCanvas().style.cursor = ''
+      })
+      map.on('mouseenter', LAYER_761_MODEL, () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', LAYER_761_MODEL, () => {
         map.getCanvas().style.cursor = ''
       })
 
@@ -325,6 +349,13 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       updateDevelopmentsSelected(mapRef.current, selectedDevId)
     }
   }, [selectedDevId])
+
+  // React to planning phase changes (Today / Phase 1 / Phase 2)
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.isStyleLoaded()) {
+      updateDevelopmentsPhase(mapRef.current, activePhase)
+    }
+  }, [activePhase])
 
   // Keep the latest selection pending while Mapbox is rebuilding its style.
   useEffect(() => {

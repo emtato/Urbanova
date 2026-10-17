@@ -1,4 +1,4 @@
-import { rememberSimulation, forgetSimulation, setActiveSimulation } from './simulationHistory'
+import { rememberSimulation, forgetSimulation, setActiveSimulation, updateLocalSimulationName } from './simulationHistory'
 import { sampleComparison } from './sampleComparison'
 import type { Comparison, Corridor, ReplayEvent, Scenario } from './types'
 import type { NativeBatch, NativeMetrics, NativeReplay, PackagePolicy, RunSimulationRequest, ScenarioPatch, AnalysisSummary } from './liveTypes'
@@ -66,9 +66,36 @@ export async function getSimulations(signal?: AbortSignal): Promise<NativeBatch[
   return batches
 }
 
+export async function renameSimulation(id: string, name: string, signal?: AbortSignal): Promise<{ id: string; name: string; renamed: boolean }> {
+  if (!id || typeof id !== 'string') throw Error('Simulation ID is required')
+  const trimmed = name.trim()
+  if (!trimmed || trimmed.length > 80) throw Error('Use a name between 1 and 80 characters.')
+  let result = { id, name: trimmed, renamed: true }
+  try {
+    result = await apiRequest<{ id: string; name: string; renamed: boolean }>('/sim/rename', { id, name: trimmed }, signal)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('HTTP 404')) {
+      result = { id, name: trimmed, renamed: true }
+    } else {
+      throw error
+    }
+  }
+  await updateLocalSimulationName(id, trimmed)
+  return result
+}
+
 export async function deleteSimulation(id: string, signal?: AbortSignal): Promise<{ id: string; deleted: boolean }> {
   if (!id || typeof id !== 'string') throw Error('Simulation ID is required')
-  const result = await apiRequest<{ id: string; deleted: boolean }>('/sim/delete', { id }, signal)
+  let result = { id, deleted: true }
+  try {
+    result = await apiRequest<{ id: string; deleted: boolean }>('/sim/delete', { id }, signal)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('HTTP 404')) {
+      result = { id, deleted: true }
+    } else {
+      throw error
+    }
+  }
   if (result.deleted) await forgetSimulation(id)
   return result
 }

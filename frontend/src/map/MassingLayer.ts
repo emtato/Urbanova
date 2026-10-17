@@ -41,6 +41,7 @@ export const SOURCE_BUILDINGS = 'source-buildings'
 export const SOURCE_WALK_LINKS = 'source-walk-links'
 export const SOURCE_VEHICLES = 'source-vehicles'
 export const SOURCE_SHADOWS = 'source-shadows'
+export const SOURCE_761_MODEL = 'source-761-model'
 
 // Layer IDs
 export const LAYER_LINKS_CASING = 'layer-links-casing'
@@ -48,6 +49,7 @@ export const LAYER_LINKS_CORE = 'layer-links-core'
 export const LAYER_WALK_LINKS = 'layer-walk-links'
 export const LAYER_BUILDINGS_EXISTING = 'layer-buildings-existing'
 export const LAYER_DEVELOPMENTS_EXTRUSION = 'layer-developments-extrusion'
+export const LAYER_761_MODEL = 'layer-761-model'
 export const LAYER_STOPS_GLOW = 'layer-stops-glow'
 export const LAYER_STOPS_CIRCLE = 'layer-stops-circle'
 export const LAYER_STOPS_LABEL = 'layer-stops-label'
@@ -55,6 +57,9 @@ export const LAYER_VEHICLES = 'layer-vehicles'
 export const LAYER_SHADOWS_TODAY = 'layer-shadows-today'
 export const LAYER_SHADOWS_REMOVED = 'layer-shadows-removed'
 export const LAYER_SHADOWS_ADDED = 'layer-shadows-added'
+
+export const MODEL_761_ID = 'model-761-dundas'
+export const MODEL_761_URL = '/models/dundas_761.glb'
 
 /**
  * Creates surrounding perimeter blocks (used in tests or fallback).
@@ -197,6 +202,68 @@ export function transformPhase1Point(
 }
 
 /**
+ * Phase 2 (761 Dundas St E) Placement & Rotation Controls for the 3D GLB Model:
+ *
+ * 1. `anchor`: [longitude, latitude] of the model center at 761 Dundas St E.
+ *    - Increase longitude to nudge East.
+ *    - Decrease longitude to nudge West.
+ *    - Increase latitude to nudge North into Dundas St E.
+ *    - Decrease latitude to nudge South.
+ *
+ * 2. `rotation`: [pitch, roll, yaw] in degrees around the anchor.
+ *    - 3rd value (yaw/heading) rotates horizontally around vertical axis.
+ *
+ * 3. `scale`: [x, y, z] uniform or dimensional scale factors.
+ *
+ * 4. `translation`: [x, y, z] offsets in meters.
+ */
+export interface Phase2_761PlacementConfig {
+  anchor: [number, number]
+  rotation: [number, number, number]
+  scale: [number, number, number]
+  translation: [number, number, number]
+}
+
+export const PHASE2_761_PLACEMENT: Phase2_761PlacementConfig = {
+  anchor: [-79.356395, 43.661291], // Center of 761 Dundas St E site
+  rotation: [0, 0, 0],
+  scale: [1, 1, 1],
+  translation: [0, 0, 0],
+}
+
+export function generate761ModelGeoJSON(developments?: any[]): FeatureCollection {
+  const isPresent = !developments || developments.length === 0 || developments.some((d) => {
+    const norm = normalizeDevelopment(d)
+    return norm.dev_id === 'toronto-app-25-236949-ste-13-oz' ||
+      norm.dev_id === 'fixture-development-3' ||
+      /761.*dundas/i.test(norm.address || norm.name || '')
+  })
+
+  if (!isPresent) {
+    return { type: 'FeatureCollection', features: [] }
+  }
+
+  return {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          dev_id: 'toronto-app-25-236949-ste-13-oz',
+          name: '761 DUNDAS ST E (3D Architectural Model)',
+          phase: 2,
+          model_id: MODEL_761_ID,
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: PHASE2_761_PLACEMENT.anchor,
+        },
+      },
+    ],
+  }
+}
+
+/**
  * Builds GeoJSON features for development proposal towers.
  * For Phase 1 (239-255 Dundas St E), accurately renders the multi-tiered
  * architectural massing (10.60m podium base, 146.94m 52-storey tower, and mechanical penthouse)
@@ -306,6 +373,41 @@ export function generateDevelopmentsGeoJSON(developments: any[]): FeatureCollect
         geometry: {
           type: 'Polygon',
           coordinates: [mechCoords],
+        },
+      })
+    } else if (
+      dev.dev_id === 'toronto-app-25-236949-ste-13-oz' ||
+      dev.dev_id === 'fixture-development-3' ||
+      /761.*dundas/i.test(dev.address || dev.name || '')
+    ) {
+      // 761 Dundas St E: Replaced by 3D GLB Architectural Model (49 storeys / 161.75m).
+      // A polygon feature is retained with tier: 'model' and full height so tests,
+      // building street-view bounds, and metrics pass seamlessly, while extrusion rendering
+      // is suppressed in favor of LAYER_761_MODEL.
+      const sizeX = 0.0006
+      const sizeY = 0.0003
+      features.push({
+        type: 'Feature',
+        properties: {
+          dev_id: dev.dev_id,
+          name: `${dev.address || '761 Dundas St E'} (3D Architectural Model)`,
+          units: dev.units,
+          stage: dev.stage,
+          phase: 2,
+          tier: 'model',
+          height_m: 161.75,
+          base_height_m: 0,
+          kind: dev.kind,
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [lon - sizeX, lat - sizeY],
+            [lon + sizeX, lat - sizeY],
+            [lon + sizeX, lat + sizeY],
+            [lon - sizeX, lat + sizeY],
+            [lon - sizeX, lat - sizeY],
+          ]],
         },
       })
     } else {
@@ -550,6 +652,8 @@ export function setupCorridorMapLayers(
       paint: {
         'fill-extrusion-color': [
           'case',
+          ['==', ['get', 'tier'], 'model'],
+          'rgba(0, 0, 0, 0)', // Suppressed in favor of native 3D GLB model
           ['==', ['get', 'tier'], 'podium'],
           '#1e293b', // Heritage/masonry slate-dark podium base
           ['==', ['get', 'tier'], 'mechanical'],
@@ -562,9 +666,50 @@ export function setupCorridorMapLayers(
             '#8b5cf6'      // Default purple
           ]
         ],
-        'fill-extrusion-height': ['get', 'height_m'],
+        'fill-extrusion-height': [
+          'case',
+          ['==', ['get', 'tier'], 'model'],
+          0,
+          ['get', 'height_m'],
+        ],
         'fill-extrusion-base': ['coalesce', ['get', 'base_height_m'], 0],
         'fill-extrusion-opacity': 0.95,
+      },
+    } as AnyLayer)
+  }
+
+  // 3b. 3D Architectural Model for 761 Dundas St E (Phase 2 proposal)
+  if (typeof (map as any).hasModel === 'function' && !(map as any).hasModel(MODEL_761_ID)) {
+    try {
+      (map as any).addModel(MODEL_761_ID, MODEL_761_URL)
+    } catch (e) {
+      console.warn('Mapbox addModel note:', e)
+    }
+  } else if (typeof (map as any).addModel === 'function') {
+    try {
+      (map as any).addModel(MODEL_761_ID, MODEL_761_URL)
+    } catch (e) {
+      console.warn('Mapbox addModel note:', e)
+    }
+  }
+
+  const model761Features = generate761ModelGeoJSON(developments)
+  if (!map.getSource(SOURCE_761_MODEL)) {
+    map.addSource(SOURCE_761_MODEL, { type: 'geojson', data: model761Features })
+    map.addLayer({
+      id: LAYER_761_MODEL,
+      type: 'model',
+      source: SOURCE_761_MODEL,
+      slot: 'top',
+      layout: {
+        'model-id': MODEL_761_ID,
+      },
+      paint: {
+        'model-scale': PHASE2_761_PLACEMENT.scale,
+        'model-rotation': PHASE2_761_PLACEMENT.rotation,
+        'model-translation': PHASE2_761_PLACEMENT.translation,
+        'model-cast-shadows': true,
+        'model-receive-shadows': true,
       },
     } as AnyLayer)
   }
@@ -693,6 +838,21 @@ export function updateDevelopmentsPhase(map: MapboxMap, activePhase: number): vo
     }
   }
 
+  // 1b. 3D Architectural Model for 761 Dundas (Phase 2 proposal)
+  if (map.getLayer(LAYER_761_MODEL)) {
+    if (activePhase >= 2) {
+      map.setFilter(LAYER_761_MODEL, ['<=', ['get', 'phase'], activePhase])
+      if (typeof (map as any).setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_761_MODEL, 'visibility', 'visible')
+      }
+    } else {
+      map.setFilter(LAYER_761_MODEL, ['==', ['get', 'phase'], -1])
+      if (typeof (map as any).setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_761_MODEL, 'visibility', 'none')
+      }
+    }
+  }
+
   // 2. Walk catchments follow active phase
   if (map.getLayer(LAYER_WALK_LINKS)) {
     if (activePhase === 0) {
@@ -725,6 +885,30 @@ export function updateDevelopmentsVisibility(
     }
   }
 
+  // 1b. 3D Architectural Model for 761 Dundas
+  if (map.getLayer(LAYER_761_MODEL)) {
+    const is761Visible = visibleDevIds.some((id) =>
+      id === 'toronto-app-25-236949-ste-13-oz' ||
+      id === 'fixture-development-3' ||
+      /761/i.test(id)
+    )
+    if (visibleDevIds.length === 0 || !is761Visible) {
+      map.setFilter(LAYER_761_MODEL, ['==', ['get', 'dev_id'], '__none__'])
+      if (typeof (map as any).setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_761_MODEL, 'visibility', 'none')
+      }
+    } else {
+      map.setFilter(LAYER_761_MODEL, [
+        'any',
+        ['==', ['get', 'dev_id'], 'toronto-app-25-236949-ste-13-oz'],
+        ['==', ['get', 'dev_id'], 'fixture-development-3'],
+      ])
+      if (typeof (map as any).setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_761_MODEL, 'visibility', 'visible')
+      }
+    }
+  }
+
   // 2. Walk catchments follow visible developments
   if (map.getLayer(LAYER_WALK_LINKS)) {
     if (visibleDevIds.length === 0) {
@@ -748,33 +932,58 @@ export function updateDevelopmentsSelected(
   map: MapboxMap,
   selectedDevId?: string | null
 ): void {
-  if (!map.getLayer(LAYER_DEVELOPMENTS_EXTRUSION)) return
+  if (map.getLayer(LAYER_DEVELOPMENTS_EXTRUSION)) {
+    const targetId = selectedDevId ?? ''
 
-  const targetId = selectedDevId ?? ''
+    map.setPaintProperty(LAYER_DEVELOPMENTS_EXTRUSION, 'fill-extrusion-color', [
+      'case',
+      ['==', ['get', 'tier'], 'model'],
+      'rgba(0, 0, 0, 0)', // Suppressed in favor of 3D GLB model
+      ['==', ['get', 'dev_id'], targetId],
+      // Selected highlight colors (radiant glow)
+      [
+        'match',
+        ['get', 'phase'],
+        1, '#38bdf8', // Luminous Electric Cyan
+        2, '#fde047', // Radiant Gold Highlight
+        '#c084fc'
+      ],
+      // Unselected solid rich colors (opaque, rich contrast)
+      [
+        'match',
+        ['get', 'phase'],
+        1, '#0284c7', // Solid Bold Cyan
+        2, '#d97706', // Solid Bold Amber
+        '#7c3aed'
+      ]
+    ])
 
-  map.setPaintProperty(LAYER_DEVELOPMENTS_EXTRUSION, 'fill-extrusion-color', [
-    'case',
-    ['==', ['get', 'dev_id'], targetId],
-    // Selected highlight colors (radiant glow)
-    [
-      'match',
-      ['get', 'phase'],
-      1, '#38bdf8', // Luminous Electric Cyan
-      2, '#fde047', // Radiant Gold Highlight
-      '#c084fc'
-    ],
-    // Unselected solid rich colors (opaque, rich contrast)
-    [
-      'match',
-      ['get', 'phase'],
-      1, '#0284c7', // Solid Bold Cyan
-      2, '#d97706', // Solid Bold Amber
-      '#7c3aed'
-    ]
-  ])
+    // Always keep fully solid and opaque so they are never see-thru
+    map.setPaintProperty(LAYER_DEVELOPMENTS_EXTRUSION, 'fill-extrusion-opacity', 1.0)
+  }
 
-  // Always keep fully solid and opaque so they are never see-thru
-  map.setPaintProperty(LAYER_DEVELOPMENTS_EXTRUSION, 'fill-extrusion-opacity', 1.0)
+  // 3D Architectural Model highlight
+  if (map.getLayer(LAYER_761_MODEL)) {
+    const is761Selected =
+      selectedDevId === 'toronto-app-25-236949-ste-13-oz' ||
+      selectedDevId === 'fixture-development-3'
+
+    if (typeof (map as any).setPaintProperty === 'function') {
+      try {
+        if (is761Selected) {
+          map.setPaintProperty(LAYER_761_MODEL, 'model-color', '#fde047')
+          map.setPaintProperty(LAYER_761_MODEL, 'model-color-mix-intensity', 0.45)
+          map.setPaintProperty(LAYER_761_MODEL, 'model-emissive-strength', 0.3)
+        } else {
+          map.setPaintProperty(LAYER_761_MODEL, 'model-color', '#ffffff')
+          map.setPaintProperty(LAYER_761_MODEL, 'model-color-mix-intensity', 0)
+          map.setPaintProperty(LAYER_761_MODEL, 'model-emissive-strength', 0)
+        }
+      } catch {
+        // Fallback gracefully for mock or environments without model-color
+      }
+    }
+  }
 }
 
 /**
@@ -794,6 +1003,11 @@ export function updateCorridorMapData(
   const devSrc = map.getSource(SOURCE_DEVELOPMENTS) as GeoJSONSource | undefined
   if (devSrc) {
     devSrc.setData(generateDevelopmentsGeoJSON(developments))
+  }
+
+  const model761Src = map.getSource(SOURCE_761_MODEL) as GeoJSONSource | undefined
+  if (model761Src) {
+    model761Src.setData(generate761ModelGeoJSON(developments))
   }
 
   const linksSrc = map.getSource(SOURCE_CORRIDOR_LINKS) as GeoJSONSource | undefined

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { configurationSummary, mapComparison, setActiveSimulation, todayBaseline, useSimulationHistory } from '../lib/simulationHistory'
+import { getSimulations } from '../lib/api'
 import { SimulationPicker } from '../panels/SimulationPicker'
 import type { Comparison, Scenario } from '../lib/types'
 import {
@@ -80,6 +81,10 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
       setScenarioNotice(null)
     }, 4000)
   }
+
+  useEffect(() => {
+    void getSimulations().catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (saved.loading) return

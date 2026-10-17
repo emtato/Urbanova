@@ -25,8 +25,9 @@ export interface Store {
   nativeReplay(id:string):Promise<NativeReplay|null>;
   nativeMetrics(id:string):Promise<{run_id:string;summary:unknown}[]>;
   pastRuns(options?:{scenario_id?:string;limit?:number;offset?:number}):Promise<PastRun[]>;
-  saveSimulation(batch:NativeBatch):Promise<NativeBatch>;
+  saveSimulation(batch:NativeBatch,name?:string):Promise<NativeBatch>;
   fetchSimulations():Promise<NativeBatch[]>;
+  renameSimulation(id:string,name:string):Promise<boolean>;
   deleteSimulation(id:string):Promise<boolean>;
   renew(job:Job):Promise<boolean>;
   audit(entry:{call_id:string;purpose:string;model:string;prompt_hash:string;status:string;duration_ms:number}):Promise<void>;
@@ -136,14 +137,25 @@ export class PgStore implements Store {
       ORDER BY created_at DESC, comparison_id DESC LIMIT $2 OFFSET $3`,[scenario_id??null,limit,offset]);
     return r.rows;
   }
-  async saveSimulation(batch:NativeBatch){
-    const checked=checkNativeBatch(NativeBatchSchema.parse(batch));
-    await this.pool.query('INSERT INTO c_simulations(id,payload,model_version,data_version,created_at) VALUES($1,$2,$3,$4,now()) ON CONFLICT(id) DO UPDATE SET payload=EXCLUDED.payload,model_version=EXCLUDED.model_version,data_version=EXCLUDED.data_version',[checked.id,checked,simulationModelVersion,dataVersion]);
+  async saveSimulation(batch:NativeBatch,name?:string){
+    const simName=(name??batch.name)?.trim()||null;
+    const checked=checkNativeBatch(NativeBatchSchema.parse(simName?{...batch,name:simName}:batch));
+    await this.pool.query('INSERT INTO c_simulations(id,payload,model_version,data_version,created_at,name) VALUES($1,$2,$3,$4,now(),$5) ON CONFLICT(id) DO UPDATE SET payload=EXCLUDED.payload,model_version=EXCLUDED.model_version,data_version=EXCLUDED.data_version,name=COALESCE(EXCLUDED.name,c_simulations.name)',[checked.id,checked,simulationModelVersion,dataVersion,simName]);
     return checked;
   }
   async fetchSimulations(){
-    const r=await this.pool.query('SELECT payload FROM c_simulations ORDER BY created_at DESC, id DESC');
-    return r.rows.map(row=>checkNativeBatch(NativeBatchSchema.parse(row.payload)));
+    const r=await this.pool.query('SELECT payload,name FROM c_simulations ORDER BY created_at DESC, id DESC');
+    return r.rows.map(row=>{
+      const raw=row.payload;
+      if(row.name&&!raw.name)raw.name=row.name;
+      return checkNativeBatch(NativeBatchSchema.parse(raw));
+    });
+  }
+  async renameSimulation(id:string,name:string){
+    const trimmed=name.trim();
+    if(!trimmed||trimmed.length>80)throw new ApiError(422,'Use a name between 1 and 80 characters.');
+    const r=await this.pool.query("UPDATE c_simulations SET name=$2, payload=jsonb_set(payload,'{name}',to_jsonb($2::text)) WHERE id=$1 RETURNING id",[id,trimmed]);
+    return Boolean(r.rowCount);
   }
   async deleteSimulation(id:string){
     const r=await this.pool.query('DELETE FROM c_simulations WHERE id=$1 RETURNING id',[id]);

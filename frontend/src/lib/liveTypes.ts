@@ -20,6 +20,7 @@ export interface NativeOverview {
 }
 export interface NativeBatch {
   id: string
+  name?: string
   overall_results: {
     run_count: number; seeds: number[]; metrics: Record<string, RunStatistics>
     all_runs_conservation_valid: boolean; invalid_run_indices: number[]

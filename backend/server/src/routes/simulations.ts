@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { ApiError } from '../core/errors.js';
 import { runSimulationBatch } from '../packages/evaluate.js';
 import { parse } from '../services/validate.js';
-import { DeleteSimulationRequestSchema, SimulationListSchema } from '../shared/schemas.js';
+import { DeleteSimulationRequestSchema, RenameSimulationRequestSchema, SimulationListSchema } from '../shared/schemas.js';
 import type { Store } from '../storage/store.js';
 
 export function simulationsRouter(store: Store) {
@@ -20,6 +20,18 @@ export function simulationsRouter(store: Store) {
   };
   r.get('/sim/fetch', handleFetch);
   r.post('/sim/fetch', handleFetch);
+
+  const handleRename = async (q: any, s: any) => {
+    const rawId = q.params?.id ?? q.body?.id ?? q.query?.id;
+    const rawName = q.body?.name;
+    const { id, name } = parse(RenameSimulationRequestSchema, { id: rawId, name: rawName });
+    const renamed = await store.renameSimulation(id, name);
+    if (!renamed) throw new ApiError(404, 'Simulation not found.');
+    s.json({ id, name, renamed: true });
+  };
+  r.post('/sim/rename', handleRename);
+  r.patch('/sim/rename', handleRename);
+  r.patch('/sim/rename/:id', handleRename);
 
   const handleDelete = async (q: any, s: any) => {
     const rawId = q.params?.id ?? q.body?.id ?? q.query?.id;

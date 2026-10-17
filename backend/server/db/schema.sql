@@ -60,7 +60,9 @@ CREATE TABLE IF NOT EXISTS c_ai_calls (
 );
 CREATE TABLE IF NOT EXISTS c_simulations (
  id uuid PRIMARY KEY,payload jsonb NOT NULL,model_version text NOT NULL,
- data_version text NOT NULL,created_at timestamptz NOT NULL DEFAULT now()
+ data_version text NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),
+ name text
 );
+ALTER TABLE c_simulations ADD COLUMN IF NOT EXISTS name text;
 CREATE INDEX IF NOT EXISTS c_simulations_history ON c_simulations(created_at DESC,id DESC);
 COMMIT;
