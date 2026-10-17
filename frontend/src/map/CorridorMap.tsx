@@ -53,6 +53,9 @@ const DARK_RASTER_STYLE: StyleSpecification = {
       source: 'esri-dark-base',
       minzoom: 0,
       maxzoom: 20,
+      paint: {
+        'raster-opacity': 0.88,
+      },
     },
     {
       id: 'esri-dark-reference-tiles',
@@ -60,6 +63,9 @@ const DARK_RASTER_STYLE: StyleSpecification = {
       source: 'esri-dark-reference',
       minzoom: 0,
       maxzoom: 20,
+      paint: {
+        'raster-opacity': 0.95,
+      },
     },
   ],
 }
@@ -83,7 +89,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   // Map initialization
   useEffect(() => {
     if (!mapContainerRef.current) return
-    if (mapRef.current) return // Prevent multiple instances
+    if (mapRef.current) return
 
     const defaultCenter: [number, number] = [-79.367, 43.661]
 
@@ -155,7 +161,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
       mapRef.current = map
 
-      // Resize observer to ensure canvas matches container bounding box
       const resizeObserver = new ResizeObserver(() => {
         if (mapRef.current) {
           mapRef.current.resize()
@@ -213,7 +218,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     if (stops.length === 0) return
     const bounds = new LngLatBounds()
     stops.forEach((s) => bounds.extend([s.lon, s.lat]))
-    map.fitBounds(bounds, { padding: 70, maxZoom: 15.5, duration: 800 })
+    map.fitBounds(bounds, { padding: 80, maxZoom: 15.5, duration: 800 })
   }
 
   // Toggle 2D / 3D tilt
@@ -245,7 +250,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         bottom: 0,
         width: '100%',
         height: '100%',
-        backgroundColor: '#080c14',
+        backgroundColor: 'transparent',
       }}
       className={className}
     >
@@ -263,18 +268,17 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         }}
       />
 
-      {/* Status or Error Banner if map is initializing */}
+      {/* Status banner */}
       {statusMessage && (
         <div
+          className="liquid-glass animate-fade-rise"
           style={{
             position: 'absolute',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid var(--border-medium)',
-            padding: '1rem 1.5rem',
-            borderRadius: 'var(--radius-md)',
+            padding: '1.25rem 2rem',
+            borderRadius: 'var(--radius-lg)',
             color: 'var(--text-secondary)',
             fontSize: 'var(--text-sm)',
             zIndex: 100,
@@ -285,51 +289,61 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         </div>
       )}
 
-      {/* Floating Map Controls Overlay */}
+      {/* Floating Map Controls Overlay (Liquid Glass) */}
       <div
+        className="animate-fade-rise"
         style={{
           position: 'absolute',
-          top: '1rem',
-          left: '1rem',
+          top: '1.25rem',
+          left: '1.25rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.5rem',
+          gap: '0.65rem',
           zIndex: 10,
         }}
       >
         {/* Phase Toggle Controls */}
         <div
-          className="glass-panel"
+          className="liquid-glass"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.25rem',
-            padding: '0.35rem 0.5rem',
+            gap: '0.35rem',
+            padding: '0.35rem 0.65rem',
+            borderRadius: 'var(--radius-full)',
           }}
         >
-          <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)', marginRight: '0.25rem', fontWeight: 600 }}>
-            HOUSING PHASE:
+          <span
+            style={{
+              fontSize: 'var(--text-2xs)',
+              color: 'var(--text-muted)',
+              marginRight: '0.25rem',
+              fontWeight: 600,
+              letterSpacing: '0.05em',
+            }}
+          >
+            PHASE:
           </span>
           <button
             type="button"
-            className={`phase-pill ${currentPhase === 0 ? 'phase-pill-today' : ''}`}
-            style={{ opacity: currentPhase === 0 ? 1 : 0.6 }}
+            className={`phase-pill liquid-glass-button ${currentPhase === 0 ? 'phase-pill-today' : ''}`}
+            style={{ opacity: currentPhase === 0 ? 1 : 0.65 }}
             onClick={() => handlePhaseChange(0)}
           >
             Today
           </button>
           <button
             type="button"
-            className={`phase-pill ${currentPhase === 1 ? 'phase-pill-1' : ''}`}
-            style={{ opacity: currentPhase === 1 ? 1 : 0.6 }}
+            className={`phase-pill liquid-glass-button ${currentPhase === 1 ? 'phase-pill-1' : ''}`}
+            style={{ opacity: currentPhase === 1 ? 1 : 0.65 }}
             onClick={() => handlePhaseChange(1)}
           >
             Phase 1
           </button>
           <button
             type="button"
-            className={`phase-pill ${currentPhase === 2 ? 'phase-pill-2' : ''}`}
-            style={{ opacity: currentPhase === 2 ? 1 : 0.6 }}
+            className={`phase-pill liquid-glass-button ${currentPhase === 2 ? 'phase-pill-2' : ''}`}
+            style={{ opacity: currentPhase === 2 ? 1 : 0.65 }}
             onClick={() => handlePhaseChange(2)}
           >
             Phase 2
@@ -338,26 +352,27 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
         {/* Camera Perspective Controls */}
         <div
-          className="glass-panel"
+          className="liquid-glass"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.35rem',
-            padding: '0.35rem 0.5rem',
+            gap: '0.4rem',
+            padding: '0.3rem 0.5rem',
+            borderRadius: 'var(--radius-full)',
             alignSelf: 'flex-start',
           }}
         >
           <button
             type="button"
+            className="liquid-glass-button"
             onClick={togglePitch}
             style={{
               fontSize: 'var(--text-xs)',
-              fontWeight: 'var(--font-medium)',
-              padding: '0.2rem 0.5rem',
-              borderRadius: 'var(--radius-xs)',
-              background: is3D ? 'var(--color-ttc-red-muted)' : 'rgba(255,255,255,0.08)',
+              fontWeight: 500,
+              padding: '0.25rem 0.75rem',
+              borderRadius: 'var(--radius-full)',
+              background: is3D ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.06)',
               color: is3D ? '#f87171' : 'var(--text-secondary)',
-              border: '1px solid var(--border-subtle)',
             }}
           >
             {is3D ? '3D View (55°)' : '2D Plan'}
@@ -365,14 +380,14 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
           <button
             type="button"
+            className="liquid-glass-button"
             onClick={() => mapRef.current && fitToCorridor(mapRef.current, corridor.stops)}
             style={{
               fontSize: 'var(--text-xs)',
-              padding: '0.2rem 0.5rem',
-              borderRadius: 'var(--radius-xs)',
-              background: 'rgba(255,255,255,0.05)',
+              padding: '0.25rem 0.75rem',
+              borderRadius: 'var(--radius-full)',
+              background: 'rgba(255,255,255,0.06)',
               color: 'var(--text-secondary)',
-              border: '1px solid var(--border-subtle)',
             }}
           >
             Fit 505 Corridor
@@ -382,36 +397,45 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
       {/* Legend Badge Bottom Left */}
       <div
-        className="glass-panel"
+        className="liquid-glass animate-fade-rise-delay-2"
         style={{
           position: 'absolute',
           bottom: '1.25rem',
-          left: '1rem',
-          padding: '0.5rem 0.75rem',
+          left: '1.25rem',
+          padding: '0.75rem 1rem',
           fontSize: 'var(--text-2xs)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.3rem',
+          gap: '0.35rem',
+          borderRadius: 'var(--radius-md)',
           zIndex: 10,
         }}
       >
-        <div style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.1rem' }}>
-          505 DUNDAS STREETCAR
+        <div
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--text-sm)',
+            letterSpacing: '0.02em',
+            color: 'var(--text-primary)',
+            marginBottom: '0.2rem',
+          }}
+        >
+          505 Dundas Streetcar
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
           <span style={{ display: 'inline-block', width: 14, height: 3, background: '#ef4444', borderRadius: 1 }}></span>
           <span>Streetcar Alignment</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
           <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#fff', border: '2px solid #0f172a' }}></span>
           <span>Stops ({corridor.stops.length})</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span style={{ display: 'inline-block', width: 8, height: 8, background: '#06b6d4', borderRadius: 2 }}></span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+          <span style={{ display: 'inline-block', width: 8, height: 8, background: 'var(--phase-1)', borderRadius: 2 }}></span>
           <span>Phase 1 Towers (Cyan)</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span style={{ display: 'inline-block', width: 8, height: 8, background: '#f59e0b', borderRadius: 2 }}></span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+          <span style={{ display: 'inline-block', width: 8, height: 8, background: 'var(--phase-2)', borderRadius: 2 }}></span>
           <span>Phase 2 Towers (Amber)</span>
         </div>
       </div>

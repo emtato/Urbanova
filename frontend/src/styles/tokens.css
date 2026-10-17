@@ -1,16 +1,16 @@
 /**
- * FutureProof Design Tokens (Lane D2)
- *
- * Core design system: typography scale, dark workspace palette,
- * phase colours, and accessibility-compliant status styles (using text/shape + color).
+ * FutureProof & Urbanova Design System
+ * Cinematic typography (Instrument Serif + Inter), deep navy palette,
+ * and high-end liquid-glass styling.
  */
 
 :root {
   /* =========================================================================
      1. Typography
      ========================================================================= */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, Monaco, monospace;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
 
   --text-2xs: 0.6875rem; /* 11px */
   --text-xs: 0.75rem;    /* 12px */
@@ -20,223 +20,248 @@
   --text-xl: 1.25rem;    /* 20px */
   --text-2xl: 1.5rem;    /* 24px */
   --text-3xl: 1.875rem;  /* 30px */
-
-  --font-regular: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
 
   /* =========================================================================
-     2. Workspace Surfaces & Base Palette (Dark-Theme High Polish)
+     2. Color Theme (dark, HSL values for CSS variables)
      ========================================================================= */
-  --bg-app: #080c14;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #1e293b;
-  --bg-surface-glass: rgba(15, 23, 42, 0.88);
-  --bg-surface-hover: #334155;
+  --background: 201 100% 13%; /* deep navy blue */
+  --foreground: 0 0% 100%;    /* white */
+  --muted-foreground: 240 4% 66%; /* muted gray */
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 10%;
+  --muted: 0 0% 10%;
+  --accent: 0 0% 10%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.16);
-  --border-strong: rgba(255, 255, 255, 0.28);
+  /* Backwards compatibility aliases */
+  --bg-app: hsl(var(--background));
+  --text-primary: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+  --text-muted: rgba(255, 255, 255, 0.45);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-inverse: #020617;
+  --border-subtle: hsl(var(--border));
+  --border-medium: rgba(255, 255, 255, 0.22);
+  --border-strong: rgba(255, 255, 255, 0.45);
 
-  /* Brand Accents */
-  --color-ttc-red: #da291c;
-  --color-ttc-red-muted: rgba(218, 41, 28, 0.18);
-  --color-brand-cyan: #06b6d4;
-  --color-brand-blue: #3b82f6;
-
-  /* =========================================================================
-     3. Phase Colours (Today / Phase 1 / Phase 2)
-     ========================================================================= */
+  /* Transit & Phase Accents */
+  --color-ttc-red: #ef4444;
   --phase-today: #94a3b8;
-  --phase-today-bg: rgba(148, 163, 184, 0.14);
-  --phase-today-border: #64748b;
+  --phase-1: #38bdf8;
+  --phase-2: #fbbf24;
 
-  --phase-1: #06b6d4;
-  --phase-1-bg: rgba(6, 182, 212, 0.15);
-  --phase-1-border: #0891b2;
+  /* Metric Performance */
+  --metric-good: #34d399;
+  --metric-warn: #fbbf24;
+  --metric-danger: #f87171;
 
-  --phase-2: #f59e0b;
-  --phase-2-bg: rgba(245, 158, 11, 0.15);
-  --phase-2-border: #d97706;
+  /* Status Colors */
+  --status-sourced: #34d399;
+  --status-assumed: #c084fc;
+  --status-user: #60a5fa;
 
-  /* =========================================================================
-     4. Assumption & Data Statuses (Accessibility: Shape/Text + Colour)
-     Every metric in FutureProof requires a visible audit status.
-     ========================================================================= */
-  --status-sourced: #10b981;
-  --status-sourced-bg: rgba(16, 185, 129, 0.12);
-  --status-sourced-border: #059669;
-
-  --status-assumed: #8b5cf6;
-  --status-assumed-bg: rgba(139, 92, 246, 0.14);
-  --status-assumed-border: #7c3aed;
-
-  --status-user: #3b82f6;
-  --status-user-bg: rgba(59, 130, 246, 0.14);
-  --status-user-border: #2563eb;
-
-  /* Metric Performance / Danger Thresholds */
-  --metric-good: #10b981;
-  --metric-good-bg: rgba(16, 185, 129, 0.12);
-  --metric-warn: #eab308;
-  --metric-warn-bg: rgba(234, 179, 8, 0.12);
-  --metric-danger: #ef4444;
-  --metric-danger-bg: rgba(239, 68, 68, 0.14);
-
-  /* =========================================================================
-     5. Shadows, Radii & Spacing
-     ========================================================================= */
+  /* Radii */
   --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
   --radius-full: 9999px;
-
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
-  --shadow-panel: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
-
-  --space-1: 0.25rem; /* 4px */
-  --space-2: 0.5rem;  /* 8px */
-  --space-3: 0.75rem; /* 12px */
-  --space-4: 1rem;    /* 16px */
-  --space-5: 1.25rem; /* 20px */
-  --space-6: 1.5rem;  /* 24px */
-  --space-8: 2rem;    /* 32px */
 }
 
 /* =========================================================================
-   Universal Status Badges (Accessibility: explicit shape indicator + border)
+   3. Liquid Glass Effect (Exact CSS specification with border masked gradient)
+   ========================================================================= */
+
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Elevated variant for high-contrast inspection cards over 3D map */
+.liquid-glass-elevated {
+  background: rgba(4, 21, 38, 0.68);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 16px 40px rgba(0, 0, 0, 0.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass-elevated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Interactive hover state for liquid-glass buttons */
+.liquid-glass-button {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+.liquid-glass-button:hover {
+  transform: scale(1.03);
+}
+
+/* =========================================================================
+   4. Animations (Exact CSS keyframes + classes)
+   ========================================================================= */
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.8s ease-out both;
+}
+
+.animate-fade-rise-delay {
+  animation: fade-rise 0.8s ease-out 0.2s both;
+}
+
+.animate-fade-rise-delay-2 {
+  animation: fade-rise 0.8s ease-out 0.4s both;
+}
+
+/* =========================================================================
+   5. Accessible Status Chips & Badges
    ========================================================================= */
 
 .status-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.15rem 0.45rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-full);
   font-size: var(--text-2xs);
-  font-family: var(--font-mono);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.03em;
+  font-weight: 600;
   text-transform: uppercase;
-  border-radius: var(--radius-xs);
-  line-height: 1.2;
+  letter-spacing: 0.05em;
 }
 
-/* Sourced: Solid border + circle icon */
 .status-chip-sourced {
-  background: var(--status-sourced-bg);
-  color: var(--status-sourced);
-  border: 1px solid var(--status-sourced-border);
+  background: rgba(52, 211, 153, 0.15);
+  color: #a7f3d0;
+  border: 1px solid rgba(52, 211, 153, 0.4);
 }
 .status-chip-sourced::before {
   content: '●';
-  font-size: 0.55rem;
+  color: #34d399;
 }
 
-/* Assumed: Dashed border + tilde symbol */
 .status-chip-assumed {
-  background: var(--status-assumed-bg);
-  color: var(--status-assumed);
-  border: 1px dashed var(--status-assumed-border);
+  background: rgba(192, 132, 252, 0.15);
+  color: #e9d5ff;
+  border: 1px solid rgba(192, 132, 252, 0.4);
 }
 .status-chip-assumed::before {
   content: '▲';
-  font-size: 0.5rem;
+  color: #c084fc;
 }
 
-/* User-Selected: Dotted border + diamond symbol */
 .status-chip-user {
-  background: var(--status-user-bg);
-  color: var(--status-user);
-  border: 1px dotted var(--status-user-border);
+  background: rgba(96, 165, 250, 0.15);
+  color: #bfdbfe;
+  border: 1px solid rgba(96, 165, 250, 0.4);
 }
 .status-chip-user::before {
   content: '◆';
-  font-size: 0.5rem;
+  color: #60a5fa;
 }
 
-/* =========================================================================
-   Phase Badges
-   ========================================================================= */
-
+/* Phase badges */
 .phase-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.2rem 0.5rem;
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.phase-pill-today {
-  background: var(--phase-today-bg);
-  color: var(--phase-today);
-  border: 1px solid var(--phase-today-border);
+.phase-pill-0 {
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 .phase-pill-1 {
-  background: var(--phase-1-bg);
-  color: var(--phase-1);
-  border: 1px solid var(--phase-1-border);
+  background: rgba(56, 189, 248, 0.15);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.4);
 }
 
 .phase-pill-2 {
-  background: var(--phase-2-bg);
-  color: var(--phase-2);
-  border: 1px solid var(--phase-2-border);
+  background: rgba(251, 191, 36, 0.15);
+  color: #fde68a;
+  border: 1px solid rgba(251, 191, 36, 0.4);
 }
 
-/* =========================================================================
-   Fixture Mode Warning Banner (Contract Requirement 1.16 & D1)
-   "show a FIXTURE banner whenever it is on, so made-up numbers never reach a judge"
-   ========================================================================= */
-
+/* Subtle fixture mode badge */
 .fixture-banner {
-  background: linear-gradient(90deg, #b45309, #d97706);
-  color: #fff;
-  padding: 0.35rem 1rem;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fde68a;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 0.35rem 1.25rem;
   font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: var(--shadow-sm);
-  z-index: 1000;
-}
-
-/* =========================================================================
-   Surface & Panel Utilities
-   ========================================================================= */
-
-.glass-panel {
-  background: var(--bg-surface-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
-}
-
-.metric-tile {
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.metric-tile:hover {
-  border-color: var(--border-medium);
-  background: var(--bg-surface-hover);
+  z-index: 50;
 }
