@@ -35,8 +35,17 @@ interface SourcedDevelopmentMeta {
 export const REVIEWED_METADATA: Record<string, SourcedDevelopmentMeta> = {
   'toronto-app-22-124214-ste-13-oz': {
     applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=pIdDarxWXh5kap0IoXhw0Q%3D%3D',
-    lon: -79.3727167030444,
-    lat: 43.657776590088,
+    lon: -79.372771,
+    lat: 43.6578204,
+    reviewNote: 'West end; numeric units agree with the current description.',
+    pipelineRowId: 927,
+    applicationReceived: '2022-03-18',
+    datasetUpdatedAt: '2026-10-08',
+  },
+  'fixture-development-1': {
+    applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=pIdDarxWXh5kap0IoXhw0Q%3D%3D',
+    lon: -79.372771,
+    lat: 43.6578204,
     reviewNote: 'West end; numeric units agree with the current description.',
     pipelineRowId: 927,
     applicationReceived: '2022-03-18',
@@ -60,15 +69,7 @@ export const REVIEWED_METADATA: Record<string, SourcedDevelopmentMeta> = {
     applicationReceived: '2025-10-08',
     datasetUpdatedAt: '2026-10-08',
   },
-  'fixture-development-1': {
-    applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=pIdDarxWXh5kap0IoXhw0Q%3D%3D',
-    lon: -79.3727167030444,
-    lat: 43.657776590088,
-    reviewNote: 'West end; numeric units agree with the current description.',
-    pipelineRowId: 927,
-    applicationReceived: '2022-03-18',
-    datasetUpdatedAt: '2026-10-08',
-  },
+
   'fixture-development-2': {
     applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=9OeVhFuD5G0FTMkwBab0Ig%3D%3D',
     lon: -79.3642039444762,

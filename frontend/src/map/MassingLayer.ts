@@ -115,20 +115,20 @@ export function generateSurroundingMassingGeoJSON(corridor?: any): FeatureCollec
 }
 
 export const DEV_COORDINATES: Record<string, [number, number]> = {
-  'toronto-app-22-124214-ste-13-oz': [-79.3727167, 43.6577766], // 239 Dundas St E (630 units)
-  'toronto-app-26-122451-ste-13-oz': [-79.3642039, 43.6600907], // 500 Dundas St E (413 units)
-  'toronto-app-25-236949-ste-13-oz': [-79.3563946, 43.6612908], // 761 Dundas St E (1197 units)
-  'fixture-development-1': [-79.3727167, 43.6577766], // 239 Dundas St E
-  'fixture-development-2': [-79.3642039, 43.6600907], // 500 Dundas St E
-  'fixture-development-3': [-79.3563946, 43.6612908], // 761 Dundas St E
+  'toronto-app-22-124214-ste-13-oz': [-79.372771, 43.6578204], // Phase 1: 239 Dundas St E (146.94m tower at Dundas & Pembroke)
+  'fixture-development-1': [-79.372771, 43.6578204],           // Phase 1 fixture
+  'toronto-app-26-122451-ste-13-oz': [-79.3642039, 43.6600907], // Phase 2: 500 Dundas St E (413 units)
+  'fixture-development-2': [-79.3642039, 43.6600907],
+  'toronto-app-25-236949-ste-13-oz': [-79.3563946, 43.6612908], // Phase 2: 761 Dundas St E (1197 units)
+  'fixture-development-3': [-79.3563946, 43.6612908],
 }
 
 export const DEV_PHASES: Record<string, number> = {
   'toronto-app-22-124214-ste-13-oz': 1,
-  'toronto-app-26-122451-ste-13-oz': 2,
-  'toronto-app-25-236949-ste-13-oz': 2,
   'fixture-development-1': 1,
+  'toronto-app-26-122451-ste-13-oz': 2,
   'fixture-development-2': 2,
+  'toronto-app-25-236949-ste-13-oz': 2,
   'fixture-development-3': 2,
 }
 
@@ -149,39 +149,192 @@ export function getDevelopmentPhase(dev: any): number {
 }
 
 /**
- * Builds GeoJSON features for development proposal towers
+ * Phase 1 (239 Dundas St E) Placement & Rotation Controls:
+ *
+ * 1. `anchor`: [longitude, latitude] of the northeast corner that directly hugs the intersection
+ *    corner of Dundas Street East & Pembroke Street.
+ *    - Increase longitude (e.g. -79.372535) to nudge East towards Pembroke/Sherbourne.
+ *    - Decrease longitude (e.g. -79.372560) to nudge West towards George/Jarvis.
+ *    - Increase latitude (e.g. 43.657920) to nudge North into Dundas St E.
+ *    - Decrease latitude (e.g. 43.657890) to nudge South along Pembroke St.
+ *
+ * 2. `rotationDeg`: Clockwise rotation angle in degrees around the corner anchor.
+ *    - e.g. 0 = baseline street alignment.
+ *    - Positive values rotate clockwise, negative values rotate counter-clockwise.
+ *
+ * 3. `scale`: Uniform scale factor (default 1.0).
+ */
+export interface Phase1PlacementConfig {
+  anchor: [number, number]
+  rotationDeg: number
+  scale: number
+}
+
+export const PHASE1_PLACEMENT: Phase1PlacementConfig = {
+  anchor: [-79.372515, 43.657910], // Corner of Dundas St E & Pembroke St (shifted east to street edge)
+  rotationDeg: 0,
+  scale: 1.0,
+}
+
+export function transformPhase1Point(
+  xMeters: number,
+  yMeters: number,
+  config: Phase1PlacementConfig = PHASE1_PLACEMENT
+): [number, number] {
+  const rad = (config.rotationDeg * Math.PI) / 180
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  const rx = (xMeters * cos - yMeters * sin) * config.scale
+  const ry = (xMeters * sin + yMeters * cos) * config.scale
+  return [
+    config.anchor[0] + rx / 80410,
+    config.anchor[1] + ry / 111139,
+  ]
+}
+
+/**
+ * Builds GeoJSON features for development proposal towers.
+ * For Phase 1 (239-255 Dundas St E), accurately renders the multi-tiered
+ * architectural massing (10.60m podium base, 146.94m 52-storey tower, and mechanical penthouse)
+ * as approved in City of Toronto Decision Report 22 124214 STE 13 OZ.
  */
 export function generateDevelopmentsGeoJSON(developments: any[]): FeatureCollection {
-  const features: Feature[] = developments.map((rawDev) => {
+  const features: Feature[] = []
+
+  for (const rawDev of developments) {
     const dev = normalizeDevelopment(rawDev)
     const [lon, lat] = getDevelopmentCoordinates(dev)
     const phase = getDevelopmentPhase(dev)
-    const size = 0.0006 // ~45m x 45m footprint
-    const height_m = Math.round(Math.max(45, Math.min(180, dev.units * 0.12)))
+    const isPhase1 = phase === 1 || dev.dev_id === 'fixture-development-1' || dev.dev_id === 'toronto-app-22-124214-ste-13-oz'
 
-    return {
-      type: 'Feature',
-      properties: {
-        dev_id: dev.dev_id,
-        name: dev.name || dev.address,
-        units: dev.units,
-        stage: dev.stage,
-        phase: phase,
-        height_m: height_m,
-        kind: dev.kind,
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [lon - size, lat - size],
-          [lon + size, lat - size],
-          [lon + size, lat + size],
-          [lon - size, lat + size],
-          [lon - size, lat - size],
-        ]],
-      },
+
+    if (isPhase1) {
+      // 1. Heritage Base & Retail Podium (10.60m tall, grade to podium roof)
+      // Follows surveyed parcel hugging the SW corner of Dundas & Pembroke: 1,038.8 m²
+      // 36.1m frontage on Dundas St E, 43.5m frontage on Pembroke St
+      const localPodium: [number, number][] = [
+        [0, 0],           // NE corner directly hugging Dundas St E & Pembroke St
+        [-1.0, -43.5],    // SE corner along Pembroke (43.5m frontage)
+        [-29.0, -43.5],   // SW corner (28m south boundary)
+        [-29.0, -29.5],   // West boundary behind heritage
+        [-33.5, -14.0],   // Dogleg west boundary
+        [0, 0],           // Close along Dundas St E (36.3m frontage)
+      ]
+      const podiumCoords = localPodium.map(([x, y]) => transformPhase1Point(x, y))
+
+      features.push({
+        type: 'Feature',
+        properties: {
+          dev_id: dev.dev_id,
+          name: `${dev.address || '239 Dundas St E'} (Podium Base)`,
+          units: dev.units,
+          stage: dev.stage,
+          phase: 1,
+          tier: 'podium',
+          height_m: 10.60,
+          base_height_m: 0,
+          kind: dev.kind,
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [podiumCoords],
+        },
+      })
+
+      // 2. 52-Storey Residential Tower Shaft (Exactly 146.94m to Level 49 Main Roof)
+      // Inset ~2.5m from sidewalk, with retail/residential entrance articulation facing Dundas
+      const localTower: [number, number][] = [
+        [-2.5, -10.0],    // NE corner of tower shaft
+        [-2.5, -40.5],    // SE corner of tower
+        [-26.5, -40.5],   // SW corner of tower (24m tower width)
+        [-26.5, -20.0],   // West wall
+        [-22.0, -17.0],   // West notch step
+        [-18.0, -11.5],   // Northwest wing corner
+        [-10.5, -8.5],    // Entrance recess
+        [-8.0, -6.5],     // North entrance protrusion facing Dundas
+        [-2.5, -10.0],    // Close
+      ]
+      const towerCoords = localTower.map(([x, y]) => transformPhase1Point(x, y))
+
+      features.push({
+        type: 'Feature',
+        properties: {
+          dev_id: dev.dev_id,
+          name: `${dev.address || '239 Dundas St E'} (52-Storey Tower)`,
+          units: dev.units,
+          stage: dev.stage,
+          phase: 1,
+          tier: 'tower',
+          height_m: 146.94,
+          base_height_m: 0,
+          kind: dev.kind,
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [towerCoords],
+        },
+      })
+
+      // 3. Mechanical Penthouse (+6.00m roof enclosure, 146.94m to 152.94m)
+      // Sits squarely on the southern half of the tower roof matching Site Plan & Elevations
+      const localMech: [number, number][] = [
+        [-4.0, -22.0],    // NE corner of penthouse
+        [-4.0, -39.0],    // SE corner of penthouse
+        [-25.0, -39.0],   // SW corner of penthouse
+        [-25.0, -22.0],   // NW corner of penthouse
+        [-4.0, -22.0],    // Close
+      ]
+      const mechCoords = localMech.map(([x, y]) => transformPhase1Point(x, y))
+
+      features.push({
+        type: 'Feature',
+        properties: {
+          dev_id: dev.dev_id,
+          name: `${dev.address || '239 Dundas St E'} (Mechanical Penthouse)`,
+          units: dev.units,
+          stage: dev.stage,
+          phase: 1,
+          tier: 'mechanical',
+          height_m: 152.94,
+          base_height_m: 146.94,
+          kind: dev.kind,
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [mechCoords],
+        },
+      })
+    } else {
+      // Standard massing for Phase 2 proposals
+      const size = 0.0005
+      const height_m = Math.round(Math.max(45, Math.min(180, dev.units * 0.12)))
+
+      features.push({
+        type: 'Feature',
+        properties: {
+          dev_id: dev.dev_id,
+          name: dev.address,
+          units: dev.units,
+          stage: dev.stage,
+          phase: phase,
+          tier: 'tower',
+          height_m: height_m,
+          base_height_m: 0,
+          kind: dev.kind,
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [lon - size, lat - size],
+            [lon + size, lat - size],
+            [lon + size, lat + size],
+            [lon - size, lat + size],
+            [lon - size, lat - size],
+          ]],
+        },
+      })
     }
-  })
+  }
 
   return { type: 'FeatureCollection', features }
 }
@@ -362,15 +515,22 @@ export function setupCorridorMapLayers(
       slot: 'top',
       paint: {
         'fill-extrusion-color': [
-          'match',
-          ['get', 'phase'],
-          1, '#0284c7', // Phase 1 Solid Cyan
-          2, '#d97706', // Phase 2 Solid Amber
-          '#7c3aed'      // Default purple
+          'case',
+          ['==', ['get', 'tier'], 'podium'],
+          '#1e293b', // Heritage/masonry slate-dark podium base
+          ['==', ['get', 'tier'], 'mechanical'],
+          '#0284c7', // Architectural metallic penthouse crown
+          [
+            'match',
+            ['get', 'phase'],
+            1, '#06b6d4', // Phase 1 Cyan
+            2, '#f59e0b', // Phase 2 Amber
+            '#8b5cf6'      // Default purple
+          ]
         ],
         'fill-extrusion-height': ['get', 'height_m'],
-        'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 1.0, // Fully solid and opaque so unselected towers are never see-thru
+        'fill-extrusion-base': ['coalesce', ['get', 'base_height_m'], 0],
+        'fill-extrusion-opacity': 0.95,
       },
     } as AnyLayer)
   }
