@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchComparison, isUsingFixture, setUseFixture } from '../lib/api'
-import type { Comparison } from '../lib/types'
+import type { Comparison, Scenario } from '../lib/types'
 import {
   type CorridorStop,
   type CorridorDevelopment,
@@ -9,10 +9,28 @@ import {
 } from '../map/types'
 import { CorridorMap } from '../map/CorridorMap'
 import { DevelopmentPanel } from '../panels/DevelopmentPanel'
+import { StopPanel } from '../panels/StopPanel'
+import { ScenarioEditor } from '../panels/ScenarioEditor'
+import { ReplaySpine } from '../replay/ReplaySpine'
+import { CaseCompare } from '../panels/CaseCompare'
+import { PackageTable } from '../panels/PackageTable'
+import { Sensitivity } from '../panels/Sensitivity'
+import { Evidence } from '../panels/Evidence'
+import { AskBox } from '../panels/AskBox'
 
 interface CorridorMapPageProps {
   onNavigate?: (path: string) => void
 }
+
+type ActiveTool =
+  | 'compare'
+  | 'replay'
+  | 'scenario'
+  | 'packages'
+  | 'sensitivity'
+  | 'evidence'
+  | 'ask'
+  | null
 
 export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [comparison, setComparison] = useState<Comparison | null>(null)
@@ -27,6 +45,27 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [hideAllPopups, setHideAllPopups] = useState(false)
   const [isStopMinimized, setIsStopMinimized] = useState(false)
   const [isDevMinimized, setIsDevMinimized] = useState(false)
+  const [activeTool, setActiveTool] = useState<ActiveTool>(null)
+  const [isToolMinimized, setIsToolMinimized] = useState(false)
+  const [scenarioNotice, setScenarioNotice] = useState<string | null>(null)
+
+  const handleScenarioChange = (updated: Scenario) => {
+    setComparison((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        scenario: updated,
+      }
+    })
+    setScenarioNotice(
+      `Scenario updated: ${updated.demand_case.toUpperCase()} demand tier (${
+        updated.demand_case === 'low' ? '3/win' : updated.demand_case === 'central' ? '5/win' : '7/win'
+      })`
+    )
+    setTimeout(() => {
+      setScenarioNotice(null)
+    }, 4000)
+  }
 
   useEffect(() => {
     loadData()
@@ -75,8 +114,16 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const developments = (comparison.scenario?.developments ?? []).map(normalizeDevelopment)
   const stops = (comparison.corridor?.stops ?? []).map(normalizeStop)
   const totalNewUnits = developments.reduce((sum, d) => sum + d.units, 0)
-  const currentCase = comparison.cases.find((c) => c.kind === 'current')
-  const growthCase = comparison.cases.find((c) => c.kind === 'growth')
+  const activeDemandCase = comparison.scenario?.demand_case ?? 'central'
+  const currentCase =
+    comparison.cases.find((c) => c.kind === 'current' && c.demand_case === activeDemandCase) ??
+    comparison.cases.find((c) => c.kind === 'current')
+  const growthCase =
+    comparison.cases.find((c) => c.kind === 'growth' && c.demand_case === activeDemandCase) ??
+    comparison.cases.find((c) => c.kind === 'growth')
+  const supportedCase =
+    comparison.cases.find((c) => c.kind === 'supported_growth' && c.demand_case === activeDemandCase) ??
+    comparison.cases.find((c) => c.kind === 'supported_growth')
 
   return (
     <div
@@ -84,6 +131,24 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
         shadowsEnabled ? 'theme-sunlight bg-amber-50/20 text-slate-900' : 'bg-background text-foreground'
       } font-body transition-colors duration-500`}
     >
+      {/* Dynamic Scenario Change Notification */}
+      {scenarioNotice && (
+        <div
+          role="status"
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-fade-rise bg-purple-950/90 text-purple-100 border border-purple-500/60 rounded-full px-5 py-2 shadow-2xl backdrop-blur-md flex items-center gap-2.5 text-xs font-mono"
+        >
+          <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shadow-[0_0_8px_#c084fc]" />
+          <span>{scenarioNotice}</span>
+          <button
+            type="button"
+            onClick={() => setScenarioNotice(null)}
+            className="ml-2 text-purple-300 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Floating Fixture Mode Alert Popup */}
       {usingFixture && showFixturePopup && !hideAllPopups && (
         <div
@@ -300,7 +365,94 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           }}
         />
 
-        {/* Selected Development Panel (Lane D4) */}
+        {/* Lane D Active Tool Panel (Top Left, Floating Non-overlapping) */}
+        {activeTool && !hideAllPopups && (
+          <div className="!absolute top-6 left-6 z-30 max-w-[calc(100vw-3rem)]">
+            {activeTool === 'compare' && (
+              <CaseCompare
+                comparison={comparison}
+                selectedDemandCase={activeDemandCase}
+                onDemandCaseChange={(dc) => {
+                  handleScenarioChange({
+                    ...comparison.scenario,
+                    demand_case: dc,
+                  })
+                }}
+                isMinimized={isToolMinimized}
+                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                onClose={() => setActiveTool(null)}
+              />
+            )}
+            {activeTool === 'replay' && (
+              <ReplaySpine
+                replay={comparison.replay}
+                stops={stops}
+                isMinimized={isToolMinimized}
+                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                onClose={() => setActiveTool(null)}
+                onSelectStop={(id) => {
+                  const s = stops.find((st) => st.stop_id === id)
+                  if (s) {
+                    setSelectedStop(s)
+                    setSelectedDev(null)
+                  }
+                }}
+              />
+            )}
+            {activeTool === 'scenario' && (
+              <ScenarioEditor
+                scenario={comparison.scenario}
+                assumptions={comparison.assumptions}
+                onScenarioChange={handleScenarioChange}
+                isMinimized={isToolMinimized}
+                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                onClose={() => setActiveTool(null)}
+              />
+            )}
+            {activeTool === 'packages' && (
+              <PackageTable
+                comparison={comparison}
+                selectedDemandCase={activeDemandCase}
+                isMinimized={isToolMinimized}
+                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                onClose={() => setActiveTool(null)}
+              />
+            )}
+            {activeTool === 'sensitivity' && (
+              <Sensitivity
+                comparison={comparison}
+                isMinimized={isToolMinimized}
+                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                onClose={() => setActiveTool(null)}
+                onSelectStop={(id) => {
+                  const s = stops.find((st) => st.stop_id === id)
+                  if (s) {
+                    setSelectedStop(s)
+                    setSelectedDev(null)
+                  }
+                }}
+              />
+            )}
+            {activeTool === 'evidence' && (
+              <Evidence
+                comparison={comparison}
+                isMinimized={isToolMinimized}
+                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                onClose={() => setActiveTool(null)}
+              />
+            )}
+            {activeTool === 'ask' && (
+              <AskBox
+                scenario={comparison.scenario}
+                isMinimized={isToolMinimized}
+                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                onClose={() => setActiveTool(null)}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Selected Development Panel (Lane D4 - Top Right) */}
         {selectedDev && !hideAllPopups && (
           <div className="!absolute top-6 right-6 z-30">
             <DevelopmentPanel
@@ -318,138 +470,166 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           </div>
         )}
 
-        {/* Selected Stop Inspector Panel (Floating Top Right) */}
-        {selectedStop && !selectedDev && !hideAllPopups && (() => {
-          const currentStopResult = currentCase?.stops.find((s) => s.stop_id === selectedStop.stop_id)
-          const growthStopResult = growthCase?.stops.find((s) => s.stop_id === selectedStop.stop_id)
+        {/* Selected Stop Panel (Lane D5 - Top Right) */}
+        {selectedStop && !selectedDev && !hideAllPopups && (
+          <div className="!absolute top-6 right-6 z-30">
+            <StopPanel
+              stop={selectedStop}
+              stops={stops}
+              developments={developments}
+              currentCase={currentCase}
+              growthCase={growthCase}
+              supportedCase={supportedCase}
+              berths={comparison.corridor?.berths_per_stop?.[selectedStop.stop_id] ?? 1}
+              isMinimized={isStopMinimized}
+              onToggleMinimize={() => setIsStopMinimized((prev) => !prev)}
+              onClose={() => setSelectedStop(null)}
+              onSelectDevelopment={(dev) => {
+                setSelectedDev(normalizeDevelopment(dev))
+                setSelectedStop(null)
+                setIsDevMinimized(false)
+              }}
+            />
+          </div>
+        )}
 
-          if (isStopMinimized) {
-            return (
-              <div className="!absolute top-6 right-6 z-30 animate-fade-rise">
-                <div className="liquid-glass rounded-full px-4 py-2 shadow-2xl flex items-center gap-3 border border-border/40">
-                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse shrink-0" />
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="text-xs font-semibold text-foreground truncate">
-                      {selectedStop.name}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-                      #{selectedStop.gtfs_stop_id}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 border-l border-border/40 pl-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setIsStopMinimized(false)}
-                      className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
-                      title="Expand stop details"
-                      aria-label="Expand stop details"
-                    >
-                      ▾
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStop(null)}
-                      className="text-muted-foreground hover:text-foreground text-xs p-1 transition-colors cursor-pointer"
-                      title="Close"
-                      aria-label="Close"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )
-          }
+        {/* Lane D Integrated Tools Dock (Bottom Center) */}
+        {!hideAllPopups && (
+          <nav
+            aria-label="Corridor Workspace Tools"
+            className="!absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 liquid-glass rounded-full px-3 py-1.5 shadow-2xl border border-border/40 backdrop-blur-md"
+          >
+            <button
+              type="button"
+              data-testid="tool-btn-compare"
+              onClick={() => {
+                setActiveTool(activeTool === 'compare' ? null : 'compare')
+                setIsToolMinimized(false)
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTool === 'compare'
+                  ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 font-semibold'
+                  : 'text-foreground/90 hover:bg-white/10'
+              }`}
+            >
+              <span>📊</span>
+              <span className="hidden sm:inline">Compare</span>
+            </button>
 
-          return (
-            <div className="!absolute top-6 right-6 w-[360px] z-30 max-h-[calc(100vh-14rem)] overflow-y-auto animate-fade-rise liquid-glass-panel rounded-2xl p-6 shadow-2xl">
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <span className="status-chip status-chip-sourced">
-                    TTC STOP #{selectedStop.gtfs_stop_id}
-                  </span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setIsStopMinimized(true)}
-                      className="text-muted-foreground hover:text-foreground text-sm p-1 transition-colors cursor-pointer font-bold leading-none"
-                      title="Minimize panel"
-                      aria-label="Minimize panel"
-                    >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStop(null)}
-                      className="text-muted-foreground hover:text-foreground text-sm p-1 transition-colors cursor-pointer"
-                      title="Close panel"
-                      aria-label="Close panel"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
+            <button
+              type="button"
+              data-testid="tool-btn-replay"
+              onClick={() => {
+                setActiveTool(activeTool === 'replay' ? null : 'replay')
+                setIsToolMinimized(false)
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTool === 'replay'
+                  ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 font-semibold'
+                  : 'text-foreground/90 hover:bg-white/10'
+              }`}
+            >
+              <span>⏱️</span>
+              <span className="hidden sm:inline">Replay</span>
+            </button>
 
-                <h3
-                  className="text-2xl text-foreground font-normal tracking-tight mb-1"
-                  style={{ fontFamily: "'Instrument Serif', serif" }}
-                >
-                  {selectedStop.name}
-                </h3>
-                <div className="text-xs text-muted-foreground mb-4">
-                  Sequence {selectedStop.seq} of {comparison.corridor.stops.length} · Inbound Westbound
-                </div>
+            <button
+              type="button"
+              data-testid="tool-btn-scenario"
+              onClick={() => {
+                setActiveTool(activeTool === 'scenario' ? null : 'scenario')
+                setIsToolMinimized(false)
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTool === 'scenario'
+                  ? 'bg-purple-500/30 text-purple-200 border border-purple-400/60 font-semibold'
+                  : 'text-foreground/90 hover:bg-white/10'
+              }`}
+            >
+              <span>⚙️</span>
+              <span className="hidden sm:inline">Scenario</span>
+            </button>
 
-                {/* Stop Metric Summary from Baseline vs Growth */}
-                {growthStopResult ? (
-                  <div className="flex flex-col gap-2.5">
-                    <div className="liquid-glass rounded-xl p-3.5">
-                      <div className="flex justify-between items-center text-[11px] text-muted-foreground mb-1">
-                        <span>MEAN WAIT TIME</span>
-                        <span className="status-chip status-chip-assumed">SIMULATED</span>
-                      </div>
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-2xl font-mono font-semibold text-rose-400">
-                          {growthStopResult.mean_wait_s != null
-                            ? `${(growthStopResult.mean_wait_s / 60).toFixed(1)}m`
-                            : '—'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          (Baseline:{' '}
-                          {currentStopResult?.mean_wait_s != null
-                            ? `${(currentStopResult.mean_wait_s / 60).toFixed(1)}m`
-                            : '—'}
-                          )
-                        </span>
-                      </div>
-                    </div>
+            <button
+              type="button"
+              data-testid="tool-btn-packages"
+              onClick={() => {
+                setActiveTool(activeTool === 'packages' ? null : 'packages')
+                setIsToolMinimized(false)
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTool === 'packages'
+                  ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/60 font-semibold'
+                  : 'text-foreground/90 hover:bg-white/10'
+              }`}
+            >
+              <span>📦</span>
+              <span className="hidden sm:inline">Packages</span>
+            </button>
 
-                    <div className="liquid-glass rounded-xl p-3.5">
-                      <div className="flex justify-between items-center text-[11px] text-muted-foreground mb-1">
-                        <span>SHARE LEFT BEHIND (DENIED)</span>
-                        <span className="status-chip status-chip-assumed">INVARIANT</span>
-                      </div>
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-2xl font-mono font-semibold text-rose-400">
-                          {growthStopResult.denied_at_least_once_share != null
-                            ? `${(growthStopResult.denied_at_least_once_share * 100).toFixed(0)}%`
-                            : '0%'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          Queue: {growthStopResult.remaining_queue} riders
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground/80 py-2">
-                    Stop outside critical bottleneck cluster.
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        })()}
+            <button
+              type="button"
+              data-testid="tool-btn-sensitivity"
+              onClick={() => {
+                setActiveTool(activeTool === 'sensitivity' ? null : 'sensitivity')
+                setIsToolMinimized(false)
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTool === 'sensitivity'
+                  ? 'bg-amber-500/30 text-amber-200 border border-amber-400/60 font-semibold'
+                  : 'text-foreground/90 hover:bg-white/10'
+              }`}
+            >
+              <span>📈</span>
+              <span className="hidden sm:inline">Sensitivity</span>
+            </button>
+
+            <button
+              type="button"
+              data-testid="tool-btn-evidence"
+              onClick={() => {
+                setActiveTool(activeTool === 'evidence' ? null : 'evidence')
+                setIsToolMinimized(false)
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTool === 'evidence'
+                  ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/60 font-semibold'
+                  : 'text-foreground/90 hover:bg-white/10'
+              }`}
+            >
+              <span>🏛️</span>
+              <span className="hidden sm:inline">Evidence</span>
+            </button>
+
+            <button
+              type="button"
+              data-testid="tool-btn-ask"
+              onClick={() => {
+                setActiveTool(activeTool === 'ask' ? null : 'ask')
+                setIsToolMinimized(false)
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTool === 'ask'
+                  ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 font-semibold'
+                  : 'text-foreground/90 hover:bg-white/10'
+              }`}
+            >
+              <span>🤖</span>
+              <span className="hidden sm:inline">Copilot</span>
+            </button>
+
+            <button
+              type="button"
+              data-testid="tool-btn-list"
+              onClick={() => (onNavigate ? onNavigate('/list') : (window.location.pathname = '/list'))}
+              className="px-2.5 py-1 rounded-full text-xs font-medium text-foreground/90 hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer border-l border-border/40 pl-2.5"
+              title="Switch to accessible 2D List view alternative"
+            >
+              <span>📋</span>
+              <span className="hidden sm:inline">2D List</span>
+            </button>
+          </nav>
+        )}
       </main>
     </div>
   )
