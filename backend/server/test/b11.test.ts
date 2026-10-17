@@ -7,7 +7,7 @@ import {defaultScenario,corridor,simulationModelVersion,dataVersion} from '../sr
 import {materialize} from '../src/packages/materialize.js';
 import {evaluate} from '../src/packages/evaluate.js';
 import {NativeReplaySchema} from '../src/shared/schemas.js';
-const policy=JSON.parse(readFileSync(resolve(ROOT,'server/config/package-policy.example.json'),'utf8'));
+const policy=JSON.parse(readFileSync(resolve(ROOT,'backend/server/config/package-policy.example.json'),'utf8'));
 const scenario={...structuredClone(defaultScenario),capital_budget_cad:1e7,annual_operating_budget_cad:2e6,fleet_allowance:20};
 const links=corridor.links.map(l=>l.link_id);
 

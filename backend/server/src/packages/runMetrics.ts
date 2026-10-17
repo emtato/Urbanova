@@ -1,4 +1,4 @@
-import type { CaseResult } from '../../../frontend/src/lib/types.js';
+import type { CaseResult } from '../../../../frontend/src/lib/types.js';
 import type { NativeCaseResult } from '../shared/nativeResults.js';
 
 /** Decisions read the native overview; legacy arrays belong to fixtures only. */

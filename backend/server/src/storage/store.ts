@@ -38,7 +38,7 @@ export class PgStore implements Store {
   async close(){await this.pool.end();}
   async init(){
     if(!settings.databaseUrl) throw new Error('DATABASE_URL is required.');
-    await this.pool.query(readFileSync(resolve(ROOT,'server/db/schema.sql'),'utf8'));
+    await this.pool.query(readFileSync(resolve(ROOT,'backend/server/db/schema.sql'),'utf8'));
     await this.pool.query('INSERT INTO c_scenarios(scenario_id,version,payload) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[defaultScenario.scenario_id,defaultScenario.version,defaultScenario]);
     for(const stop of corridor.stops) await this.pool.query('INSERT INTO c_stops VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[dataVersion,stop.id,stop.name]);
     for(const d of reviewed.inputs.developments) for(const stop of d.accessible_stop_ids) await this.pool.query('INSERT INTO c_development_access VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[dataVersion,d.id,stop,JSON.stringify(reviewed.source_ids)]);

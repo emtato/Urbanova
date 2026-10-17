@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { config } from 'dotenv';
 
-export const ROOT = resolve(process.cwd(), existsSync('data/contracts') ? '.' : '..');
+export const ROOT = resolve(process.cwd(), existsSync('data/contracts') ? '.' : existsSync('../../data/contracts') ? '../..' : '..');
 config({ path: resolve(ROOT, '.env'), quiet: true });
 export const settings = {
   port: Number(process.env.PORT ?? 8010),

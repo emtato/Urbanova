@@ -1,6 +1,6 @@
 # Railway Express deployment
 
-The root railway.json and server/railway.json both target the Lane C Express API. Keep Root Directory at the repository root. Railway builds server/Dockerfile, starts the API and worker scheduler together, and checks /health. Teammates do not need Docker installed locally.
+The root railway.json and backend/server/railway.json both target the Lane C Express API. Keep Root Directory at the repository root. Railway builds backend/server/Dockerfile, starts the API and worker scheduler together, and checks /health. Teammates do not need Docker installed locally.
 
 Set backend-only Railway variables DATABASE_URL, GEMINI_API_KEY, GEMINI_MODEL and CORS_ORIGINS. Origins are a JSON array including the exact deployed frontend origin. The ignored local .env is not uploaded. The API listens on Railway PORT; local development defaults to 8010. Use the committed Node start command.
 

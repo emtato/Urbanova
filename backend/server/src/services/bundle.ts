@@ -12,7 +12,7 @@ export const rawCorridor = read('data/reviewed/corridor.json');
 export const sourceManifest = read('data/reviewed/simulation_sources.json') as Comparison['sources'];
 const digest=(path:string)=>createHash('sha256').update(readFileSync(resolve(ROOT,path),'utf8').replaceAll('\r\n','\n')).digest('hex');
 const simulationFiles=['runner.py','metrics.py','commute.py','streetcars.py','inputs.py','paired_runs.py',...readdirSync(resolve(ROOT,'backend/simulation/objects')).filter(f=>f.endsWith('.py')).map(f=>'objects/'+f)];
-export const simulationModelVersion='b11-'+hash([...simulationFiles.map(f=>[f,digest('backend/simulation/'+f)]),['adapter',digest('backend/integration/b11.py')],['packages',digest('server/dist/server/src/packages/materialize.js')],['feasibility',digest('server/dist/server/src/packages/feasibility.js')]]).slice(0,20);
+export const simulationModelVersion='b11-'+hash([...simulationFiles.map(f=>[f,digest('backend/simulation/'+f)]),['adapter',digest('backend/integration/b11.py')],['packages',digest('backend/server/dist/backend/server/src/packages/materialize.js')],['feasibility',digest('backend/server/dist/backend/server/src/packages/feasibility.js')]]).slice(0,20);
 const commuteFiles=['workplaces_2021.json','line1_stations.json','workplaces_sources.json'];
 export const dataVersion = 'reviewed-'+hash({reviewed,rawCorridor,sourceManifest,commute:commuteFiles.map(f=>[f,digest('data/reviewed/'+f)])}).slice(0,20);
 export const defaultScenario: Scenario = {

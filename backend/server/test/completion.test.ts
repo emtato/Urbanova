@@ -9,7 +9,7 @@ import { defaultScenario,fixture } from '../src/services/bundle.js';
 import { checkedComparison } from '../src/services/comparisonIntegrity.js';
 import { memoryStore } from './support.js';
 import { startScheduler } from '../src/worker/scheduler.js';
-const policy=JSON.parse(readFileSync(resolve(ROOT,'server/config/package-policy.example.json'),'utf8'));
+const policy=JSON.parse(readFileSync(resolve(ROOT,'backend/server/config/package-policy.example.json'),'utf8'));
 
 test('cost screen accepts labelled assumptions and checks budgets, phase IDs, source IDs and ranges',async()=>{
   const app=createApp(memoryStore(),async()=>null),path=`/api/scenarios/${defaultScenario.scenario_id}/packages`;
@@ -37,7 +37,7 @@ test('frozen output guard rejects cross-references, wrong flags and broken accou
 
 for(const fault of ['empty','hang'])test(`worker ${fault} fails the job and allows graceful shutdown`,async()=>{
   const store=memoryStore();const job=await store.enqueue(defaultScenario,fault,{scenario:defaultScenario});
-  const stop=startScheduler(store,{workerPath:resolve(ROOT,`server/dist/server/test/workers/${fault}.js`),timeoutMs:300,pollMs:10});
+  const stop=startScheduler(store,{workerPath:resolve(ROOT,`backend/server/dist/backend/server/test/workers/${fault}.js`),timeoutMs:300,pollMs:10});
   try{for(let n=0;n<50&&job.status!=='failed';n++)await new Promise(r=>setTimeout(r,20));assert.equal(job.status,'failed');}
   finally{await stop();}
 });
@@ -62,7 +62,7 @@ test('queued work pins execution versions and refuses mixed-version evaluation',
 });
 test('Railway configs target the same Express image and docs are served',async()=>{
   const root=JSON.parse(readFileSync(resolve(ROOT,'railway.json'),'utf8'));
-  const server=JSON.parse(readFileSync(resolve(ROOT,'server/railway.json'),'utf8'));
-  assert.deepEqual(root,server);assert.equal(root.build.dockerfilePath,'server/Dockerfile');
+  const server=JSON.parse(readFileSync(resolve(ROOT,'backend/server/railway.json'),'utf8'));
+  assert.deepEqual(root,server);assert.equal(root.build.dockerfilePath,'backend/server/Dockerfile');
   await request(createApp(memoryStore(),async()=>null)).get('/docs').expect(200).expect('Content-Type',/text\/plain/);
 });

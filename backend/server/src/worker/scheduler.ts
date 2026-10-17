@@ -16,7 +16,7 @@ export function startScheduler(store:Store,options:{workerPath?:string;timeoutMs
       try{
         const versions=job.payload.execution_versions;
         if(versions&&(versions.data_version!==dataVersion||versions.model_version!==settings.modelVersion||(versions.simulation_model&&versions.simulation_model!==simulationModelVersion)))throw Error('Stale execution versions; submit a new job.');
-        const entry=options.workerPath??resolve(ROOT,'server/dist/server/src/worker/evaluate.js');
+        const entry=options.workerPath??resolve(ROOT,'backend/server/dist/backend/server/src/worker/evaluate.js');
         if(!existsSync(entry))throw Error('Build the server before starting its worker.');
         const result=await new Promise<any>((resolve,reject)=>{
           const worker=new Worker(entry,{workerData:job.payload});active=worker;

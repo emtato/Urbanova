@@ -6,7 +6,7 @@
 The 505 is a streetcar route, so "lane" here means streetcar priority in the style of King Street (traffic restrictions and signal changes that let streetcars go first), not a bus lane.
 
 ## Why
-Lane C's package screen compares four packages: existing, streetcar priority (called "lane" in Lane C's code), extra service, and both. It needs one policy file (`PACKAGE_POLICY_PATH`, schema in `server/src/shared/policy.ts`) with run times, headways and costs. None exists, so every upgrade is reported as "cost policy unavailable" and no affordability answer can be given. A10 supplies that data, with every number sourced or labelled.
+Lane C's package screen compares four packages: existing, streetcar priority (called "lane" in Lane C's code), extra service, and both. It needs one policy file (`PACKAGE_POLICY_PATH`, schema in `backend/server/src/shared/policy.ts`) with run times, headways and costs. None exists, so every upgrade is reported as "cost policy unavailable" and no affordability answer can be given. A10 supplies that data, with every number sourced or labelled.
 
 ## Decisions taken
 | Decision | Choice | Why |
@@ -23,7 +23,7 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 1. **`data/reviewed/interventions.json`**: the reviewed A10 data. Every value has `unit`, `status` (`sourced`, `derived`, `transferred`, `assumed` or `user_selected`), `source_ids`, a low/central/high range where uncertain, and a one-line `meaning`.
 2. **`data/reviewed/package_policy_<headway>.json`** (three files: `_360`, `_300`, `_240`): generated from item 1, each matching Lane C's `PolicySchema` exactly. Lane C's schema holds one `service_headway_s`, so each target headway is one policy. The default (`_300`) is the one to point `PACKAGE_POLICY_PATH` at. The API also accepts a policy per job, so the frontend can offer all three.
 3. **`backend/scripts/build_interventions.py`**: computes the derived values from cached GTFS, assembles items 1 and 2, and registers new sources in `simulation_sources.json`. Lane C rejects any `source_id` missing from that manifest.
-4. A **contract-shaped catalogue** inside `interventions.json`: one `Intervention` per option (extra service at 360, 300 and 240 s; streetcar priority), validated against `backend/schemas/intervention.py`. Lane C's default scenario currently requires an empty catalogue (`server/src/services/bundle.ts`, checked in `validate.ts`); loading this one is a small Lane C change.
+4. A **contract-shaped catalogue** inside `interventions.json`: one `Intervention` per option (extra service at 360, 300 and 240 s; streetcar priority), validated against `backend/schemas/intervention.py`. Lane C's default scenario currently requires an empty catalogue (`backend/server/src/services/bundle.ts`, checked in `validate.ts`); loading this one is a small Lane C change.
 5. Tests and a short section in this doc describing the final values.
 
 ## Fields and where each comes from
@@ -96,8 +96,8 @@ Required vehicles = `ceil(cycle_s / headway_s)`; Lane C computes this, A10 only 
 5. **Complete.** Regression tests check the reviewed catalogue, source references, cost ranges and all three generated policy files. Final 2026-CAD values are recorded above.
 
 ## Dependencies and risks
-- **Budgets and fleet are zero in Lane C's default scenario** (`server/src/services/bundle.ts`: `capital_budget_cad: 0`, `fleet_allowance: 0`). With A10 in place, any upgrade still fails "over budget" until a user or Lane C supplies budgets and a fleet allowance. Not part of A10; Lane C needs to know.
-- **Lane C bundle integration is still required.** `server/src/services/bundle.ts` currently sets `interventions: []`; it must load the A10 catalogue from `data/reviewed/interventions.json` (and provide matching `intervention_availability`) before those options can be selected in a scenario. This is intentionally not changed by A10.
+- **Budgets and fleet are zero in Lane C's default scenario** (`backend/server/src/services/bundle.ts`: `capital_budget_cad: 0`, `fleet_allowance: 0`). With A10 in place, any upgrade still fails "over budget" until a user or Lane C supplies budgets and a fleet allowance. Not part of A10; Lane C needs to know.
+- **Lane C bundle integration is still required.** `backend/server/src/services/bundle.ts` currently sets `interventions: []`; it must load the A10 catalogue from `data/reviewed/interventions.json` (and provide matching `intervention_availability`) before those options can be selected in a scenario. This is intentionally not changed by A10.
 - **The simulator has no streetcar-priority mechanism.** Extra service works through `headway_s`. For priority to change crowding, Lane B needs to apply A10's per-link savings to `link_travel_times_s`; deferred (see below).
 - **Costs cover both directions; benefits are westbound only.** The simulation models westbound AM only. Eastbound is used only because a car must run back eastbound before its next westbound trip, so vehicle counts use the full round trip. Priority is assumed built in both directions, so its capital cost and the shorter round trip (`lane_cycle_s`) include eastbound, but eastbound time savings for riders are not simulated. This understates priority's benefit, which is the conservative direction.
 - **Cost figures may be incomplete.** Anything not found is marked `assumed` with a wide range; no number is presented as a TTC quote.

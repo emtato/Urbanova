@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import * as z from 'zod';
 import { ROOT } from '../config.js';
 import { PolicySchema } from './policy.js';
-import type { Comparison as PresentationComparison, Scenario, Corridor, ReplayStream } from '../../../frontend/src/lib/types.js';
+import type { Comparison as PresentationComparison, Scenario, Corridor, ReplayStream } from '../../../../frontend/src/lib/types.js';
 import { nativeBatchSchema, nativeComparisonSchema, type NativeComparison } from './nativeResults.js';
 export type { Scenario, Corridor, ReplayStream };
 export type FixtureComparison = Omit<PresentationComparison,'contract_version'> & {contract_version:'2.0.0'};

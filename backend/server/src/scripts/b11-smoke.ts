@@ -15,7 +15,7 @@ try{
   async function call(path:string,body?:unknown){const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});if(!response.ok)throw Error(`HTTP ${response.status} for ${path}`);return response.json();}
   const s=await call('/scenarios',{scenario_id:'b11-smoke-'+randomUUID()});
   await call(`/scenarios/${s.scenario_id}/patch`,{version:1,patch:{capital_budget_cad:10000000,annual_operating_budget_cad:2000000,fleet_allowance:20}});
-  const policy=JSON.parse(readFileSync(resolve(ROOT,'server/config/package-policy.example.json'),'utf8'));
+  const policy=JSON.parse(readFileSync(resolve(ROOT,'backend/server/config/package-policy.example.json'),'utf8'));
   const input={scenario_id:s.scenario_id,version:2,random:{seed_ids:[42],draws_id:'b11-real-smoke'},policy,retain_replay:true};
   let job=await call('/jobs',input);const id=job.job_id;
   for(let n=0;n<1200&&job.status!=='completed'&&job.status!=='failed';n++){await new Promise(r=>setTimeout(r,250));job=await call('/jobs/'+id);}

@@ -9,4 +9,4 @@ try{
   let closing=false;
   const close=async()=>{if(closing)return;closing=true;await stop();server.close(()=>void store.close());};
   process.on('SIGTERM',()=>void close());process.on('SIGINT',()=>void close());
-}catch{console.error('API startup failed. Check DATABASE_URL and run npm run db:init in server/.');await store.close();process.exitCode=1;}
+}catch{console.error('API startup failed. Check DATABASE_URL and run npm run db:init in backend/server.');await store.close();process.exitCode=1;}

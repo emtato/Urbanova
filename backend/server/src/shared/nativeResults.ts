@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import type { Comparison as FixtureComparison, CaseResult, Run, StopResult } from '../../../frontend/src/lib/types.js';
+import type { Comparison as FixtureComparison, CaseResult, Run, StopResult } from '../../../../frontend/src/lib/types.js';
 
 const count = z.int().nonnegative();
 const nonnegative = z.number().finite().nonnegative();
