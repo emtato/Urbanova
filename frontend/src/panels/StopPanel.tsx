@@ -3,7 +3,7 @@ import { type CorridorDevelopment, type CorridorStop, normalizeStop } from '../m
 import type { CaseResult, Comparison } from '../lib/types'
 import type { NativeBatch } from '../lib/liveTypes'
 import { spacingScore, transitMetrics, type TransitMetrics } from './transitMetrics'
-import { addComparison, batchCase, comparisonProblem, configurationName, configurationSummary, mockGrowthSimulation, todayBaseline, todayDate, useSimulationHistory } from '../lib/simulationHistory'
+import { addComparison, batchCase, comparisonProblem, configurationName, configurationSummary, todayBaseline, todayDate, useSimulationHistory } from '../lib/simulationHistory'
 import { SimulationPicker } from './SimulationPicker'
 import './StopPanel.css'
 
@@ -43,7 +43,7 @@ function MetricTable({ columns, rows }: { columns: Column[]; rows: { label: stri
 export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops = [], onClose, onViewPlatform,
   isMinimized = false, onToggleMinimize, className = '' }) => {
   const [scope, setScope] = useState<'station' | 'line'>('station')
-  const [selectedIds, setSelectedIds] = useState<string[]>([mockGrowthSimulation.id])
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const saved = useSimulationHistory()
   const tabId = useId()
   const stop = normalizeStop(rawStop)

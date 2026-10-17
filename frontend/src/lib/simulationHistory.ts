@@ -3,8 +3,6 @@ import type { NativeBatch, NativeCaseResult } from './liveTypes'
 import type { Comparison } from './types'
 import { sampleComparison } from './sampleComparison'
 import baselineData from '../data/today_baseline.json'
-import growthData from '../data/mock_growth_baseline.json'
-
 export interface SavedSimulation {
   id: string
   name: string
@@ -13,13 +11,6 @@ export interface SavedSimulation {
 }
 export const todayBaseline = baselineData.batch as unknown as NativeBatch
 export const todayDate = baselineData.serviceDate
-export const mockGrowthBaseline = growthData.batch as unknown as NativeBatch
-export const mockGrowthSimulation: SavedSimulation = {
-  id: mockGrowthBaseline.id,
-  name: 'Phase 1+2 Growth',
-  createdAt: '2026-10-17T18:00:00.000Z',
-  batch: mockGrowthBaseline,
-}
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach(listener => listener())
 let database: Promise<IDBDatabase> | undefined
@@ -96,23 +87,15 @@ export function setActiveSimulation(id: string | null) {
   notify()
 }
 export function useSimulationHistory() {
-  const [history, setHistory] = useState<SavedSimulation[]>([mockGrowthSimulation])
+  const [history, setHistory] = useState<SavedSimulation[]>([])
   const [activeId, setActiveId] = useState<string | null>(activeSimulationId)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     let disposed = false
     const refresh = () => {
       setActiveId(activeSimulationId())
-      void readHistory().then(value => {
-        if (!disposed) {
-          const all = value.some(s => s.id === mockGrowthSimulation.id)
-            ? value
-            : [mockGrowthSimulation, ...value]
-          setHistory(all)
-          setError('')
-        }
-      })
+      void readHistory().then(value => { if (!disposed) { setHistory(value); setError('') } })
         .catch(reason => { if (!disposed) setError(reason instanceof Error ? reason.message : 'Saved simulations unavailable.') })
         .finally(() => { if (!disposed) setLoading(false) })
     }

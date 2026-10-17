@@ -35,11 +35,4 @@ describe('saved-configuration inspector', () => {
     expect(minimized).toContain('Expand stop details')
     expect(minimized).not.toContain('Existing demand')
   })
-  it('renders comparative columns with mock growth simulation', () => {
-    const html = clean(renderToString(<StopPanel {...props} />))
-    expect(html).toContain('Today')
-    expect(html).toContain('Phase 1+2 Growth')
-    expect(html).toContain('Wait change from Today')
-    expect(html).toContain('Denied boarding')
-  })
 })
