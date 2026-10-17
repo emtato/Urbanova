@@ -283,3 +283,54 @@ def test_corridor_505_share_bands():
     assert corridor_505_share(LAT - (0.70 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.0
 
 
+def test_cutoff_in_progress_passengers_excluded_from_unresolved():
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Passenger, Stop
+    from backend.simulation.runner import run_simulation
+
+    stops = (
+        Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
+        Stop(id="s1", name="Mid", sequence=1, latitude=LAT, longitude=lon_at(400)),
+        Stop(id="s2", name="TMU", sequence=2, latitude=LAT, longitude=lon_at(800)),
+    )
+    inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(20.0, 100.0),
+        streetcar_capacity=1,
+        headway_s=100.0,
+        rush_hour_duration_s=60.0,
+        trips_per_resident_in_window=0.3,
+        start_time_s=0,
+        end_time_s=60,
+    )
+    # p_onboard: boards at s0 at t=0, rides toward s2, still onboard at t=60 cutoff -> neutral (in_progress)
+    # p_denied: waits at s0 at t=0, denied by full car 1 at dwell end, still waiting at t=60 -> unresolved
+    # p_late: arrives at s0 at t=58 after car 1 has already departed, never saw a car by t=60 -> neutral (in_progress)
+    passengers = {
+        "p_onboard": Passenger(id="p_onboard", origin_stop_id="s0", destination_stop_id="s2", get_to_stop_time=0, rider_group="existing"),
+        "p_denied": Passenger(id="p_denied", origin_stop_id="s0", destination_stop_id="s2", get_to_stop_time=0, rider_group="existing"),
+        "p_late": Passenger(id="p_late", origin_stop_id="s0", destination_stop_id="s2", get_to_stop_time=58, rider_group="existing"),
+    }
+    res = run_simulation(inputs, passengers)
+    ov = res["summary"]["overview"]
+
+    assert passengers["p_onboard"].status == "onboard"
+    assert passengers["p_denied"].status == "waiting" and passengers["p_denied"].denied_boarding_once is True
+    assert passengers["p_late"].status == "waiting" and passengers["p_late"].denied_boarding_once is False
+
+    # p_onboard and p_late are neutral at cutoff; only p_denied is unresolved.
+    assert ov["completed_corridor_passengers"] == 0
+    assert ov["in_progress_at_cutoff_passengers"] == 2
+    assert ov["onboard_at_end_passengers"] == 1
+    assert ov["awaiting_first_car_at_end_passengers"] == 1
+    assert ov["unresolved_passengers"] == 1
+    assert ov["remaining_queue_passengers"] == 1
+    # p_onboard still contributed to streetcar fullness and boarding counts up to cutoff:
+    assert ov["boarded_corridor_passengers"] == 1
+    assert ov["peak_streetcar_load"] == 1
+    # Denied share is 1 out of the 2 riders who actually encountered a streetcar (p_late is excluded):
+    assert ov["denied_boarding_share"] == pytest.approx(0.5)
+
+
