@@ -23,7 +23,11 @@ export async function apiRequest<T>(path: string, body?: unknown, signal?: Abort
 }
 
 function comparisonResponse(value: Comparison) {
-  if (value.contract_version !== '2.0.0' || typeof value.fixture !== 'boolean' || !Array.isArray(value.cases) || !value.scenario || !value.corridor) throw Error('Unsupported comparison response')
+  if (!['2.0.0', '3.0.0'].includes(value.contract_version) || typeof value.fixture !== 'boolean' || !Array.isArray(value.cases) || !value.scenario || !value.corridor) throw Error('Unsupported comparison response')
+  if (value.contract_version === '3.0.0' && (value.fixture || value.cases.some(result => {
+    const batch = result as import('./liveTypes').NativeCaseResult
+    return !batch.overall_results || !Array.isArray(batch.individual_results) || batch.individual_results.length !== batch.overall_results.run_count
+  }))) throw Error('Invalid native simulation batch')
   return value
 }
 

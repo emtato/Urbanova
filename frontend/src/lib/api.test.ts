@@ -73,6 +73,15 @@ describe('D1: API Client & Fixture Service (Contract 1.0.0)', () => {
 
 describe('Live B11 transport', () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); setUseFixture(true) })
+  it('accepts native 3.0.0 batches without changing any endpoint paths', async () => {
+    const { sampleComparison } = await import('./sampleComparison')
+    const result = { ...structuredClone(sampleComparison), contract_version: '3.0.0', comparison_id: 'native-id', fixture: false,
+      cases: sampleComparison.cases.map(item => ({ ...item, overall_results: {run_count: 1}, individual_results: [{inputs: {seed: 7}, streetcars: [], passengers: [], sim_log: [], summary: {}}] })) }
+    const fetchMock = vi.fn(async (_url: string) => new Response(JSON.stringify(result)))
+    vi.stubGlobal('fetch', fetchMock); setUseFixture(false)
+    expect(await fetchComparison('native-id')).toEqual(result)
+    expect(fetchMock.mock.calls[0][0]).toBe(API_BASE_URL + '/results/native-id')
+  })
   it('creates, patches, enqueues, polls and fetches the stored comparison without changing fixture flags', async () => {
     const { sampleComparison } = await import('./sampleComparison')
     const result = { ...structuredClone(sampleComparison), comparison_id: 'stored-id', fixture: false }

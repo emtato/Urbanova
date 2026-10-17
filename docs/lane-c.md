@@ -1,6 +1,6 @@
 # Lane C: Express API, storage and grounded AI
 
-The requested Express service is implemented in `server/`. Its current compatibility path consumes the earlier Comparison 2.0.0 JSON Schema and matching frontend TypeScript interfaces. **The owner's 2026-10-17 decision makes Lane B's native dictionaries and metric definitions authoritative for live results.** C owns migrating its boundary, persistence and consumers accordingly. Stop/Development and the Python simulator remain owned by Lane B. The root Railway configuration now targets Express.
+The requested Express service is implemented in `server/`. Live results use C's **3.0.0** metadata envelope containing Lane B's native batches; legacy Comparison 2.0.0 remains readable for fixtures/history. **The owner's 2026-10-17 decision makes Lane B's dictionaries and metric definitions authoritative.** Stop/Development and the Python simulator remain owned by Lane B. The root Railway configuration targets Express.
 
 ## Run
 
@@ -38,7 +38,7 @@ The regular tests need no credentials/network/paid calls. The explicit database 
 | POST /api/scenarios/:id/parse | `{question}`; AI patch preview, never an automatic write |
 | POST /api/jobs | `{scenario_id, version, random:{seed_ids,draws_id}, retain_replay}`; 202 and polling ID, or cached completion |
 | GET /api/jobs/:id | Job status, evaluator notice, package screen and stale flag |
-| GET /api/results/:comparison_id | Frozen Comparison; fixture and stale response headers |
+| GET /api/results/:comparison_id | Native 3.0.0 comparison or legacy 2.0.0 result; fixture and stale response headers |
 | GET /api/results/:comparison_id/summary | Tested-package decision and sensitivity report |
 | POST /api/results/:comparison_id/explain | Grounded explanation or template fallback |
 | GET /api/results/:comparison_id/brief | Text brief including costs, outcomes, uncertainty and versions |
@@ -105,10 +105,11 @@ carry these records and metadata without discarding events or requiring all
 riders to start in queues at time zero. Native actions and fields are documented
 in `backend/simulation/metrics.py`.
 
-The Python bridge below is already implemented. Accepting the new batch shape
-and removing the old metric projection remain C migration work; this section
-states the required handoff and does not claim that runtime migration is done.
-Matching seed IDs alone also does not complete B2's fixed vehicle/link draws.
+The bridge now calls `run_repeated_simulations` and retains each original batch
+inside its case metadata. The old metric projection has been removed. Native
+validation checks seed order, aggregates and per-run views against full results;
+package matching compares initial journeys instead of completion-dependent
+counts. Matching seed IDs alone still does not complete B2's fixed vehicle/link draws.
 
 ## Current B11 computation and explicit fixture mode
 
@@ -118,13 +119,13 @@ For each phase, low/central/high demand case and requested seed, sample the corr
 
 Without a policy, existing service runs against the reviewed housing; upgrades remain unavailable. With an explicit policy and sufficient budgets/fleet, the adapter constructs existing, lane, extra-service and both. The combined package accounts for fleet savings from the lane. Capital and annual costs, effects, availability and reasons are preserved. The frozen extra-service contract requires at least one added vehicle; an otherwise feasible zero-added-vehicle service assumption returns 422 instead of invented fleet. Packages unavailable in every phase are screened out and their reasons retained.
 
-All runs use actual simulator output. The current bridge still projects physical passenger state into the older Comparison 2.0.0 formulas while storing unmodified native metrics in `c_b11_run_metrics` and exposing `GET /api/results/:comparison_id/b11-metrics` with `format_version:"b11-metrics-v1"`. **That projection is now superseded by the owner decision above and must be removed from the live result/criterion path.** Native definitions must drive package decisions, not only a side endpoint. Existing storage and endpoints described here record the current implementation, not the target handoff. The bridge also computes stop p95 from pooled completed-passenger waits and materializes the one-year availability delay separately; those capabilities can be retained when migrating result transport.
+All runs use actual simulator output. Each live 3.0.0 case contains unchanged `overall_results` and `individual_results` plus C-owned metadata. Decisions read the native overview directly; per-run view arrays are checked for equality. Stop summaries pool completed-passenger waits and weight denied share by encountered riders. Full original summaries remain in `c_b11_run_metrics` and at `GET /api/results/:comparison_id/b11-metrics` with `format_version:"b11-metrics-v1"`. The one-year availability delay is materialized separately. Explanations receive checked metrics and variation without the large individual passenger/replay archives; grounding checks that same payload.
 
 Submit `{scenario_id, version, random:{seed_ids:[42],draws_id:"demo"}, retain_replay:true}` to `POST /api/jobs`. Optional `policy` pins user-selected costs/effects. Optional `demand_factors` defaults to `{low:0.8,central:1,high:1.2}` and multiplies the all-mode trip rate; these are sensitivity assumptions, not measured confidence intervals. Every run carries model and data digests. The boundary checks the materialized scenario, feasible package coverage, phases/demand cases, paired seed IDs, stop/cohort counts, versions, conservation, references and numeric criterion flags.
 
 `evaluator:"fixture"` explicitly requests the unchanged hand-worked contract sample. It retains fixture labels and synthetic housing/seeds; it is never presented as the requested scenario's calculation. Omit this option for real B11 runs.
 
-Frozen Comparison 2.0.0 remains unchanged, with `replay:null` for B11. `GET /api/replay/:comparison_id` returns a separate strict `format_version:"b11-events-v1"` envelope for a retained B11 run: arrival/boarding/denial/dwell-related movement events, incoming passengers, final passenger records, stops and source/model/data/run IDs. Clients must branch on this version before rendering; the original fixture replay renderer cannot consume it directly. Only one selected base run retains its full log; all runs retain aggregates. A B11 replay is never disguised as an initial-queues-only fixture replay.
+Fixture Comparison 2.0.0 remains unchanged. Live 3.0.0 has `replay:null` in its metadata envelope; full native run dictionaries and logs are archived inside each case. `GET /api/replay/:comparison_id` additionally returns the selected replay as the existing strict `format_version:"b11-events-v1"` envelope. Only the selected replay is separately indexed; the exact event records remain native. Native batches travel between Python and Node as gzip-compressed JSON, with a 64 MiB compressed limit and configurable decoded `B11_MAX_OUTPUT_BYTES` (default 512 MiB). Large matrices require corresponding memory/runtime sizing. API paths and handlers were not changed; frontend response validation now accepts 3.0.0.
 
 The decision wording remains **best among the tested packages under these assumptions**. Results are scenario experiments, not calibrated forecasts. Housing estimates, unreviewed entrances/crossings, assumed incoming loads/dwell/demand factors and possible scheduled-time/dwell double counting remain visible limitations. Long source-query URLs and date-only retrieval metadata are normalized for the frozen SourceRef limits, with exact originals/checksums preserved in reviewed manifests.
 
@@ -132,7 +133,7 @@ The decision wording remains **best among the tested packages under these assump
 
 The API enqueues only; computation runs in `worker_threads`. One active thread per process is bounded by a ten-minute timeout (override with JOB_TIMEOUT_MS). A 30-second heartbeat renews its 150-second lease. Timeout, shutdown and worker failure terminate the Python child. PostgreSQL leases, SKIP LOCKED claims and lease tokens prevent multiple instances completing the same job. Expired leases can be reclaimed after a restart. Scenarios are versioned and edits serialized; old jobs/results become stale. Cache keys include the complete validated scenario, policy, replay selection, reviewed data digest, model version, seed IDs and draws ID. Failed cached jobs can be retried. Simulation/adapter/package source changes automatically change the B11 model digest; MODEL_VERSION separately versions the orchestrator.
 
-All runs retain aggregates and actual run/source/assumption versions. Replay events are separated from comparison payloads and stored only when requested. `server/db/queries.sql` contains the three judge queries: reviewed development access joined to stops, worst stops for a phase, and package results across runs/assumption versions. It includes no unmeasured speed-up claim. Run EXPLAIN ANALYZE with real parameters before claiming one.
+All runs retain aggregates and actual run/source/assumption versions. Native 3.0.0 archives the full batches, including original run logs; only the selected replay is additionally indexed for replay retrieval. `PgStore.pastRuns({scenario_id,limit,offset})` returns paginated experiment metadata without loading those large dictionaries; wiring a history endpoint is deferred with the API routes. `server/db/queries.sql` contains the three judge queries: reviewed development access joined to stops, worst stops for a phase, and package results across runs/assumption versions. It includes no unmeasured speed-up claim. Run EXPLAIN ANALYZE with real parameters before claiming one.
 
 ## AI and failures
 
@@ -140,7 +141,7 @@ One configured Gemini model uses `@google/genai`, a JSON schema generated from t
 
 The configured model accepted the SDK `responseSchema` vocabulary. The adapter generates it from Zod, encodes optional fields as nullable, removes nulls only for originally optional keys, then revalidates the complete original Zod schema. Provider-side schema constraints are a subset; server-side bounds and strict keys remain authoritative. Calls have a 25-second SDK timeout and 30-second abort deadline. Keep the default model generation settings used by the live check.
 
-The explainer receives only a stored Comparison. Its numeric tokens must appear in that payload and cited IDs must resolve; otherwise it uses a deterministic template. A missing comparison returns a plain invitation to submit a scenario job. Observed stop-level demand and incoming occupancy remain unavailable and are never manufactured from whole-route daily counts.
+The explainer receives the stored comparison's checked metrics, variation and metadata; native individual histories are omitted from its prompt. Numeric tokens must appear in that same prompt payload and cited IDs must resolve; otherwise it uses a deterministic template. A missing comparison returns a plain invitation to submit a scenario job. Observed stop-level demand and incoming occupancy remain unavailable and are never manufactured from whole-route daily counts.
 
 ## Railway
 
