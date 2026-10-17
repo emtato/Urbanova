@@ -10,6 +10,7 @@ Simulation owner: start with simulation_input.json and [the loading guide](../..
 - sources.json: source IDs, official URLs, versions, retrieval times, SHA-256 checksums and licences.
 - walking_access.json / walking_routes.geojson: estimated nearest-stop pedestrian paths and explicit connector lengths.
 - walking_routes.svg: reproducible desktop review map; walking_routes.png is the exported preview inspected during review.
+- shadows.geojson: ground shadows today and the shadow added/removed by the proposals at preset times; see ../../docs/massing.md.
 - buildings_3d.geojson / sun_positions.json: footprints and heights for the 2,444 inventoried buildings, simplified proposal masses and sun positions for the 3D map and shadows; see ../../docs/massing.md.
 - feasibility_report.json: machine-readable findings and missing observations.
 - route_505.json: the whole 505 route in both directions (stops, patterns, trips per hour) for reference; rebuild with python -m backend.scripts.export_route.

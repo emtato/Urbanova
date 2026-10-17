@@ -1,5 +1,7 @@
 # Phase 01 contract, version 2.0.0
 
+Lane C now also has an [Express service](lane-c.md) consuming this frozen JSON Schema and the same TypeScript interfaces. Its worker currently returns the labelled fixture until Lane B supplies B11. The existing root Railway configuration continues to deploy FastAPI; selecting server/railway.json deploys Express. This addition does not change Comparison 2.0.0.
+
 Simulation variables and the simulator are owned by the simulation teammate. The sourced data covers **505 westbound, Dundas East/Broadview to TMU Station**; see [data-handoff.md](data-handoff.md). The synthetic fixture and frontend use that same westbound segment with the simulation-owned Stop and Development formats. Fixture inputs are pinned in data/fixtures/sample_comparison_inputs.json so source refreshes do not silently change the hand-worked example.
 
 The active backend is FastAPI. **Stop and Development are defined once, as dataclasses in backend/simulation/objects/**. The Pydantic models in backend/schemas/ reuse those exact classes in Corridor and Scenario; there are no separate schema versions of either object. Boundary validators check coordinates, shares, counts and references without changing the simulator's field definitions. Other concepts, including sources, interventions, results and replay events, remain Pydantic models. The generated JSON Schema is data/contracts/comparison.schema.json. Matching, hand-maintained TypeScript interfaces are frontend/src/lib/types.ts.
