@@ -27,16 +27,6 @@ def test_bundle_values_match_the_dataclass_defaults():
         assert (tuple(value) if isinstance(value, list) else value) == defaults[name].default
 
 
-def test_sensitivity_ranges_bracket_the_central_value():
-    bundle = json.loads((ROOT_DIR / "data/reviewed/simulation_input.json").read_text())
-    for name in ASSUMPTIONS:
-        sensitivity = bundle["field_metadata"][name].get("sensitivity")
-        if sensitivity:
-            low, central, high = (sensitivity[k] for k in ("low", "central", "high"))
-            assert central == bundle["inputs"][name]
-            assert low <= central <= high
-
-
 def onboard_at_entry(result):
     first_seen = {}
     for entry in result["sim_log"]:

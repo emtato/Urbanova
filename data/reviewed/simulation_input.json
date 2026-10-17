@@ -8243,11 +8243,6 @@
       "status": "assumed",
       "source_ids": [],
       "meaning": "Share of generated commuters given a workplace west of home; the rest are placed anywhere else. Uncalibrated; employment locations alone do not establish commute direction.",
-      "sensitivity": {
-        "low": 0.4,
-        "central": 0.6,
-        "high": 0.8
-      },
       "defined_in": "docs/commute-demand-assumptions.md"
     },
     "walk_limit_m": {
@@ -8255,11 +8250,6 @@
       "status": "assumed",
       "source_ids": [],
       "meaning": "Longest walk to work, to a useful Line 1 station or to/from a 505 stop. Walking distance is straight-line distance times the reviewed detour factor.",
-      "sensitivity": {
-        "low": 500.0,
-        "central": 750.0,
-        "high": 1000.0
-      },
       "defined_in": "docs/commute-demand-assumptions.md"
     },
     "parallel_route_bands": {
@@ -8274,21 +8264,6 @@
       "status": "assumed",
       "source_ids": [],
       "meaning": "Each car entering the segment draws its starting load uniformly from this range. No observed incoming occupancy exists; this is the input most likely to change who is left behind.",
-      "sensitivity": {
-        "low": [
-          0,
-          6
-        ],
-        "central": [
-          12,
-          24
-        ],
-        "high": [
-          65,
-          130
-        ]
-      },
-      "sensitivity_note": "Proposed range for sensitivity runs. The high case tops out at TTC's historical planned load of 130; it is not an observation.",
       "defined_in": "backend/simulation/runner.py (seed_incoming_passengers)"
     },
     "stop_dwell_range_s": {
@@ -8296,20 +8271,6 @@
       "status": "assumed",
       "source_ids": [],
       "meaning": "Each stop's dwell is drawn uniformly from this range. Scheduled link times may already include some dwell, so this can double count.",
-      "sensitivity": {
-        "low": [
-          10,
-          20
-        ],
-        "central": [
-          15,
-          30
-        ],
-        "high": [
-          20,
-          45
-        ]
-      },
       "defined_in": "backend/simulation/runner.py (run_simulation)"
     }
   },

@@ -210,15 +210,15 @@ def travel_context(path):
 
 
 def apply_model_assumptions(bundle, selection):
-    """Copy the simulator's model assumptions into the inputs, with unit, status and ranges in field_metadata.
+    """Copy the simulator's model assumptions into the inputs, with unit, status and meaning in field_metadata.
 
     The simulator reads these from SimulationInput instead of module constants, so the
-    values, the documentation and any sensitivity run share one source.
+    values and their documentation share one source.
     """
     for name, spec in selection["model_assumptions"].items():
         bundle["inputs"][name] = spec["value"]
         bundle["field_metadata"][name] = {key: spec[key] for key in
-                                          ("unit", "status", "source_ids", "meaning", "sensitivity", "sensitivity_note", "defined_in")
+                                          ("unit", "status", "source_ids", "meaning", "defined_in")
                                           if key in spec}
     return bundle
 

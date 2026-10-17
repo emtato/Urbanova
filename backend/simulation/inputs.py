@@ -221,7 +221,7 @@ class SimulationInput:
 # 505-SPECIFIC COMMUTE DEMAND, ROUTING, INCOMING LOADS & DWELL:
 # The five model assumptions below are SimulationInput fields (westward_share, walk_limit_m,
 # parallel_route_bands, incoming_load_range, stop_dwell_range_s). Their values, units,
-# status and low/central/high ranges live in data/reviewed/simulation_input.json
+# status and meaning live in data/reviewed/simulation_input.json
 # (field_metadata), set from data/sources/simulation_selection.json -> model_assumptions.
 # Change them there or with load_simulation_input(overrides=...), not in the code.
 # - Workplace destinations & Line 1 stations: `data/reviewed/workplaces_2021.json` (585
