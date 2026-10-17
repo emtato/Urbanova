@@ -9,7 +9,7 @@
 # stops:
 #   All stops on the selected 505 Dundas segment between broadview and TMU,
 #   including the endpoints. For WESTBOUND travel, supply them in the order
-#   Broadview -> Jarvis, not Jarvis -> Broadview. Each Stop supplies its ID, name,
+#   Broadview -> TMU, not TMU -> Broadview. Each Stop supplies its ID, name,
 #   latitude, longitude and zero-based sequence along that direction.
 #   Start waiting_passenger_ids empty and serving_streetcar_id as None; those
 #   fields describe changing run state, not data Team A needs to collect.
@@ -90,7 +90,7 @@ from .objects import Development, ExistingResidences, Stop
 
 @dataclass(frozen=True)
 class SimulationInput:
-    # Westbound study segment: Broadview -> Jarvis.
+    # Westbound study segment: Broadview -> TMU.
     stops: tuple[Stop, ...]
     existing_residences: tuple[ExistingResidences, ...]
     developments: tuple[Development, ...]
@@ -103,12 +103,11 @@ class SimulationInput:
     # Rush hour starts at simulation time zero.
     rush_hour_duration_s: float
     trips_per_resident_in_window: float  # Before applying each housing object's transit share.
+    start_time_s: int  # usser provided (seconds after midnight)
+    end_time_s: int  # User-provided reporting cutoff in service-day seconds.
 
     # Optional bounded variation in entry gaps; 0 = regular service.
     headway_randomness_s: float = 0.0
     # Arrival weights over equal time bins; e.g. (1, 4, 6, 4, 1) for a bell-shaped peak.
     commuter_distribution: tuple[float, ...] = (1.0,)
     seed: int = 0  # Reproduce random choices when comparing scenarios.
-
-    start_time_s: float = 0.0 # usser provided
-    end_time_s: float = 0.0
