@@ -61,11 +61,25 @@
 #   The initial model applies the same rate to existing and new residents.
 #
 # headway_randomness_s (OPTIONAL; defaults to 0):
-#   Maximum amount an individual entry gap may vary above/below headway_s.
+#   User-selected maximum variation in an entry gap, measured in SECONDS, not a share.
+#   For each gap, draw an offset uniformly between -headway_randomness_s and
+#   +headway_randomness_s, then add that offset to headway_s. The first car enters at 0.
 #   With headway_s=300 and randomness=30, gaps would be between 270 and 330 seconds.
-#   Leave at zero for regular service if suitable variability data is unavailable.
-#   Helpful if Team A can supply observed headways, but this parameter is a bounded
-#   scenario assumption, not a standard deviation. Keep it below headway_s.
+#   To express a percentage, convert it to seconds: 10% of a 300 s headway is 30 s.
+#   Use 0 for regular entries; require 0 <= headway_randomness_s < headway_s.
+#   This is a scenario setting, not required data collection or a standard deviation.
+#   Observed entry gaps can help choose it later. It changes entry timing, not travel speed.
+#
+# link_travel_time_variation_share (OPTIONAL; defaults to 0):
+#   User-selected scenario setting; Team A does NOT need to collect this value.
+#   It is the maximum fractional variation in each link's travel TIME, not the
+#   probability of stopping or a direct change to speed. Require 0 <= share < 1.
+#   Intended behaviour: draw one duration uniformly between base_time * (1 - share)
+#   and base_time * (1 + share) when each streetcar starts each link.
+#   For a 120 s link, 0.25 means a duration between 90 and 150 s. Use 0 for fixed times.
+#   This models combined road variability around the baseline; it is not extra
+#   positive delay added on top. The runner acts when its whole-second clock is due.
+#   TODO: Connect this input to travel-duration sampling in the movement helper.
 #
 # commuter_distribution (OPTIONAL; defaults to uniform arrivals):
 #   Shape of passenger arrivals over rush hour, often envisioned as a bell curve:
@@ -107,7 +121,66 @@ class SimulationInput:
     end_time_s: int  # User-provided reporting cutoff in service-day seconds.
 
     # Optional bounded variation in entry gaps; 0 = regular service.
-    headway_randomness_s: float = 0.0
+    headway_randomness_s: float = 0.0  # User-selected seconds: 30 with a 300 s headway gives 270–330 s gaps.
     # Arrival weights over equal time bins; e.g. (1, 4, 6, 4, 1) for a bell-shaped peak.
     commuter_distribution: tuple[float, ...] = (1.0,)
     seed: int = 0  # Reproduce random choices when comparing scenarios.
+    link_travel_time_variation_share: float = 0.0  # User-selected: 0.25 means 90–150 s for a 120 s link; see TODO above.
+
+
+# CURRENT DATA AUDIT — repository files checked on 2026-10-17 9AM.
+# Sources: data/reviewed/, docs/data-handoff.md and docs/feasibility.md.
+# These findings describe the collected evidence, not measurements of every DTO field.
+#
+# GOOD SOURCE QUALITY FOR THE STATED PURPOSE — already collected:
+# - stops: official GTFS IDs, coordinates, travel order and route geometry for
+#   9 stops / 8 links, 505 westbound Broadview -> TMU, roughly 2.51 km.
+# - Schedule: 17 planned entries during 07:00–09:00 on 2026-10-16, with scheduled
+#   arrival/departure times and one scheduled median duration per adjacent stop pair.
+# - Proposed developments: municipal application IDs, addresses, coordinates,
+#   pipeline stages and proposed units in data/reviewed/developments.csv:
+#   239 Dundas St E: 630; 500 Dundas St E: 413; 761 Dundas St E: 1,197.
+#   These are published PROPOSED counts, not verified net-added or occupied homes.
+# - Provenance: source URLs, dataset versions, retrieval dates, checksums and licences.
+#
+# USABLE ESTIMATES / LIMITS — do not present these as observed operating conditions:
+# - link_travel_times_s: supplied values are SCHEDULED medians, not measured journey
+#   times or clear-road running times. They may already allow for normal road delays.
+# - headway_s: the 16 gaps between scheduled entries range from 300 to 657 seconds.
+#   Their mean is 419.8125 s; the published 360 s figure is the MEDIAN, not the mean.
+#   These describe the timetable, not actual gaps caused by service disruptions.
+# - accessible_stop_ids: nearest stops have been identified for all 3 proposals.
+#   Estimated walks are approximately 272 / 229 / 270 m respectively. Entrances,
+#   connectors and crossings still require review; alternative accessible stops
+#   have not been reviewed. Address-point coordinates are not confirmed entrances.
+#
+# STILL MISSING — buildings are not the only incomplete part of the input bundle:
+# - existing_residences: existing housing clusters, their total_units, occupancy,
+#   residents per occupied unit, transit shares and accessible stop assignments.
+# - developments: replacement-home counts / net_added_units, occupied_share,
+#   residents_per_occupied_unit and transit_share for the chosen scenario/phase.
+#   Proposed units alone cannot supply those values; collect evidence or label assumptions.
+# - streetcar_capacity: no sourced vehicle capacity is included in the reviewed bundle.
+# - trips_per_resident_in_window: no sourced trip rate for the selected window.
+# - Observed entry gaps, link travel-time variation and passenger-arrival profiles
+#   are not included, so the randomness/profile settings are not calibrated yet.
+# - Passenger destinations, corridor/direction choice, incoming vehicle occupancy,
+#   boarding/alighting rates and dwell rules still need evidence or model decisions.
+#   Some of these are future model needs rather than fields in this DTO today.
+#
+# USER-SELECTED SETTINGS — Team A does not have to collect these to run an assumed scenario:
+# - headway_randomness_s: keep as a user-selected bound in seconds for now.
+#   Team A CAN help calibrate it by recording actual westbound passage times at
+#   Broadview and calculating successive gaps, manually or using vehicle tracking.
+#   Actual passages are needed; countdown predictions or timetable gaps are not
+#   measurements of real service variability. Collecting this is an optional task.
+# - link_travel_time_variation_share: user-selected relative variation; actual
+#   journey observations could guide it later. Sampling is not connected yet.
+# - commuter_distribution: user-selected arrival shape until observations exist.
+# - start_time_s, end_time_s and rush_hour_duration_s: chosen analysis boundaries;
+#   the collected schedule covers the selected 07:00–09:00 window (7,200 seconds).
+# - seed: an internal reproducibility control, not a real-world measurement.
+# - Missing occupancy, household-size and transit/trip-rate values can initially
+#   be explicit user assumptions; they must not be labelled as collected facts.
+#
+# data/fixtures/ contains synthetic examples; its numbers do not fill these data gaps.
