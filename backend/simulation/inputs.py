@@ -126,6 +126,13 @@ class SimulationInput:
     commuter_distribution: tuple[float, ...] = (1.0,)  # User input: arrival weights over equal time bins; e.g. (1, 4, 6, 4, 1).
     seed: int = 0  # Reproduce random choices when comparing scenarios.
     link_travel_time_variation_share: float = 0.0  # User input: 0.25 means 90–150 s for a 120 s link; 0 keeps fixed times.
+    # Model assumptions: values, ranges and status live in data/reviewed/simulation_input.json
+    # (field_metadata). Defaults match that file so hand-built test inputs behave the same.
+    westward_share: float = 0.6  # Share of commuters assigned a workplace west of home.
+    walk_limit_m: float = 750.0  # Longest walk to work, a Line 1 station or a 505 stop.
+    parallel_route_bands: tuple[float, float] = (0.40, 0.60)  # Fraction of the way to College/Queen: below the first -> all consider the 505; up to the second -> half.
+    incoming_load_range: tuple[int, int] = (12, 24)  # Riders already aboard each car entering at Broadview & Dundas (uniform, inclusive).
+    stop_dwell_range_s: tuple[int, int] = (15, 30)  # Dwell seconds at each non-terminus stop (uniform, inclusive).
 
 
 # CURRENT DATA AUDIT — repository files checked on 2026-10-17 9AM.
@@ -211,22 +218,29 @@ class SimulationInput:
 # - trips_per_resident_in_window (RESOLVED): Sourced/derived at `0.231057` trips/resident
 #   for the 2-hour 07:00–09:00 window (2022 TTS Ward 13 AM peak resident trips scaled by 2/3).
 #
-# 505-SPECIFIC COMMUTE DEMAND, ROUTING, INCOMING LOADS & DWELL (RESOLVED IN CODE):
+# 505-SPECIFIC COMMUTE DEMAND, ROUTING, INCOMING LOADS & DWELL:
+# The five model assumptions below are SimulationInput fields (westward_share, walk_limit_m,
+# parallel_route_bands, incoming_load_range, stop_dwell_range_s). Their values, units,
+# status and low/central/high ranges live in data/reviewed/simulation_input.json
+# (field_metadata), set from data/sources/simulation_selection.json -> model_assumptions.
+# Change them there or with load_simulation_input(overrides=...), not in the code.
 # - Workplace destinations & Line 1 stations: `data/reviewed/workplaces_2021.json` (585
 #   City of Toronto census tracts weighted by 2021 employment), `line1_stations.json`,
 #   and full-route `route_505.json` are loaded by `backend/simulation/commute.py`.
 # - Parallel streetcar catchment split (`corridor_505_share` in `commute.py`): Accounts
 #   for 506 College (~580 m north) and 501 Queen (~450 m south): <40% of distance to
 #   College/Queen -> 100% evaluated for 505; 40%–60% -> 50%; >60% -> 0% (use Queen/College).
+#   Bands come from `parallel_route_bands`.
 # - 750 m routing rule (`sample_streetcar_trip` in `commute.py`): Samples a workplace
 #   (60% west of home, 40% elsewhere) and filters out walk-to-work (<= 750 m), direct
 #   Line 1 subway trips, and unserved trips; returns westbound 505 boarding and alighting
-#   stops (or `None` / `beyond_segment` when riding past TMU).
+#   stops (or `None` / `beyond_segment` when riding past TMU). The 60% and 750 m come from
+#   `westward_share` and `walk_limit_m`.
 # - Incoming Broadview streetcar load (`seed_incoming_passengers` in `runner.py`):
-#   Streetcars entering at Broadview & Dundas (`ttc-stop-1756`) are seeded with a hardcoded
-#   random range of `12–24` already-onboard passengers (`INCOMING_BROADVIEW_LOAD_RANGE = (12, 24)`).
-# - Stop dwell time (`STOP_DWELL_RANGE_S = (15, 30)` in `runner.py`): Hardcoded random
-#   variable of `15–30` seconds per non-terminus stop (sampled via `dwell_rng` from `inputs.seed`)
+#   Streetcars entering at Broadview & Dundas (`ttc-stop-1756`) are seeded with a uniform
+#   random number of already-onboard passengers from `incoming_load_range` (currently 12–24).
+# - Stop dwell time (`run_simulation` in `runner.py`): uniform random seconds per non-terminus
+#   stop from `stop_dwell_range_s` (currently 15–30), sampled via `dwell_rng` from `inputs.seed`,
 #   while boarding/alighting passengers before departing to the next link.
 #
 # USER-PROVIDED SCENARIO INPUTS:

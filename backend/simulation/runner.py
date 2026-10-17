@@ -86,7 +86,7 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
 
     for rider_group, dev_id, lat, lon, estimated_residents, accessible_stop_ids in housing_sources:
         # Scale by how close the building is to Dundas vs. College/Queen (1.0, 0.5, or 0.0).
-        route_share = corridor_505_share(lat, lon, inputs.stops)
+        route_share = corridor_505_share(lat, lon, inputs.stops, bands=inputs.parallel_route_bands)
         if route_share <= 0:
             continue
         # Total commuter trips from this building that consider the 505 corridor.
@@ -98,6 +98,8 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
                 lon,
                 passenger_rng,
                 accessible_stop_ids=accessible_stop_ids or None,
+                walk_limit_m=inputs.walk_limit_m,
+                westward_share=inputs.westward_share,
             )
             if trip is None:
                 continue  # Commuter walked, used Line 1 directly, or wasn't served by the 505.
@@ -124,14 +126,6 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
     return passengers
 
 
-# Assumed number of passengers already onboard a westbound 505 streetcar when it
-# arrives at Broadview & Dundas (from Broadview Station / Broadview Ave north of Dundas).
-INCOMING_BROADVIEW_LOAD_RANGE = (12, 24)
-
-# Hardcoded random stop dwell time range in seconds (boarding/alighting dwell at each stop).
-STOP_DWELL_RANGE_S = (15, 30)
-
-
 def seed_incoming_passengers(
     inputs: SimulationInput,
     streetcar: Streetcar,
@@ -139,7 +133,7 @@ def seed_incoming_passengers(
     incoming_rng: Random,
     time_s: float,
 ) -> None:
-    """Place 12-24 already-onboard riders onto a new streetcar entering at Broadview.
+    """Place `inputs.incoming_load_range` already-onboard riders onto a car entering at Broadview.
 
     Uses `sample_streetcar_trip` (from commute.py) at the entry stop (`inputs.stops[0]`)
     so each incoming rider gets a realistic downstream alighting stop (or `None` if
@@ -147,7 +141,7 @@ def seed_incoming_passengers(
     """
     entry_stop = inputs.stops[0]
     valid_stop_ids = {stop.id for stop in inputs.stops}
-    low, high = INCOMING_BROADVIEW_LOAD_RANGE
+    low, high = inputs.incoming_load_range
     incoming_count = min(incoming_rng.randint(low, high), streetcar.capacity)
 
     for _ in range(incoming_count):
@@ -159,6 +153,8 @@ def seed_incoming_passengers(
                 entry_stop.longitude,
                 incoming_rng,
                 accessible_stop_ids=(entry_stop.id,),
+                walk_limit_m=inputs.walk_limit_m,
+                westward_share=inputs.westward_share,
             )
             if trip is not None and (trip.alight_stop_id is None or trip.alight_stop_id in valid_stop_ids):
                 destination_stop_id = trip.alight_stop_id
@@ -248,7 +244,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     def record(time_s: int, action: SimAction, streetcar: Streetcar) -> None:
         sim_log.append(SimLog(time_s, action, deepcopy(streetcar)))
 
-    # Serve passengers upon reaching a stop; terminate at TMU or schedule 15-30s stop dwell.
+    # Serve passengers upon reaching a stop; terminate at TMU or schedule the stop dwell (inputs.stop_dwell_range_s).
     def begin_stop_service(streetcar: Streetcar, time_s: int) -> None:
         # handle_stop_passengers (from streetcars.py):
         # 1) Alights onboard passengers whose destination_stop_id == streetcar.current_stop_id
@@ -262,10 +258,10 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             record(time_s, "terminate", streetcar)
             active_streetcars.pop(streetcar.id)
         else:
-            dwell_low_s, dwell_high_s = STOP_DWELL_RANGE_S
+            dwell_low_s, dwell_high_s = inputs.stop_dwell_range_s
             planned_departure_s[streetcar.id] = time_s + dwell_rng.randint(dwell_low_s, dwell_high_s)
 
-    # Depart a non-terminus stop once its 15-30s dwell time has elapsed.
+    # Depart a non-terminus stop once its sampled dwell time has elapsed.
     def finish_dwell_and_depart(streetcar: Streetcar, time_s: int) -> None:
         handle_stop_passengers(inputs, streetcar, passengers, time_s)
         planned_departure_s.pop(streetcar.id, None)

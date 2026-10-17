@@ -1,5 +1,7 @@
 # Commute demand: prototype assumptions
 
+> **Where the values live.** The 60% westward share, the 750 m walk limit, the 40%/60% parallel-route bands, the incoming load at Broadview and the stop dwell range are inputs, not code constants. Their current values, units, status and low/central/high sensitivity ranges are in `data/reviewed/simulation_input.json` (`inputs` and `field_metadata`), set from `data/sources/simulation_selection.json` → `model_assumptions`. Change them there; the numbers in this document describe the current central values.
+
 ## Why we need this
 
 The simulation studies the westbound 505 segment from Broadview to TMU. A neighbourhood transit share percentage does not tell us how many trips use this route, direction, or time window. Its definition and source still need checking: a share of commuters is not automatically a share of all trips.
