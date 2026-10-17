@@ -12,18 +12,14 @@ DATA_VERSION = "unloaded-v1"
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ROOT_DIR / ".env", env_file_encoding="utf-8",
-        extra="ignore", frozen=True,
+        extra="ignore", frozen=True, hide_input_in_errors=True,
     )
 
     gemini_api_key: SecretStr = SecretStr("")
     gemini_model: str = "gemini-2.5-flash"
-    database_url: PostgresDsn | None = None
-    database_url_local: PostgresDsn = PostgresDsn(
-        "postgresql://futureproof:futureproof@localhost:5432/futureproof"
-    )
+    database_url: PostgresDsn | None = Field(default=None, repr=False)
     data_cache_dir: Path = ROOT_DIR / "data/cache"
     sim_runs: int = Field(default=100, ge=1)
-    offline: bool = True
 
     @field_validator("database_url", mode="before")
     @classmethod
@@ -37,8 +33,8 @@ class Settings(BaseSettings):
 
     @property
     def active_database_url(self) -> str:
-        if self.offline or self.database_url is None:
-            return str(self.database_url_local)
+        if self.database_url is None:
+            raise ValueError("Set DATABASE_URL in the root .env to your Tiger Data connection URL.")
         return str(self.database_url)
 
 

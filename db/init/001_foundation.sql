@@ -1,4 +1,4 @@
--- Apply this exact, repeatable schema to local PostGIS and Tiger Data.
+-- Repeatable Tiger Data schema bootstrap.
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE TABLE IF NOT EXISTS saved_results (

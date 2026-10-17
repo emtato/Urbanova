@@ -21,10 +21,5 @@ fi
 "$venv_python" -m pip install -r requirements.txt
 (cd frontend && npm ci)
 mkdir -p data/cache data/raw
-offline=$("$venv_python" -c 'from backend.config import settings; print(str(settings.offline or settings.database_url is None).lower())')
-if [[ "$offline" == true ]]; then
-  command -v docker >/dev/null || { echo "Install/start Docker Desktop, then rerun setup."; exit 1; }
-  docker compose up -d --wait db
-fi
 "$venv_python" -m scripts.check_db --init
 echo "Setup passed. See README.md for the three startup commands."

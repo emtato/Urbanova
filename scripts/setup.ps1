@@ -18,15 +18,6 @@ Confirm-Exit
 Push-Location frontend
 try { npm ci; Confirm-Exit } finally { Pop-Location }
 New-Item -ItemType Directory -Force data/cache,data/raw | Out-Null
-$useLocal = & $venvPython -c 'from backend.config import settings; print(str(settings.offline or settings.database_url is None).lower())'
-Confirm-Exit
-if ($useLocal -eq 'true') {
-    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-        throw 'Install/start Docker Desktop, then rerun setup.'
-    }
-    docker compose up -d --wait db
-    Confirm-Exit
-}
 & $venvPython -m scripts.check_db --init
 Confirm-Exit
 Write-Host 'Setup passed. See README.md for the three startup commands.'

@@ -1,4 +1,4 @@
-"""The same SQL bootstrap and result writer serve local and hosted Postgres."""
+"""Tiger Data schema bootstrap and versioned result writer."""
 from typing import Any
 from uuid import UUID
 

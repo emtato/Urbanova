@@ -10,28 +10,26 @@ from backend.db import save_result
 from backend.main import app
 
 
-def test_offline_always_selects_local_database():
-    config = Settings(_env_file=None, offline=True,
-                      database_url="postgresql://hosted:secret@remote/futureproof")
-    assert "localhost" in config.active_database_url
-    config = Settings(_env_file=None, offline=False,
-                      database_url="postgresql://hosted:secret@remote/futureproof")
-    assert "remote" in config.active_database_url
+def test_tiger_data_connection_url_is_used():
+    config = Settings(_env_file=None, database_url="postgresql://hosted:secret@remote/futureproof?sslmode=require")
+    assert config.active_database_url == "postgresql://hosted:secret@remote/futureproof?sslmode=require"
 
 
 def test_dotenv_loading_and_validation(tmp_path):
     env = tmp_path / ".env"
-    env.write_text("OFFLINE=false\nDATABASE_URL=postgresql://user:secret@remote/db\nSIM_RUNS=42\n")
+    env.write_text("DATABASE_URL=postgresql://user:secret@remote/db?sslmode=require\nSIM_RUNS=42\n")
     config = Settings(_env_file=env)
-    assert not config.offline
     assert config.sim_runs == 42
     assert "remote" in config.active_database_url
     with pytest.raises(ValidationError):
         Settings(_env_file=None, sim_runs=0)
 
 
-def test_blank_hosted_url_uses_local_fallback():
-    assert "localhost" in Settings(_env_file=None, database_url="", offline=False).active_database_url
+@pytest.mark.parametrize("database_url", ["", None])
+def test_missing_tiger_data_url_requests_configuration(database_url):
+    config = Settings(_env_file=None, database_url=database_url)
+    with pytest.raises(ValueError, match="Set DATABASE_URL"):
+        _ = config.active_database_url
 
 
 def test_health_and_database_failure_do_not_leak_secrets():
