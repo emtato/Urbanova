@@ -1,6 +1,6 @@
 # Phase 01 contract, version 1.0.0
 
-The implementation gate for steps 1.1–1.16 is complete for **505 eastbound, Jarvis to Dundas East/Broadview**. The seven stops follow the confirmed endpoints rather than the draft's generic 8–12-stop bus target.
+Simulation variables and the simulator are owned by the simulation teammate. The sourced data now covers **505 westbound, Dundas East/Broadview to Jarvis**; see [data-handoff.md](data-handoff.md). The existing synthetic contract fixture below predates that direction change and remains an integration example, not simulation input. Its regeneration check currently fails against the updated source bundle; Phase 01 is not fully green until that handoff is reconciled.
 
 The active backend is FastAPI. Its authoritative runtime models are **Pydantic modules in backend/schemas/**, replacing the archived Express/Zod instructions in the version 3 planning document. The generated JSON Schema is data/contracts/comparison.schema.json. Matching, hand-maintained TypeScript interfaces are frontend/src/lib/types.ts. No second backend or validation library is needed.
 
@@ -11,7 +11,7 @@ The active backend is FastAPI. Its authoritative runtime models are **Pydantic m
 | 1.1 | Corridor and service window | [corridor.md](corridor.md), dated GTFS evidence in data/reviewed |
 | 1.2 | Three proposals and missing observations | [feasibility.md](feasibility.md); estimated walking access explicitly requires owner review |
 | 1.3 | Live database and structured Gemini response | data/reviewed/access_check.json; both passed locally |
-| 1.4 | Three-stop, two-car, ten-passenger hand case | sim/tiny_case.py and its conservation/capacity checks |
+| 1.4 | Simulator and hand-case validation | Owned by simulation teammate; duplicate root sim/ scaffolding removed |
 | 1.5 | SourceRef | backend/schemas/source.py |
 | 1.6 | Assumption | backend/schemas/assumption.py |
 | 1.7 | Stop, Link, Corridor | backend/schemas/corridor.py |
@@ -76,7 +76,6 @@ From the repository root, using the activated Python environment:
 
 ```sh
 python -m backend.scripts.check_contract
-python -m sim.tiny_case
 python -m pytest backend/tests -q
 cd frontend
 npm run check:contract

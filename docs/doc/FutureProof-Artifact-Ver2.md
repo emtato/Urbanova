@@ -93,7 +93,7 @@ All four people have `uvicorn backend.main:app --reload`, `npm run dev` and `SEL
 
 ## Prove feasibility, freeze the contract
 
-Implementation complete for 505 eastbound Jarvis to Dundas/Broadview (seven stops). Runtime uses FastAPI/Pydantic. See [contract 1.0.0](../contract.md) for executed checks and scope adjustments; the generic bus candidates below are retained as planning context. Four-laptop owner confirmation and walking field review remain separate.
+Data now covers 505 westbound Dundas/Broadview to Jarvis (seven stops). Simulation variables and validation belong to the simulation owner; the earlier synthetic fixture still needs alignment. Runtime uses FastAPI/Pydantic. See [contract 1.0.0](../contract.md) for executed checks and scope adjustments; the generic bus candidates below are retained as planning context. Four-laptop owner confirmation and walking field review remain separate.
 
 All four together · Sat 00:30 → 02:30 · blocking ·
 
@@ -132,9 +132,9 @@ In pairs · time-boxed to 75 minutes
    backend/scripts/check_access.py
 
    Tiger Data service reachable with PostGIS enabled; one Gemini call returns a valid structured response. If either fails, decide the fallback now, not at hour 20.
-4. [x] 1.4
+4. [ ] 1.4
 
-   sim/tiny_case.pyOwner 3's first milestone
+   Simulation owner's hand-case validation (no duplicate root sim/ implementation)
 
    Three stops, two buses, ten passengers, worked out by hand first and written in the docstring. The simulator's first job is to reproduce that page exactly.
 

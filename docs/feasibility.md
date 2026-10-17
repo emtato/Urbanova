@@ -8,7 +8,7 @@ Product label: **scenario experiment**. Schedules and proposed unit counts are s
 | 1.1 Corridor | Verified with an explicit window assumption | 505 westbound Dundas/Broadview → Jarvis, seven consecutive stops; see corridor.md |
 | 1.2 GTFS and developments | Verified as feasibility evidence | Dated weekday service plus three distinct pipeline proposals and estimated pedestrian access |
 | 1.3 Tiger Data and Gemini | Passed live | data/reviewed/access_check.json records PostGIS and a schema-validated Gemini response |
-| 1.4 Tiny case | Passed | sim/tiny_case.py reproduces the hand calculation; tests check conservation, capacity and persistent denied riders |
+| 1.4 Tiny case | Simulation teammate owns this | Duplicate simulation scaffolding removed; use the sourced data handoff, not synthetic fixture values |
 
 The analysis window is Friday 2026-10-16, 07:00–09:00 America/Toronto, chosen for reproducibility.
 The feed covers that day, and calendar exceptions are applied. There are 17 scheduled westbound entries, a median 6-minute headway and a roughly 1.97 km segment.
@@ -55,26 +55,14 @@ Each route retains manual_review=pending. Full Lane A walking access to 2–3 al
 Do not invent observed ridership or treat the schedules as calibration data for passenger demand.
 The production model needs warm-up, a clearance horizon and explicit reporting of unresolved riders.
 
-## Hand-calculated tiny case
-Three stops A → B → C; two cars of capacity 4 enter A at 0 s and 60 s.
-Five riders wait at A and five at B at 0 s; all travel to C. Each link takes 30 s with zero dwell as a fixture assumption.
-
-| Car | At A | At B | At C |
-| --- | --- | --- | --- |
-| 1 | t=0: boards 4, leaves 1 | t=30: full, leaves 5 | t=60: alights 4 |
-| 2 | t=60: boards 1 | t=90: boards 3, leaves 2 | t=120: alights 4 |
-
-At 120 s: 8 arrived, 2 waiting, 0 onboard; 6 riders denied at least once.
-Mean completed-rider wait = (4×0 + 1×60 + 3×90)/8 = 41.25 s.
-The two unresolved riders have wait lower bounds of 120 s; they are reported rather than dropped.
-This is a separately labelled reference case, not a claim that the production simulation is complete.
+## Simulation ownership
+The simulation teammate defines the variables and hand-case validation. Duplicate simulation scaffolding has been removed. Use [data-handoff.md](data-handoff.md) for her sourced inputs.
 
 ## Reproduce from the repository root
 After installing requirements and setting local .env credentials:
 ```sh
 python -m backend.scripts.prove_feasibility
 python -m backend.scripts.check_access
-python -m sim.tiny_case
 python -m pytest -q
 ```
 The data build reuses checksum-verified caches; on a new laptop it downloads source files into ignored data/raw and data/cache.
@@ -91,7 +79,7 @@ Set that same value in Railway Variables and apply/redeploy; Google rejected gem
 Keys and database URLs remain backend-only and are excluded from the committed evidence.
 
 ## Phase 01 handoff
-Steps 1.5–1.16 now land in [contract.md](contract.md): Pydantic models, matching TypeScript, the full validated Comparison fixture and two-car replay. The implementation gate is complete; team laptop confirmation and the walking review caveats above remain explicit.
+Steps 1.5–1.16 are documented in [contract.md](contract.md). The existing synthetic fixture predates the westbound data change and its regeneration check needs reconciliation. Simulation variables and validation belong to the simulation teammate. Her sourced inputs are listed in [data-handoff.md](data-handoff.md); laptop confirmations and walking-review caveats remain explicit.
 The frozen API boundary is backend/schemas/Comparison, version 1.0.0. The reviewed corridor.json remains the data evidence rather than the API response shape.
 
 The separate [Lawrence East study](feasibility-lawrence-east.md) is preserved for reference; this handoff follows the confirmed 505 endpoints.

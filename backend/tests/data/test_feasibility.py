@@ -10,7 +10,6 @@ import pytest
 from backend.config import ROOT_DIR
 from data.sources.base import fetch_cached
 from data.sources.gtfs_static import active_services, extract_corridor, seconds
-from sim.tiny_case import verify_tiny_case
 
 
 def calendar():
@@ -136,14 +135,3 @@ def test_route_reference_contains_the_corridor_in_order():
     assert positions == list(range(positions[0], positions[0] + len(positions)))
     start, end = direction["stops"][positions[0]], direction["stops"][positions[-1]]
     assert abs((end["dist_from_start_m"] - start["dist_from_start_m"]) - bundle["summary"]["length_m"]) < 50
-
-
-def test_hand_calculated_streetcar_case_conserves_all_ten_riders():
-    result = verify_tiny_case()
-    assert result["arrived"] == 8
-    assert result["waiting"] == 2
-    assert result["mean_completed_wait_s"] == 41.25
-    assert result["passengers"]["A5"]["denied_once"]
-    assert result["passengers"]["A5"]["status"] == "arrived"
-    assert result["passengers"]["B5"]["status"] == "waiting"
-    assert result == verify_tiny_case()
