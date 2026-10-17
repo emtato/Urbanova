@@ -1,4 +1,4 @@
--- Repeatable Tiger Data schema bootstrap.
+-- Repeatable Vultr Managed PostgreSQL schema bootstrap.
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE TABLE IF NOT EXISTS saved_results (

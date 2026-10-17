@@ -1,4 +1,4 @@
-"""Initialize the Tiger Data schema, then run the PostGIS gate query."""
+"""Initialize the Vultr Managed PostgreSQL schema, then run the PostGIS gate query."""
 import argparse
 
 from backend.config import settings
@@ -10,14 +10,14 @@ def main() -> None:
     parser.add_argument("--init", action="store_true")
     args = parser.parse_args()
     if settings.database_url is None:
-        raise SystemExit("Set DATABASE_URL in the root .env to your Tiger Data connection URL.")
+        raise SystemExit("Set DATABASE_URL in the root .env to your Vultr Managed PostgreSQL connection URL.")
     try:
         if args.init:
             initialize_database()
         version = ping_database()
     except Exception:
         raise SystemExit(
-            "Tiger Data check failed. Verify DATABASE_URL, network access, and sslmode=require. "
+            "Vultr Managed PostgreSQL check failed. Verify DATABASE_URL, network access, and sslmode=require. "
             "The database account needs permission to create tables and enable PostGIS."
         )
     print(f"SELECT postgis_version(); => {version}")

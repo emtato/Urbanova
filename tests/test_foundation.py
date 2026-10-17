@@ -10,7 +10,7 @@ from backend.db import save_result
 from backend.main import app
 
 
-def test_tiger_data_connection_url_is_used():
+def test_vultr_connection_url_is_used():
     config = Settings(_env_file=None, database_url="postgresql://hosted:secret@remote/futureproof?sslmode=require")
     assert config.active_database_url == "postgresql://hosted:secret@remote/futureproof?sslmode=require"
 
@@ -26,7 +26,7 @@ def test_dotenv_loading_and_validation(tmp_path):
 
 
 @pytest.mark.parametrize("database_url", ["", None])
-def test_missing_tiger_data_url_requests_configuration(database_url):
+def test_missing_vultr_url_requests_configuration(database_url):
     config = Settings(_env_file=None, database_url=database_url)
     with pytest.raises(ValueError, match="Set DATABASE_URL"):
         _ = config.active_database_url

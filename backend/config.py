@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     @property
     def active_database_url(self) -> str:
         if self.database_url is None:
-            raise ValueError("Set DATABASE_URL in the root .env to your Tiger Data connection URL.")
+            raise ValueError("Set DATABASE_URL in the root .env to your Vultr Managed PostgreSQL connection URL.")
         return str(self.database_url)
 
 
