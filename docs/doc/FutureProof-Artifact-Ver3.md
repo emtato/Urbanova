@@ -101,7 +101,7 @@ In pairs · time-boxed to 75 minutes
 
 ### Feasibility checks
 
-1. [ ] 1.1
+1. [x] 1.1
 
    docs/corridor.mdDecision
 
@@ -120,7 +120,7 @@ In pairs · time-boxed to 75 minutes
    **Watch:** no observed lane effect on this street. Any lane effect borrowed from Eglinton East is labelled as a transferred assumption.
 
    Choose the first one where Owner 2 finds three documented residential projects within walking distance of the stops. Use the AM peak toward the subway: new residents board near home, so their load lands on existing riders downstream, which is the effect the brief asks you to show. Record stop IDs, direction, window, and what is left out (express trips, the other direction).
-2. [ ] 1.2
+2. [x] 1.2
 
    docs/feasibility.md
 
