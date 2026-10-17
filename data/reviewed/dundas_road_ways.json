@@ -1,0 +1,1764 @@
+[
+  {
+    "id": "4321248",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "parking:both": "no",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "29603223",
+      "394500546",
+      "29603224",
+      "6532307693",
+      "3597536123",
+      "6532307692",
+      "26240539",
+      "1409284223",
+      "6532307423",
+      "26240542"
+    ],
+    "coords": [
+      [
+        -79.3809131,
+        43.6563354
+      ],
+      [
+        -79.3807822,
+        43.6563642
+      ],
+      [
+        -79.3804394,
+        43.6564382
+      ],
+      [
+        -79.3803714,
+        43.6564494
+      ],
+      [
+        -79.3803008,
+        43.6564528
+      ],
+      [
+        -79.3802366,
+        43.6564477
+      ],
+      [
+        -79.3801319,
+        43.6564282
+      ],
+      [
+        -79.3797645,
+        43.6563425
+      ],
+      [
+        -79.3795911,
+        43.6562999
+      ],
+      [
+        -79.37958,
+        43.6562972
+      ]
+    ]
+  },
+  {
+    "id": "23447979",
+    "name": "Dundas Square",
+    "tags": {
+      "highway": "unclassified",
+      "lanes": "1",
+      "maxspeed": "30",
+      "name": "Dundas Square",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "oneway": "yes",
+      "sidewalk:both": "separate",
+      "surface": "concrete"
+    },
+    "nodes": [
+      "253937384",
+      "394500549",
+      "281361979",
+      "6532307725"
+    ],
+    "coords": [
+      [
+        -79.3806501,
+        43.6557204
+      ],
+      [
+        -79.3805539,
+        43.6557444
+      ],
+      [
+        -79.380036,
+        43.6558609
+      ],
+      [
+        -79.3797534,
+        43.6559279
+      ]
+    ]
+  },
+  {
+    "id": "30979603",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "34682139",
+      "26240553"
+    ],
+    "coords": [
+      [
+        -79.3734552,
+        43.6573006
+      ],
+      [
+        -79.3735445,
+        43.6572789
+      ]
+    ]
+  },
+  {
+    "id": "35155500",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "29689091",
+      "2155391473",
+      "394506450"
+    ],
+    "coords": [
+      [
+        -79.3756445,
+        43.6568287
+      ],
+      [
+        -79.3751814,
+        43.6569239
+      ],
+      [
+        -79.3746831,
+        43.6570338
+      ]
+    ]
+  },
+  {
+    "id": "35155501",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "25768772",
+      "394506510"
+    ],
+    "coords": [
+      [
+        -79.3745475,
+        43.6570636
+      ],
+      [
+        -79.3744193,
+        43.6570902
+      ]
+    ]
+  },
+  {
+    "id": "35159933",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "26240542",
+      "1409284222",
+      "26240543",
+      "6532307417",
+      "42606876"
+    ],
+    "coords": [
+      [
+        -79.37958,
+        43.6562972
+      ],
+      [
+        -79.3794243,
+        43.6562615
+      ],
+      [
+        -79.3789979,
+        43.656163
+      ],
+      [
+        -79.37894,
+        43.6561526
+      ],
+      [
+        -79.3788819,
+        43.6561484
+      ]
+    ]
+  },
+  {
+    "id": "35159934",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "26240549",
+      "253937505",
+      "966480925"
+    ],
+    "coords": [
+      [
+        -79.3783016,
+        43.6562591
+      ],
+      [
+        -79.3782196,
+        43.6562763
+      ],
+      [
+        -79.3777071,
+        43.6563843
+      ]
+    ]
+  },
+  {
+    "id": "220918439",
+    "name": "Dundas Street West",
+    "tags": {
+      "cycleway:both": "no",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street West",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "name:zh": "\u767b\u6253\u58eb\u897f\u8857",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "390998466",
+      "266582325",
+      "394500529",
+      "29603223"
+    ],
+    "coords": [
+      [
+        -79.3835922,
+        43.655763
+      ],
+      [
+        -79.3823381,
+        43.6560328
+      ],
+      [
+        -79.3810417,
+        43.6563099
+      ],
+      [
+        -79.3809131,
+        43.6563354
+      ]
+    ]
+  },
+  {
+    "id": "248489460",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "25628759",
+      "6699111768",
+      "6699111732",
+      "10040870319",
+      "412354772",
+      "211893022"
+    ],
+    "coords": [
+      [
+        -79.3771344,
+        43.6565053
+      ],
+      [
+        -79.3771155,
+        43.6565096
+      ],
+      [
+        -79.3770363,
+        43.6565262
+      ],
+      [
+        -79.3770285,
+        43.6565279
+      ],
+      [
+        -79.3770167,
+        43.6565305
+      ],
+      [
+        -79.3765393,
+        43.6566347
+      ]
+    ]
+  },
+  {
+    "id": "446996494",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "394506510",
+      "26240553"
+    ],
+    "coords": [
+      [
+        -79.3744193,
+        43.6570902
+      ],
+      [
+        -79.3735445,
+        43.6572789
+      ]
+    ]
+  },
+  {
+    "id": "446996495",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "394506450",
+      "25768772"
+    ],
+    "coords": [
+      [
+        -79.3746831,
+        43.6570338
+      ],
+      [
+        -79.3745475,
+        43.6570636
+      ]
+    ]
+  },
+  {
+    "id": "446998087",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "966480925",
+      "394509546"
+    ],
+    "coords": [
+      [
+        -79.3777071,
+        43.6563843
+      ],
+      [
+        -79.3772498,
+        43.656481
+      ]
+    ]
+  },
+  {
+    "id": "446998088",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway:both": "no",
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "394509546",
+      "6699111762",
+      "25628759"
+    ],
+    "coords": [
+      [
+        -79.3772498,
+        43.656481
+      ],
+      [
+        -79.3771506,
+        43.6565019
+      ],
+      [
+        -79.3771344,
+        43.6565053
+      ]
+    ]
+  },
+  {
+    "id": "446999755",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "281361927",
+      "26240549"
+    ],
+    "coords": [
+      [
+        -79.3787374,
+        43.6561628
+      ],
+      [
+        -79.3783016,
+        43.6562591
+      ]
+    ]
+  },
+  {
+    "id": "446999759",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "42606876",
+      "6532307408",
+      "2423205881",
+      "281361927"
+    ],
+    "coords": [
+      [
+        -79.3788819,
+        43.6561484
+      ],
+      [
+        -79.3788645,
+        43.6561489
+      ],
+      [
+        -79.3788248,
+        43.6561513
+      ],
+      [
+        -79.3787374,
+        43.6561628
+      ]
+    ]
+  },
+  {
+    "id": "547634984",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "211893022",
+      "29689091"
+    ],
+    "coords": [
+      [
+        -79.3765393,
+        43.6566347
+      ],
+      [
+        -79.3756445,
+        43.6568287
+      ]
+    ]
+  },
+  {
+    "id": "634716097",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27559707",
+      "2155391487",
+      "1801247229",
+      "2155391486",
+      "27559705",
+      "1801247228",
+      "1801247227",
+      "2155391474",
+      "27559703",
+      "1801247226",
+      "763664109",
+      "34682139"
+    ],
+    "coords": [
+      [
+        -79.3728833,
+        43.6578805
+      ],
+      [
+        -79.3729531,
+        43.6578202
+      ],
+      [
+        -79.3730153,
+        43.6577602
+      ],
+      [
+        -79.3730582,
+        43.657714
+      ],
+      [
+        -79.3730979,
+        43.6576642
+      ],
+      [
+        -79.3731222,
+        43.6576268
+      ],
+      [
+        -79.3732283,
+        43.6574618
+      ],
+      [
+        -79.3732618,
+        43.657416
+      ],
+      [
+        -79.3732997,
+        43.6573784
+      ],
+      [
+        -79.3733378,
+        43.6573525
+      ],
+      [
+        -79.3733979,
+        43.6573201
+      ],
+      [
+        -79.3734552,
+        43.6573006
+      ]
+    ]
+  },
+  {
+    "id": "695649274",
+    "name": "Dundas Square",
+    "tags": {
+      "highway": "unclassified",
+      "lanes": "2",
+      "name": "Dundas Square",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "oneway": "no",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "6532307725",
+      "3700459276",
+      "773006155",
+      "6279501270",
+      "253937395"
+    ],
+    "coords": [
+      [
+        -79.3797534,
+        43.6559279
+      ],
+      [
+        -79.3796086,
+        43.6559616
+      ],
+      [
+        -79.379556,
+        43.6559738
+      ],
+      [
+        -79.3794649,
+        43.6559923
+      ],
+      [
+        -79.3794448,
+        43.6559964
+      ]
+    ]
+  },
+  {
+    "id": "37531911",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27559776",
+      "6698487519",
+      "12181043710",
+      "394505068",
+      "6698487520",
+      "2155391493"
+    ],
+    "coords": [
+      [
+        -79.3709993,
+        43.6583173
+      ],
+      [
+        -79.3710621,
+        43.6583031
+      ],
+      [
+        -79.3710767,
+        43.6583007
+      ],
+      [
+        -79.3711129,
+        43.658295
+      ],
+      [
+        -79.3711617,
+        43.6582929
+      ],
+      [
+        -79.371179,
+        43.658293
+      ]
+    ]
+  },
+  {
+    "id": "446823311",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27559801",
+      "27559798"
+    ],
+    "coords": [
+      [
+        -79.366675,
+        43.6592878
+      ],
+      [
+        -79.3673487,
+        43.659135
+      ]
+    ]
+  },
+  {
+    "id": "446823312",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27559798",
+      "281704451"
+    ],
+    "coords": [
+      [
+        -79.3673487,
+        43.659135
+      ],
+      [
+        -79.3679508,
+        43.6590048
+      ]
+    ]
+  },
+  {
+    "id": "446994465",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27559803",
+      "400706828",
+      "6412492393",
+      "6412492386",
+      "35506392"
+    ],
+    "coords": [
+      [
+        -79.3652334,
+        43.6596015
+      ],
+      [
+        -79.3658898,
+        43.6594583
+      ],
+      [
+        -79.365902,
+        43.6594556
+      ],
+      [
+        -79.3659848,
+        43.6594368
+      ],
+      [
+        -79.3659997,
+        43.6594334
+      ]
+    ]
+  },
+  {
+    "id": "446994466",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "35506392",
+      "6412492183",
+      "6412492405",
+      "773011476",
+      "663133658",
+      "27559801"
+    ],
+    "coords": [
+      [
+        -79.3659997,
+        43.6594334
+      ],
+      [
+        -79.3660194,
+        43.6594293
+      ],
+      [
+        -79.3661027,
+        43.6594118
+      ],
+      [
+        -79.36611,
+        43.6594103
+      ],
+      [
+        -79.3665795,
+        43.6593095
+      ],
+      [
+        -79.366675,
+        43.6592878
+      ]
+    ]
+  },
+  {
+    "id": "633312116",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27559782",
+      "394505058",
+      "12181043707",
+      "27559776"
+    ],
+    "coords": [
+      [
+        -79.3702201,
+        43.6584919
+      ],
+      [
+        -79.3709083,
+        43.6583373
+      ],
+      [
+        -79.3709453,
+        43.6583293
+      ],
+      [
+        -79.3709993,
+        43.6583173
+      ]
+    ]
+  },
+  {
+    "id": "633312117",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "281704451",
+      "10695708204",
+      "7477429161",
+      "27559788",
+      "7477429158",
+      "27559783",
+      "27559782"
+    ],
+    "coords": [
+      [
+        -79.3679508,
+        43.6590048
+      ],
+      [
+        -79.3682613,
+        43.6589332
+      ],
+      [
+        -79.3684148,
+        43.6588978
+      ],
+      [
+        -79.3685377,
+        43.6588694
+      ],
+      [
+        -79.3686391,
+        43.6588467
+      ],
+      [
+        -79.3695027,
+        43.6586538
+      ],
+      [
+        -79.3702201,
+        43.6584919
+      ]
+    ]
+  },
+  {
+    "id": "813284533",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "13232167278",
+      "2674310796",
+      "27559805",
+      "27559804",
+      "6626909714",
+      "27559803"
+    ],
+    "coords": [
+      [
+        -79.3635499,
+        43.6599772
+      ],
+      [
+        -79.36365,
+        43.6599549
+      ],
+      [
+        -79.363743,
+        43.6599341
+      ],
+      [
+        -79.3645006,
+        43.6597657
+      ],
+      [
+        -79.3649441,
+        43.6596663
+      ],
+      [
+        -79.3652334,
+        43.6596015
+      ]
+    ]
+  },
+  {
+    "id": "1537303801",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "maxspeed:type": "sign",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "2155391493",
+      "2155391494",
+      "2155391496",
+      "27559774",
+      "2155391497",
+      "27559770",
+      "2155391495",
+      "2155391492",
+      "2155391491",
+      "27559769",
+      "344478163",
+      "27559759",
+      "763664847",
+      "2155391490",
+      "27559708",
+      "2155391489",
+      "1801247230",
+      "2155391488",
+      "27559707"
+    ],
+    "coords": [
+      [
+        -79.371179,
+        43.658293
+      ],
+      [
+        -79.3713232,
+        43.658301
+      ],
+      [
+        -79.3714665,
+        43.6583129
+      ],
+      [
+        -79.3715536,
+        43.658316
+      ],
+      [
+        -79.3716479,
+        43.6583165
+      ],
+      [
+        -79.3717213,
+        43.6583132
+      ],
+      [
+        -79.3718361,
+        43.6583027
+      ],
+      [
+        -79.3719444,
+        43.6582877
+      ],
+      [
+        -79.3720433,
+        43.6582692
+      ],
+      [
+        -79.3721412,
+        43.6582465
+      ],
+      [
+        -79.37227,
+        43.6582074
+      ],
+      [
+        -79.3723774,
+        43.6581714
+      ],
+      [
+        -79.3724603,
+        43.6581372
+      ],
+      [
+        -79.3725208,
+        43.6581079
+      ],
+      [
+        -79.3725805,
+        43.6580799
+      ],
+      [
+        -79.3726599,
+        43.6580366
+      ],
+      [
+        -79.3727378,
+        43.6579851
+      ],
+      [
+        -79.3728112,
+        43.6579343
+      ],
+      [
+        -79.3728833,
+        43.6578805
+      ]
+    ]
+  },
+  {
+    "id": "22677604",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway": "track",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "2",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "parking:both": "no",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "20964422",
+      "2056859693",
+      "244247373",
+      "9438412959",
+      "292781222"
+    ],
+    "coords": [
+      [
+        -79.3562114,
+        43.6616398
+      ],
+      [
+        -79.3563521,
+        43.6616176
+      ],
+      [
+        -79.3564803,
+        43.6615907
+      ],
+      [
+        -79.3569328,
+        43.6614832
+      ],
+      [
+        -79.357688,
+        43.6613038
+      ]
+    ]
+  },
+  {
+    "id": "22677607",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway": "track",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27558327",
+      "6695596357"
+    ],
+    "coords": [
+      [
+        -79.3545261,
+        43.6618441
+      ],
+      [
+        -79.3546403,
+        43.6618296
+      ]
+    ]
+  },
+  {
+    "id": "62005846",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway": "track",
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "2",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27558323",
+      "6698466459",
+      "6698466447",
+      "3711331621",
+      "6698466418",
+      "6695596356",
+      "2884414063",
+      "27558324"
+    ],
+    "coords": [
+      [
+        -79.3513487,
+        43.6624459
+      ],
+      [
+        -79.3513676,
+        43.6624404
+      ],
+      [
+        -79.3514318,
+        43.6624217
+      ],
+      [
+        -79.3514484,
+        43.6624166
+      ],
+      [
+        -79.3514566,
+        43.6624148
+      ],
+      [
+        -79.3515967,
+        43.6623801
+      ],
+      [
+        -79.351811,
+        43.6623327
+      ],
+      [
+        -79.3522244,
+        43.6622396
+      ]
+    ]
+  },
+  {
+    "id": "284730112",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway": "lane",
+      "highway": "tertiary",
+      "lanes": "2",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "6364830639",
+      "7768340966",
+      "4550991267",
+      "3711331622",
+      "6698466452",
+      "27558323"
+    ],
+    "coords": [
+      [
+        -79.350506,
+        43.6626459
+      ],
+      [
+        -79.3507013,
+        43.6625996
+      ],
+      [
+        -79.3508456,
+        43.6625653
+      ],
+      [
+        -79.3512482,
+        43.6624697
+      ],
+      [
+        -79.3513307,
+        43.6624502
+      ],
+      [
+        -79.3513487,
+        43.6624459
+      ]
+    ]
+  },
+  {
+    "id": "284730113",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway": "track",
+      "embedded_rails": "tram",
+      "highway": "secondary",
+      "lanes": "2",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27558324",
+      "9161890734",
+      "35721975",
+      "9161890733",
+      "6364830637",
+      "8389119331",
+      "6364830638",
+      "27558325",
+      "27558326",
+      "27558327"
+    ],
+    "coords": [
+      [
+        -79.3522244,
+        43.6622396
+      ],
+      [
+        -79.352972,
+        43.662075
+      ],
+      [
+        -79.353045,
+        43.6620589
+      ],
+      [
+        -79.353151,
+        43.6620373
+      ],
+      [
+        -79.3533421,
+        43.6619984
+      ],
+      [
+        -79.353453,
+        43.66198
+      ],
+      [
+        -79.3535466,
+        43.6619644
+      ],
+      [
+        -79.3538904,
+        43.6619194
+      ],
+      [
+        -79.354228,
+        43.6618779
+      ],
+      [
+        -79.3545261,
+        43.6618441
+      ]
+    ]
+  },
+  {
+    "id": "446823310",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway": "track",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "2",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "parking:both": "no",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27558330",
+      "2616826197",
+      "3637940017",
+      "416744895",
+      "416744883",
+      "7477429127",
+      "27559809",
+      "6412492159",
+      "439492096"
+    ],
+    "coords": [
+      [
+        -79.3581471,
+        43.6611986
+      ],
+      [
+        -79.3582523,
+        43.6611747
+      ],
+      [
+        -79.3593114,
+        43.6609327
+      ],
+      [
+        -79.3596928,
+        43.6608458
+      ],
+      [
+        -79.3600987,
+        43.6607508
+      ],
+      [
+        -79.360343,
+        43.6606948
+      ],
+      [
+        -79.3604731,
+        43.6606654
+      ],
+      [
+        -79.3605714,
+        43.6606431
+      ],
+      [
+        -79.3609049,
+        43.6605695
+      ]
+    ]
+  },
+  {
+    "id": "446977511",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway": "track",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "4",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "parking:both": "no",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "292781222",
+      "2616826199",
+      "27558330"
+    ],
+    "coords": [
+      [
+        -79.357688,
+        43.6613038
+      ],
+      [
+        -79.3580333,
+        43.6612236
+      ],
+      [
+        -79.3581471,
+        43.6611986
+      ]
+    ]
+  },
+  {
+    "id": "679754336",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway:left": "track",
+      "cycleway:right": "lane",
+      "highway": "tertiary",
+      "lanes": "2",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "27558321",
+      "8229842650",
+      "2290975438",
+      "6364830639"
+    ],
+    "coords": [
+      [
+        -79.3482128,
+        43.6631902
+      ],
+      [
+        -79.3482841,
+        43.6631733
+      ],
+      [
+        -79.3490505,
+        43.6629914
+      ],
+      [
+        -79.350506,
+        43.6626459
+      ]
+    ]
+  },
+  {
+    "id": "712114584",
+    "name": "Dundas Street East",
+    "tags": {
+      "bridge": "yes",
+      "cycleway": "track",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "2",
+      "layer": "1",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "6695596357",
+      "20964422"
+    ],
+    "coords": [
+      [
+        -79.3546403,
+        43.6618296
+      ],
+      [
+        -79.3562114,
+        43.6616398
+      ]
+    ]
+  },
+  {
+    "id": "1308580017",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway:left": "track",
+      "cycleway:right": "lane",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "2",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "parking:both": "no",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "439492096",
+      "7477429134",
+      "2381380917"
+    ],
+    "coords": [
+      [
+        -79.3609049,
+        43.6605695
+      ],
+      [
+        -79.3616662,
+        43.660396
+      ],
+      [
+        -79.3618045,
+        43.6603649
+      ]
+    ]
+  },
+  {
+    "id": "1308580018",
+    "name": "Dundas Street East",
+    "tags": {
+      "cycleway:left": "lane",
+      "cycleway:right": "track",
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "2",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "parking:both": "no",
+      "sidewalk:both": "separate",
+      "surface": "asphalt"
+    },
+    "nodes": [
+      "2381380917",
+      "7477429132",
+      "2056852367",
+      "27559806"
+    ],
+    "coords": [
+      [
+        -79.3618045,
+        43.6603649
+      ],
+      [
+        -79.3619266,
+        43.6603377
+      ],
+      [
+        -79.3628559,
+        43.6601303
+      ],
+      [
+        -79.3630083,
+        43.660098
+      ]
+    ]
+  },
+  {
+    "id": "1442067563",
+    "name": "Dundas Street East",
+    "tags": {
+      "embedded_rails:lanes": "|tram|tram|",
+      "highway": "secondary",
+      "lanes": "3",
+      "lanes:backward": "2",
+      "lanes:forward": "1",
+      "lit": "yes",
+      "maxspeed": "40",
+      "name": "Dundas Street East",
+      "name:etymology": "Henry Dundas, 1st Viscount Melville",
+      "name:etymology:wikidata": "Q335351",
+      "sidewalk:both": "separate",
+      "surface": "asphalt",
+      "turn:lanes:backward": "none|right"
+    },
+    "nodes": [
+      "27559806",
+      "7596904691",
+      "6412492169",
+      "13232167278"
+    ],
+    "coords": [
+      [
+        -79.3630083,
+        43.660098
+      ],
+      [
+        -79.3630663,
+        43.6600854
+      ],
+      [
+        -79.3631079,
+        43.6600757
+      ],
+      [
+        -79.3635499,
+        43.6599772
+      ]
+    ]
+  }
+]

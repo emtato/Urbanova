@@ -15,7 +15,11 @@ import {
   normalizeStop,
   normalizeDevelopment,
 } from './types'
-import { reviewedWalkingRoutes } from '../data'
+import { reviewedWalkingRoutes, dundasStreetcarLine } from '../data'
+
+export const DUNDAS_ROAD_COORDINATES: [number, number][] = (
+  dundasStreetcarLine.features[0].geometry as unknown as { coordinates: [number, number][] }
+).coordinates
 
 // Existing building IDs directly on the development parcels to swap out during phases
 export const OVERWRITTEN_BASE_BUILDING_IDS_P1 = [
@@ -115,8 +119,8 @@ export function generateSurroundingMassingGeoJSON(corridor?: any): FeatureCollec
 }
 
 export const DEV_COORDINATES: Record<string, [number, number]> = {
-  'toronto-app-22-124214-ste-13-oz': [-79.372771, 43.6578204], // Phase 1: 239 Dundas St E (146.94m tower at Dundas & Pembroke)
-  'fixture-development-1': [-79.372771, 43.6578204],           // Phase 1 fixture
+  'toronto-app-22-124214-ste-13-oz': [-79.372685, 43.658009], // Phase 1: 239 Dundas St E (146.94m tower at Dundas & Pembroke)
+  'fixture-development-1': [-79.372685, 43.658009],           // Phase 1 fixture
   'toronto-app-26-122451-ste-13-oz': [-79.3642039, 43.6600907], // Phase 2: 500 Dundas St E (413 units)
   'fixture-development-2': [-79.3642039, 43.6600907],
   'toronto-app-25-236949-ste-13-oz': [-79.3563946, 43.6612908], // Phase 2: 761 Dundas St E (1197 units)
@@ -153,14 +157,14 @@ export function getDevelopmentPhase(dev: any): number {
  *
  * 1. `anchor`: [longitude, latitude] of the northeast corner that directly hugs the intersection
  *    corner of Dundas Street East & Pembroke Street.
- *    - Increase longitude (e.g. -79.372535) to nudge East towards Pembroke/Sherbourne.
- *    - Decrease longitude (e.g. -79.372560) to nudge West towards George/Jarvis.
- *    - Increase latitude (e.g. 43.657920) to nudge North into Dundas St E.
- *    - Decrease latitude (e.g. 43.657890) to nudge South along Pembroke St.
+ *    - Increase longitude to nudge East towards Pembroke/Sherbourne.
+ *    - Decrease longitude to nudge West towards George/Jarvis.
+ *    - Increase latitude to nudge North into Dundas St E.
+ *    - Decrease latitude to nudge South along Pembroke St.
  *
- * 2. `rotationDeg`: Clockwise rotation angle in degrees around the corner anchor.
+ * 2. `rotationDeg`: Counter-clockwise rotation angle in degrees around the corner anchor.
  *    - e.g. 0 = baseline street alignment.
- *    - Positive values rotate clockwise, negative values rotate counter-clockwise.
+ *    - Positive values rotate counter-clockwise, negative values rotate clockwise.
  *
  * 3. `scale`: Uniform scale factor (default 1.0).
  */
@@ -171,8 +175,8 @@ export interface Phase1PlacementConfig {
 }
 
 export const PHASE1_PLACEMENT: Phase1PlacementConfig = {
-  anchor: [-79.372515, 43.657910], // Corner of Dundas St E & Pembroke St (shifted east to street edge)
-  rotationDeg: 0,
+  anchor: [-79.372429, 43.658099], // Corner of Dundas St E & Pembroke St (shifted east 2m, south 2m, 18 deg CCW)
+  rotationDeg: 18,
   scale: 1.0,
 }
 
@@ -396,15 +400,42 @@ export function generateWalkCatchmentsGeoJSON(
 }
 
 /**
- * Builds corridor track alignment line GeoJSON
+ * Builds corridor track alignment line GeoJSON centered directly above the actual road of Dundas
  */
-export function generateCorridorLinksGeoJSON(corridor: any): FeatureCollection {
-  const coordinates: [number, number][] = []
+export function generateCorridorLinksGeoJSON(corridor?: any): FeatureCollection {
+  let coordinates: [number, number][] = []
 
-  if (corridor && corridor.stops) {
-    for (let i = 0; i < corridor.stops.length; i++) {
-      const s = normalizeStop(corridor.stops[i])
-      coordinates.push([s.lon, s.lat])
+  // 1. If corridor has explicit link geometries with coordinates, assemble them
+  if (corridor && Array.isArray(corridor.links) && corridor.links.some((l: any) => l.geometry?.coordinates?.length)) {
+    for (const link of corridor.links) {
+      if (link.geometry?.coordinates) {
+        for (const pt of link.geometry.coordinates) {
+          const last = coordinates[coordinates.length - 1]
+          if (!last || last[0] !== pt[0] || last[1] !== pt[1]) {
+            coordinates.push([pt[0], pt[1]])
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Otherwise, use the verified Dundas Street road centerline, centered directly above the road
+  if (coordinates.length === 0) {
+    if (corridor?.stops && corridor.stops.length > 0) {
+      const stops = corridor.stops.map(normalizeStop)
+      const minLon = Math.min(...stops.map((s: any) => s.lon))
+      const maxLon = Math.max(...stops.map((s: any) => s.lon))
+      // Filter Dundas centerline points within the stop bounds with a small buffer
+      const filtered = DUNDAS_ROAD_COORDINATES.filter(
+        ([lon]) => lon >= minLon - 0.0006 && lon <= maxLon + 0.0006
+      )
+      if (filtered.length >= 2) {
+        coordinates = filtered
+      }
+    }
+    // Fallback to full Dundas Streetcar line if no filter matched or empty stops
+    if (coordinates.length === 0) {
+      coordinates = [...DUNDAS_ROAD_COORDINATES]
     }
   }
 
@@ -413,7 +444,10 @@ export function generateCorridorLinksGeoJSON(corridor: any): FeatureCollection {
     features: [
       {
         type: 'Feature',
-        properties: { corridor_id: corridor?.corridor_id ?? '', name: `Route ${corridor?.route_pattern ?? '505'} (${corridor?.direction ?? 'westbound'})` },
+        properties: {
+          corridor_id: corridor?.corridor_id ?? 'ttc-505-west-broadview-tmu',
+          name: `Route ${corridor?.route_pattern ?? '505'} (${corridor?.direction ?? 'westbound'})`,
+        },
         geometry: {
           type: 'LineString',
           coordinates,

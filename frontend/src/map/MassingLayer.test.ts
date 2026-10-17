@@ -14,12 +14,15 @@ import type { Comparison } from '../lib/types'
 const data = sampleComparison as unknown as Comparison
 
 describe('MassingLayer GeoJSON Generators (Contract 1.0.0)', () => {
-  it('generates valid corridor links GeoJSON with 7 coordinates', () => {
+  it('generates valid corridor links GeoJSON centered along Dundas road corridor', () => {
     const links = generateCorridorLinksGeoJSON(data.corridor)
     expect(links.type).toBe('FeatureCollection')
     expect(links.features.length).toBe(1)
     const geom = links.features[0].geometry as { type: string; coordinates: [number, number][] }
-    expect(geom.coordinates.length).toBe(7)
+    expect(geom.coordinates.length).toBeGreaterThanOrEqual(7)
+    // Verify line coordinates are centered along Dundas Street corridor bounds
+    expect(geom.coordinates[0][0]).toBeCloseTo(-79.3513, 2)
+    expect(geom.coordinates[0][1]).toBeCloseTo(43.6624, 2)
   })
 
   it('generates valid corridor stops GeoJSON with 7 point features', () => {

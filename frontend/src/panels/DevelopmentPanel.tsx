@@ -37,8 +37,8 @@ interface SourcedDevelopmentMeta {
 export const REVIEWED_METADATA: Record<string, SourcedDevelopmentMeta> = {
   'toronto-app-22-124214-ste-13-oz': {
     applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=pIdDarxWXh5kap0IoXhw0Q%3D%3D',
-    lon: -79.372771,
-    lat: 43.6578204,
+    lon: -79.372685,
+    lat: 43.658009,
     reviewNote: 'West end; numeric units agree with the current description.',
     pipelineRowId: 927,
     applicationReceived: '2022-03-18',
@@ -46,8 +46,8 @@ export const REVIEWED_METADATA: Record<string, SourcedDevelopmentMeta> = {
   },
   'fixture-development-1': {
     applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=pIdDarxWXh5kap0IoXhw0Q%3D%3D',
-    lon: -79.372771,
-    lat: 43.6578204,
+    lon: -79.372685,
+    lat: 43.658009,
     reviewNote: 'West end; numeric units agree with the current description.',
     pipelineRowId: 927,
     applicationReceived: '2022-03-18',
