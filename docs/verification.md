@@ -1,11 +1,11 @@
 # Verification record — 2026-10-17
 
-Pulled `origin/main` through `a032270`, resolved six overlaps with the saved local changes, and retained the simulation owner's tick engine and configured-simulation API. The pre-pull work is also preserved in a local Git stash. No frontend/3D implementation files were edited by this change.
+Pulled `origin/main` through `d3cb110`, including the teammate frontend/3D changes explicitly approved by the user. Resolved the initial six overlaps and the later naming/provenance schema conflict, retaining both features. The simulation owner's tick engine and configured-simulation API are preserved. The pre-pull work is also preserved in a local Git stash. Teammate frontend/3D files match upstream without additional implementation edits.
 
-- Express: 46 tests passed after integration, including real B11 computations and configured batch save/fetch/delete. Seven API/pipeline tests passed again after the worker/queue changes; `/health` stays responsive during configured computation.
+- Express: all 47 tests passed after the final merge, including real B11 computations, configured batch save/fetch/rename/delete, native storage and the pipeline. `/health` stays responsive during configured computation.
 - Python: 166 tests passed with the shadow suite excluded. The independent three-stop/two-car/ten-rider case passes; mean wait 17.2 seconds, p95 41 seconds, five denied once, all ten completed. The streamed-retention regression preserves native statistics and the full-result default.
 - Pulled 3D test issue: `backend/tests/data/test_shadows.py::test_committed_shadows_have_three_layers_for_every_sunlit_time` expects 12 timestamps, while the pulled shadow artifact contains 16. The shadow artifact and test were left unchanged under the requested 3D exclusion.
-- Frontend contract check passed after the pull: generated interfaces, TypeScript compilation and fixture warning/replay/assumption rendering.
+- Frontend production build and contract check passed after the final pull: generated interfaces, TypeScript compilation and fixture warning/replay/assumption rendering.
 - Tiger Data bundle: 60 source records, 9 stops, 8 links, 3 developments, 9 candidate walking routes and 4 intervention records. Repeated seeding is idempotent. Walking routes remain pending human approval.
 - Database compatibility probe: an incompatible worker claim was skipped and the matching worker accepted; the test job was rolled back.
 - Railway deployment `77e54033-e4ea-4a4c-a550-0c8e3501b60a` is healthy at `https://urbanova-production-ec5f.up.railway.app`. Model `b11-f25bcfaf3073abf6c471`, data `reviewed-ca928b8645bb48a7dd4b`, orchestrator `lane-c-b11-v2` match Windows.

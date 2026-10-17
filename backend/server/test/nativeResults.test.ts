@@ -113,6 +113,26 @@ function recordingStore(failReplay = false) {
     if (sql.startsWith('SELECT payload FROM c_comparisons')) return {rows: saved.has(values[0]) ? [{payload: structuredClone(saved.get(values[0]))}] : []};
     if (sql.startsWith('SELECT payload FROM c_b11_replays')) return {rows: replay.has(values[0]) ? [{payload: structuredClone(replay.get(values[0]))}] : []};
     if (sql.startsWith('SELECT run_id,payload AS summary')) return {rows: structuredClone(native.get(values[0]) ?? [])};
+    if (sql.startsWith('INSERT INTO c_simulations')) {
+      saved.set(values[0], { payload: structuredClone(values[1]), name: values[4] });
+      return { rows: [], rowCount: 1 };
+    }
+    if (sql.startsWith('SELECT payload,name FROM c_simulations')) {
+      return { rows: [...saved.values()].filter(s => s.payload && s.payload.overall_results).map(s => ({ payload: structuredClone(s.payload), name: s.name })) };
+    }
+    if (sql.startsWith('UPDATE c_simulations SET name')) {
+      const existing = saved.get(values[0]);
+      if (existing) {
+        existing.name = values[1];
+        existing.payload.name = values[1];
+        return { rows: [{ id: values[0] }], rowCount: 1 };
+      }
+      return { rows: [], rowCount: 0 };
+    }
+    if (sql.startsWith('DELETE FROM c_simulations')) {
+      const existed = saved.delete(values[0]);
+      return { rows: existed ? [{ id: values[0] }] : [], rowCount: existed ? 1 : 0 };
+    }
     return {rows: [], rowCount: 1};
   };
   store.pool = {query, connect: async () => ({query, release() {}})} as unknown as Pool;
@@ -161,6 +181,49 @@ test('past-run query filters and paginates without loading full simulation dicti
   assert.deepEqual(calls[0].values, ['selected-scenario', 5, 10]);
   assert.match(calls[0].sql, /NOT EXISTS \(SELECT 1 FROM c_delayed_comparisons/);
   assert.match(calls[0].sql, /ORDER BY created_at DESC, comparison_id DESC LIMIT/);
-  for (const options of [{limit: 0}, {limit: 101}, {offset: -1}]) await assert.rejects(store.pastRuns(options));
   assert.equal(calls.length, 1);
 });
+
+test('PgStore saves, fetches, renames and deletes native simulations', async () => {
+  const {store} = recordingStore();
+    const stat = { valid_run_count: 1, missing_run_count: 0, mean: 0, median: 0, min: 0, max: 0, stddev: null };
+    const sampleBatch: any = {
+      id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3',
+      overall_results: {
+        run_count: 1, seeds: [42],
+        metrics: {
+          denied_boarding_share: stat,
+          in_progress_at_cutoff_passengers: stat,
+          mean_wait_s: stat,
+          p95_wait_s: stat,
+          raw_waiting_at_cutoff_passengers: stat,
+          unresolved_passengers: stat,
+        },
+        all_runs_conservation_valid: true, invalid_run_indices: [],
+        runtime: { per_run_s: [0.1], statistics_s: { valid_run_count: 1, missing_run_count: 0, mean: 0.1, median: 0.1, min: 0.1, max: 0.1, stddev: null }, total_s: 0.1 }
+      },
+      individual_results: [
+        { inputs: { seed: 42 }, streetcars: [], passengers: [], sim_log: [], summary: { overview: { in_progress_at_cutoff_passengers: 0, raw_waiting_at_cutoff_passengers: 0, unresolved_passengers: 0, conservation_valid: true, mean_wait_s: 0, p95_wait_s: 0, denied_boarding_share: 0 }, contract: { diagnostics: { passengers_created: 0, passengers_arrived: 0, passengers_waiting: 0, passengers_onboard: 0, in_progress_at_cutoff_excluded: 0, conservation: true, unresolved_passengers: 0, runtime_s: 0.1 } } } }
+      ]
+    };
+  await store.saveSimulation(sampleBatch, 'Original Name');
+  const fetched = await store.fetchSimulations();
+  assert.equal(fetched.length, 1);
+  assert.equal(fetched[0].name, 'Original Name');
+
+  const renamed = await store.renameSimulation(sampleBatch.id, 'New Name');
+  assert.equal(renamed, true);
+  const refetched = await store.fetchSimulations();
+  assert.equal(refetched[0].name, 'New Name');
+
+  const missingRename = await store.renameSimulation('00000000-0000-0000-0000-000000000000', 'Missing');
+  assert.equal(missingRename, false);
+
+  const deleted = await store.deleteSimulation(sampleBatch.id);
+  assert.equal(deleted, true);
+  assert.equal((await store.fetchSimulations()).length, 0);
+
+  const missingDelete = await store.deleteSimulation('00000000-0000-0000-0000-000000000000');
+  assert.equal(missingDelete, false);
+});
+

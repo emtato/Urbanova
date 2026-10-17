@@ -3,7 +3,7 @@ import { type CorridorDevelopment, type CorridorStop, normalizeStop } from '../m
 import type { CaseResult, Comparison } from '../lib/types'
 import type { NativeBatch } from '../lib/liveTypes'
 import { spacingScore, transitMetrics, type TransitMetrics } from './transitMetrics'
-import { addComparison, batchCase, comparisonProblem, configurationName, configurationSummary, mockGrowthSimulation, todayBaseline, todayDate, useSimulationHistory } from '../lib/simulationHistory'
+import { addComparison, batchCase, comparisonProblem, configurationName, configurationSummary, todayBaseline, todayDate, useSimulationHistory } from '../lib/simulationHistory'
 import { SimulationPicker } from './SimulationPicker'
 import './StopPanel.css'
 
@@ -43,7 +43,7 @@ function MetricTable({ columns, rows }: { columns: Column[]; rows: { label: stri
 export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops = [], onClose, onViewPlatform,
   isMinimized = false, onToggleMinimize, className = '' }) => {
   const [scope, setScope] = useState<'station' | 'line'>('station')
-  const [selectedIds, setSelectedIds] = useState<string[]>([mockGrowthSimulation.id])
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const saved = useSimulationHistory()
   const tabId = useId()
   const stop = normalizeStop(rawStop)
@@ -98,18 +98,20 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
         {incompatibleActive && <p role="status">Loaded simulation: {active?.name}. {incompatibleActive}; Today values and changes are hidden because they are not comparable.</p>}
       </section>
 
-      <section className="transit-section" aria-label="Existing demand"><h3>Existing demand</h3><p>Existing-housing rider arrivals {station ? 'at this stop' : 'along this corridor'} over each simulation’s modeled window.</p>
+      <section className="transit-section" aria-label="Impact on existing riders"><h3>Impact on existing riders</h3><p>Baseline residents {station ? 'at this stop' : 'along this corridor'}. Their arrival count stays fixed; their wait shows how growth affects current riders.</p>
         <MetricTable columns={columns} rows={[
           { label: 'Existing rider arrivals', render: value => count(value.metrics.existing) },
-          { label: 'Average wait to board', render: value => wait(value.metrics.existingWait ?? (!station ? value.metrics.wait : null)) },
+          { label: 'Average wait for existing riders', render: value => wait(value.metrics.existingWait ?? (!station ? value.metrics.wait : null)) },
         ]} />
       </section>
 
-      <section className="transit-section" aria-label="Added housing demand"><h3>Housing & configuration effects</h3>
+      <section className="transit-section" aria-label="New development and total demand"><h3>New development &amp; total demand</h3><p>New riders from proposed homes and the combined experience for everyone {station ? 'at this stop' : 'on this corridor'}.</p>
         <MetricTable columns={columns} rows={[
           { label: station ? 'Proposed homes connected here' : 'Proposed homes in configuration', render: value => count(homes(value)) },
-          { label: 'New-housing rider arrivals', render: value => count(value.metrics.added) },
-          { label: 'Wait change from Today', render: value => value.id === 'today' ? 'Reference' : deltaWait(value.metrics.wait, reference?.wait) },
+          { label: 'New rider arrivals', render: value => count(value.metrics.added) },
+          { label: 'Total rider arrivals', render: value => count(value.metrics.total) },
+          { label: 'Average wait for all riders', render: value => wait(value.metrics.wait) },
+          { label: 'Change in all-rider wait', render: value => value.id === 'today' ? 'Reference' : deltaWait(value.metrics.wait, reference?.wait) },
         ]} />
         <p>Wait changes reflect all settings changed in a configuration, including service—not housing alone.</p>
       </section>
@@ -131,7 +133,7 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
 
       <section className="transit-section" aria-label="Simulation comparison"><h3>Simulation comparison</h3>
         <MetricTable columns={columns} rows={[
-          { label: 'Average wait to board', render: value => wait(value.metrics.wait) },
+          { label: 'Average wait for all riders', render: value => wait(value.metrics.wait) },
           { label: 'Change from Today', render: value => value.id === 'today' ? 'Reference' : deltaWait(value.metrics.wait, reference?.wait) },
           { label: 'Denied boarding', render: value => percent(value.metrics.denied) },
           { label: 'Change in denied share', render: value => value.id === 'today' ? 'Reference' : value.metrics.denied == null || reference?.denied == null ? '—' : `${value.metrics.denied - reference.denied > 0 ? '+' : ''}${((value.metrics.denied - reference.denied) * 100).toFixed(1)} pp` },

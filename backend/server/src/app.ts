@@ -17,7 +17,7 @@ import { replayRouter } from './routes/replay.js';
 import { simulationsRouter } from './routes/simulations.js';
 export function createApp(store:Store,generate:Generate=gemini(store)){
   const app=express();app.disable('x-powered-by');
-  app.use(cors({origin:settings.origins,methods:['GET','POST','DELETE'],allowedHeaders:['Content-Type'],exposedHeaders:['X-FutureProof-Fixture','X-FutureProof-Stale','Content-Disposition']}));
+  app.use(cors({origin:settings.origins,methods:['GET','POST','PATCH','DELETE'],allowedHeaders:['Content-Type'],exposedHeaders:['X-FutureProof-Fixture','X-FutureProof-Stale','Content-Disposition']}));
   app.use(express.json({limit:'256kb'}));
   app.get('/',(_q,s)=>s.json({service:'FutureProof',api:'/api',health:'/health',docs:'/docs'}));
   app.get('/docs',(_q,s)=>s.type('text/plain').send(readFileSync(resolve(ROOT,'docs/lane-c.md'),'utf8')));

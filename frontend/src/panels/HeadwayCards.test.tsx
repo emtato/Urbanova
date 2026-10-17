@@ -22,19 +22,20 @@ function batch(id: string, metrics: Record<string, number>): NativeBatch {
 }
 
 describe('headway selector', () => {
-  it('marks the selected preset and labels today', () => {
+  it('offers a bounded slider and an always-visible custom seconds field', () => {
     const out = html(<HeadwaySelector value={300} onChange={() => {}} />)
-    expect(out).toContain('Current')
-    expect(out).toContain('360 s')
-    expect(out).toContain('240 s')
-    expect(out).toContain('Custom…')
-    expect(out).toMatch(/aria-pressed="true"[^>]*>\s*<span class="headway-option-label">300 s/)
+    expect(out).toContain('type="range"')
+    expect(out).toContain('min="180"')
+    expect(out).toContain('max="420"')
+    expect(out).toContain('Custom headway (s)')
+    expect(out).toContain('value="300"')
+    expect(out).toContain('Use today’s service')
   })
 
-  it('opens the custom field for a non-preset value', () => {
-    const out = html(<HeadwaySelector value={270} onChange={() => {}} />)
-    expect(out).toContain('Custom headway (s)')
-    expect(out).toContain('value="270"')
+  it('displays custom intervals and rounds the exact reviewed baseline for the control', () => {
+    expect(html(<HeadwaySelector value={270} onChange={() => {}} />)).toContain('value="270"')
+    const today = html(<HeadwaySelector value={BASELINE_HEADWAY_S} onChange={() => {}} />)
+    expect(today).toContain('value="420"')
   })
 })
 

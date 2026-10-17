@@ -34,6 +34,7 @@ export function nativeBatchSchema(event: z.ZodType, passenger: z.ZodType, street
   return z.strictObject({
     id: z.string().min(1),
     provenance:z.strictObject({format_version:z.literal('simulation-provenance-v1'),configuration_id:z.string().min(1),model_version:z.string().min(1),data_version:z.string().min(1),orchestrator_version:z.string().min(1),source_ids:z.array(z.string().min(1)),recorded_at:z.iso.datetime()}).optional(),
+    name: z.string().min(1).max(80).nullish().transform(v => v ?? undefined),
     overall_results: z.strictObject({
       run_count: z.int().positive(), seeds: z.array(z.int()).min(1),
       metrics: z.record(z.string(), RunStatisticsSchema),

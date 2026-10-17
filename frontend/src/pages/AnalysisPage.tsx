@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, runSimulation, setUseFixture } from '../lib/api'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { ArrowLeft, ArrowUpRight, Play, Settings2 } from 'lucide-react'
+import { simulationTimes } from '../lib/analysisParameters'
+import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, renameSimulation, runSimulation, setUseFixture } from '../lib/api'
 import type { Scenario } from '../lib/types'
 import type { NativeBatch, NativeReplay } from '../lib/liveTypes'
 import { setActiveSimulation } from '../lib/simulationHistory'
@@ -9,6 +11,7 @@ import { ServiceCostCard } from '../panels/ServiceCostCard'
 import { HeadwayImpactCard, type ImpactPair } from '../panels/HeadwayImpactCard'
 import { BASELINE_HEADWAY_S, DEFAULT_HEADWAY_S, isBaseline } from '../lib/serviceOptions'
 import '../App.css'
+import './AnalysisPage.css'
 
 const message = (error: unknown) => error instanceof Error ? error.message : String(error)
 const seconds = (value: number | null | undefined) => value === null || value === undefined ? 'Unknown' : `${value.toFixed(1)} s`
@@ -48,9 +51,9 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   const [impactInputs, setImpactInputs] = useState('')
   const [headwayRandomnessS, setHeadwayRandomnessS] = useState(0)
   const [linkVariationShare, setLinkVariationShare] = useState(0)
-  const [startTimeS, setStartTimeS] = useState(25200)
-  const [endTimeS, setEndTimeS] = useState(32400)
-  const [rushHourDurationS, setRushHourDurationS] = useState(7200)
+  const [startHours, setStartHours] = useState('7')
+  const [endHours, setEndHours] = useState('9')
+  const [rushHours, setRushHours] = useState('2')
   const [simulations, setSimulations] = useState<NativeBatch[]>([])
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
   const [selectedRunIndex, setSelectedRunIndex] = useState(0)
@@ -74,7 +77,11 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     return () => { abort.abort(); controller.current?.abort() }
   }, [])
 
-  const inputsKey = JSON.stringify([includedDevs, runCount, seed, headwayS, headwayRandomnessS, linkVariationShare, startTimeS, endTimeS, rushHourDurationS])
+  const inputsKey = JSON.stringify([includedDevs, runCount, seed, headwayS, headwayRandomnessS, linkVariationShare, startHours, endHours, rushHours])
+  const times = simulationTimes(startHours, endHours, rushHours)
+  const canRun = headwayValid && runCount > 0 && times.values !== null && headwayRandomnessS < headwayS
+  const includedCount = Object.values(includedDevs).filter(Boolean).length
+  const includedUnits = defaults?.developments.filter(d => includedDevs[d.id]).reduce((total, d) => total + d.net_added_units, 0) ?? 0
   const impactStale = impactPair !== null && impactInputs !== inputsKey
 
   const currentBatch = simulations.find(item => item.id === selectedBatchId) ?? simulations[0] ?? null
@@ -82,7 +89,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
 
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!defaults || busy) return
+    if (!defaults || busy || !canRun || !times.values) return
     controller.current?.abort()
     const abort = new AbortController()
     controller.current = abort
@@ -97,9 +104,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
         headway_s,
         headway_randomness_s: headwayRandomnessS,
         link_travel_time_variation_share: linkVariationShare,
-        start_time_s: startTimeS,
-        end_time_s: endTimeS,
-        rush_hour_duration_s: rushHourDurationS,
+        ...times.values,
       }, abort.signal)
       // A non-current headway also runs today's service with the same buildings and seeds, for a fair before/after.
       const compare = !isBaseline(headwayS)
@@ -122,7 +127,29 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     }
   }
 
+  async function handleRename(id: string, currentName: string) {
+    const promptFn = typeof window !== 'undefined' && typeof window.prompt === 'function' ? window.prompt : null
+    const newName = promptFn ? promptFn('Enter new name for simulation:', currentName) : null
+    if (newName === null) return
+    const trimmed = newName.trim()
+    if (!trimmed || trimmed.length > 80) {
+      setError('Use a name between 1 and 80 characters.')
+      return
+    }
+    setError('')
+    try {
+      await renameSimulation(id, trimmed)
+      setSimulations(prev => prev.map(item => item.id === id ? { ...item, name: trimmed } : item))
+    } catch (reason) {
+      setError(message(reason))
+    }
+  }
+
   async function handleDelete(id: string) {
+    const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
+      ? window.confirm('Delete this simulation? This cannot be undone.')
+      : true
+    if (!confirmed) return
     setError('')
     try {
       await deleteSimulation(id)
@@ -136,42 +163,69 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     }
   }
 
-  return <main className="contract-review analysis-workspace">
-    <nav><button onClick={() => onNavigate('/')}>Policy briefing</button>{' '}<button onClick={() => { setActiveSimulation(currentBatch?.id ?? null); setUseFixture(false); onNavigate('/map') }}>View map</button></nav>
-    <header><p className="eyebrow">FutureProof · live scenario experiment</p><h1>Run westbound 505 simulation</h1><p>Broadview at Dundas → TMU / Yonge. Check which proposed buildings to include and run one or more seeded trials.</p><p role="status">{health}</p></header>
+  return <main className="contract-review analysis-workspace analysis-studio">
+    <div className="analysis-shell">
+    <nav className="analysis-nav" aria-label="Simulation navigation">
+      <button onClick={() => onNavigate('/')}><ArrowLeft size={15} /> Policy briefing</button>
+      <button onClick={() => { setActiveSimulation(currentBatch?.id ?? null); setUseFixture(false); onNavigate('/map') }}>View map <ArrowUpRight size={15} /></button>
+    </nav>
+    <header className="analysis-hero">
+      <div>
+        <h1>Run simulation</h1>
+        <p className="analysis-intro">505 Dundas westbound · Broadview → TMU / Yonge</p>
+      </div>
+      <p className={`analysis-health${health === 'API and database connected' ? ' is-connected' : ''}`} role="status"><span />{health}</p>
+    </header>
     {error && <p role="alert" className="analysis-error">{error}</p>}
-    <form onSubmit={submit}>
+    <form onSubmit={submit} className="analysis-form" aria-label="Simulation configuration">
       <fieldset disabled={busy || !defaults}>
-        <legend>Proposed developments &amp; simulation parameters</legend>
-        <div>
-          <p>Include proposed buildings in simulation:</p>
-          {defaults?.developments.map(d => (
-            <label key={d.id} style={{ display: 'block', marginBottom: '0.35rem' }}>
-              <input
-                type="checkbox"
-                checked={ Boolean(includedDevs[d.id]) }
-                onChange={e => setIncludedDevs({ ...includedDevs, [d.id]: e.target.checked })}
-              />{' '}
-              {d.name} ({d.net_added_units} net-added units)
-            </label>
-          ))}
+        <legend className="analysis-sr-only">Proposed developments and simulation parameters</legend>
+        <div className="analysis-configuration">
+          <section className="analysis-card analysis-developments" aria-labelledby="developments-title">
+            <div className="analysis-card-heading"><h2 id="developments-title">Proposed developments</h2></div>
+            <div className="analysis-building-list">
+              {defaults?.developments.map(d => <label key={d.id} className={`analysis-building${includedDevs[d.id] ? ' is-included' : ''}`}>
+                <input type="checkbox" checked={Boolean(includedDevs[d.id])} onChange={e => setIncludedDevs({ ...includedDevs, [d.id]: e.target.checked })} />
+                <span className="analysis-building-copy"><strong>{d.name}</strong><span><b>+{d.net_added_units.toLocaleString()}</b> net-added homes</span></span>
+              </label>)}
+              {!defaults && <p className="analysis-help">Loading proposed buildings…</p>}
+            </div>
+            <div className="analysis-selection-summary"><span>{includedCount} of {defaults?.developments.length ?? 3} buildings selected</span><strong>+{includedUnits.toLocaleString()} <small>homes</small></strong></div>
+          </section>
+          <section className="analysis-card analysis-service" aria-labelledby="service-title">
+            <div className="analysis-card-heading"><h2 id="service-title">Simulation settings</h2></div>
+            <HeadwaySelector value={headwayS} onChange={setHeadwayS} onValidityChange={setHeadwayValid} disabled={busy || !defaults} />
+            <div className="analysis-runs-control">
+              <div className="analysis-control-heading"><div><label htmlFor="simulation-runs">Number of runs</label><p className="analysis-help">Repeat with a different seed for each trial</p></div><output htmlFor="simulation-runs" className="analysis-value">{runCount}<small> / 25</small></output></div>
+              <input id="simulation-runs" type="range" min={0} max={25} step={1} value={runCount} onChange={e => setRunCount(Number(e.target.value))} aria-describedby="run-count-help" style={{ '--range-progress': `${runCount / 25 * 100}%` } as CSSProperties} />
+              <div className="analysis-range-labels"><span>0</span><span>25 trials</span></div>
+              <p id="run-count-help" className={runCount === 0 ? 'analysis-field-error' : 'analysis-help'}>{runCount === 0 ? 'Choose at least one run to start a simulation.' : isBaseline(headwayS) ? `${runCount} seeded ${runCount === 1 ? 'trial' : 'trials'} at today’s service level.` : `${runCount} ${runCount === 1 ? 'trial' : 'trials'} per service level, plus today’s service for comparison.`}</p>
+            </div>
+          </section>
+          <section className="analysis-card analysis-timing" aria-labelledby="timing-title">
+            <div className="analysis-card-heading"><h2 id="timing-title">Time window</h2></div>
+            <div className="analysis-time-grid">
+              <label htmlFor="start-hours">Start time (hours)<div className="analysis-unit-input"><input id="start-hours" required type="number" min={0} max={24} step="any" value={startHours} onChange={e => setStartHours(e.target.value)} aria-describedby="time-input-help" /><span>h</span></div></label>
+              <label htmlFor="end-hours">End time (hours)<div className="analysis-unit-input"><input id="end-hours" required type="number" min={0} max={48} step="any" value={endHours} onChange={e => setEndHours(e.target.value)} aria-describedby="time-input-help" /><span>h</span></div></label>
+              <label htmlFor="rush-hours">Rush-hour duration (hours)<div className="analysis-unit-input"><input id="rush-hours" required type="number" min={1 / 3600} max={24} step="any" value={rushHours} onChange={e => setRushHours(e.target.value)} aria-describedby="time-input-help" /><span>h</span></div></label>
+            </div>
+            <p id="time-input-help" className="analysis-help">Use 24-hour time: 7 = 07:00, 7.5 = 07:30. Duration is in hours.</p>
+            {times.error && <p className="analysis-field-error" role="alert">{times.error}</p>}
+            <details className="analysis-advanced">
+              <summary><Settings2 size={15} /> Randomness &amp; seed</summary>
+              <div className="analysis-advanced-grid">
+                <label htmlFor="simulation-seed">Starting seed<input id="simulation-seed" required type="number" min={0} max={2147483647} step={1} value={seed} onChange={e => setSeed(Number(e.target.value))} /></label>
+                <label htmlFor="headway-randomness">Headway randomness (s)<input id="headway-randomness" required type="number" min={0} max={headwayS} step="any" value={headwayRandomnessS} onChange={e => setHeadwayRandomnessS(Number(e.target.value))} /></label>
+                <label htmlFor="link-variation">Link variation share<input id="link-variation" required type="number" min={0} max={0.99} step="any" value={linkVariationShare} onChange={e => setLinkVariationShare(Number(e.target.value))} /></label>
+              </div>
+              <p className="analysis-help">The same seed reproduces the same scenario. Link variation ranges from 0 to 0.99.</p>
+            </details>
+            {headwayRandomnessS >= headwayS && <p className="analysis-field-error" role="alert">Headway randomness must be less than the headway.</p>}
+          </section>
         </div>
-        <HeadwaySelector
-          value={headwayS}
-          onChange={setHeadwayS}
-          onValidityChange={setHeadwayValid}
-          disabled={busy || !defaults}
-        />
-        <div className="analysis-grid">
-          <label>Number of runs<input required type="number" min={1} max={25} step={1} value={runCount} onChange={e => setRunCount(Number(e.target.value))} /></label>
-          <label>Seed<input required type="number" min={0} max={2147483647} step={1} value={seed} onChange={e => setSeed(Number(e.target.value))} /></label>
-          <label>Headway randomness (s)<input required type="number" min={0} max={86400} step="any" value={headwayRandomnessS} onChange={e => setHeadwayRandomnessS(Number(e.target.value))} /></label>
-          <label>Link variation share (0–0.99)<input required type="number" min={0} max={0.99} step="any" value={linkVariationShare} onChange={e => setLinkVariationShare(Number(e.target.value))} /></label>
-          <label>Start time (s)<input required type="number" min={0} max={86400} step={1} value={startTimeS} onChange={e => setStartTimeS(Number(e.target.value))} /></label>
-          <label>End time (s)<input required type="number" min={1} max={172800} step={1} value={endTimeS} onChange={e => setEndTimeS(Number(e.target.value))} /></label>
-          <label>Rush-hour duration (s)<input required type="number" min={1} max={86400} step="any" value={rushHourDurationS} onChange={e => setRushHourDurationS(Number(e.target.value))} /></label>
+        <div className="analysis-launch">
+          <button className="analysis-run-button" type="submit" disabled={!canRun}><Play size={17} fill="currentColor" />{busy ? progress || 'Running simulation…' : 'Run simulation'}</button>
         </div>
-        <button type="submit" disabled={!headwayValid}>{busy ? progress || 'Running simulation…' : `Run simulation (${runCount} ${runCount === 1 ? 'trial' : 'trials'}${isBaseline(headwayS) ? '' : ', plus today for comparison'})`}</button>
       </fieldset>
     </form>
 
@@ -184,13 +238,13 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     </div>
 
     {simulations.length > 0 && (
-      <section aria-label="Saved simulation batches">
+      <section className="analysis-results-card" aria-label="Saved simulation batches">
         <h2>Saved simulation batches ({simulations.length})</h2>
         <div className="table-scroll">
           <table>
             <thead>
               <tr>
-                <th>Batch ID</th>
+                <th>Simulation</th>
                 <th>Buildings included</th>
                 <th>Headway</th>
                 <th>Runs (seeds)</th>
@@ -207,8 +261,10 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
                 const metrics = batch.overall_results.metrics
                 const isSelected = currentBatch?.id === batch.id
                 return (
-                  <tr key={batch.id} style={isSelected ? { fontWeight: 600 } : undefined}>
-                    <th className="analysis-id">{batch.id.slice(0, 8)}…</th>
+                  <tr key={batch.id} className={isSelected ? 'is-active-row' : undefined}>
+                    <th className="analysis-id" title={batch.id}>
+                      {batch.name ? <span><strong>{batch.name}</strong> <small style={{ opacity: 0.6 }}>({batch.id.slice(0, 8)}…)</small></span> : `${batch.id.slice(0, 8)}…`}
+                    </th>
                     <td>{devs.length ? devs.map(d => d.name).join(', ') : 'None (baseline only)'}</td>
                     <td>{typeof batch.individual_results[0]?.inputs.headway_s === 'number' ? `${Math.round(batch.individual_results[0].inputs.headway_s)} s` : 'Unknown'}</td>
                     <td>{batch.overall_results.run_count} ({batch.overall_results.seeds.join(', ')})</td>
@@ -220,6 +276,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
                       <button type="button" onClick={() => { setSelectedBatchId(batch.id); setSelectedRunIndex(0) }}>
                         {isSelected ? 'Viewing' : 'View'}
                       </button>{' '}
+                      <button type="button" onClick={() => void handleRename(batch.id, batch.name || '')}>Rename</button>{' '}
                       <button type="button" onClick={() => void handleDelete(batch.id)}>Delete</button>
                     </td>
                   </tr>
@@ -233,7 +290,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
 
     {currentBatch && (
       <>
-        <section>
+        <section className="analysis-results-card">
           <h2>Overall batch summary</h2>
           <p className="analysis-id">Batch {currentBatch.id} · {currentBatch.overall_results.run_count} {currentBatch.overall_results.run_count === 1 ? 'run' : 'runs'} · total runtime {seconds(currentBatch.overall_results.runtime.total_s)}</p>
           <div className="table-scroll">
@@ -262,7 +319,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
           </div>
         </section>
 
-        <section>
+        <section className="analysis-results-card">
           <h2>Individual runs in batch</h2>
           <div className="table-scroll">
             <table>
@@ -297,5 +354,6 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
         {replay && <NativeReplayPanel key={replay.run_id} replay={replay} />}
       </>
     )}
+    </div>
   </main>
 }

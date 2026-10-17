@@ -1,82 +1,49 @@
-import { useState } from 'react'
-import { CUSTOM_MAX_S, CUSTOM_MIN_S, HEADWAY_PRESETS, validateCustomHeadway } from '../lib/serviceOptions'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { BASELINE_HEADWAY_S, CUSTOM_MIN_S, isBaseline } from '../lib/serviceOptions'
 
 interface Props {
   value: number
   onChange: (headway_s: number) => void
-  /** False while the custom field is open but empty or out of range; block submit then. */
   onValidityChange?: (valid: boolean) => void
   disabled?: boolean
 }
 
-/** Today's 420 s plus the three A10 extra-service headways; a bounded custom value sits behind "Custom…". */
+const maximum = Math.ceil(BASELINE_HEADWAY_S)
+const display = (value: number) => String(isBaseline(value) ? maximum : value)
+
+/** The rounded "today" endpoint retains the reviewed baseline's exact seconds. */
 export function HeadwaySelector({ value, onChange, onValidityChange, disabled }: Props) {
-  const isPreset = HEADWAY_PRESETS.some(p => p.headway_s === value)
-  const [customOpen, setCustomOpen] = useState(!isPreset)
-  const [draft, setDraft] = useState(isPreset ? '' : String(value))
+  const [draft, setDraft] = useState(display(value))
   const [error, setError] = useState<string | null>(null)
+  useEffect(() => { setDraft(display(value)) }, [value])
 
-  function pickPreset(headway_s: number) {
-    setCustomOpen(false)
-    setError(null)
-    onValidityChange?.(true)
-    onChange(headway_s)
-  }
-
-  function editCustom(text: string) {
+  function edit(text: string) {
     setDraft(text)
-    const problem = validateCustomHeadway(Number(text))
-    const valid = text !== '' && !problem
-    setError(text === '' ? 'Enter a headway in seconds' : problem)
+    const number = Number(text)
+    const valid = text.trim() !== '' && Number.isFinite(number) && number >= CUSTOM_MIN_S && number <= maximum
+    setError(valid ? null : `Enter ${CUSTOM_MIN_S}–${maximum} seconds.`)
     onValidityChange?.(valid)
-    if (valid) onChange(Number(text))
+    if (valid) onChange(number === maximum ? BASELINE_HEADWAY_S : number)
   }
 
   return <div className="headway-selector" role="group" aria-labelledby="headway-selector-label">
-    <p id="headway-selector-label" className="headway-selector-label">Headway (time between streetcars)</p>
-    <div className="headway-options">
-      {HEADWAY_PRESETS.map(preset => {
-        const selected = !customOpen && preset.headway_s === value
-        return <button
-          key={preset.headway_s}
-          type="button"
-          className={`headway-option${selected ? ' is-selected' : ''}${preset.current ? ' is-current' : ''}`}
-          aria-pressed={selected}
-          disabled={disabled}
-          onClick={() => pickPreset(preset.headway_s)}
-        >
-          <span className="headway-option-label">{preset.label}</span>
-          <span className="headway-option-detail">{preset.detail}</span>
-        </button>
-      })}
-      <button
-        type="button"
-        className={`headway-option${customOpen ? ' is-selected' : ''}`}
-        aria-pressed={customOpen}
-        aria-expanded={customOpen}
-        disabled={disabled}
-        onClick={() => { setCustomOpen(true); editCustom(draft) }}
-      >
-        <span className="headway-option-label">Custom…</span>
-        <span className="headway-option-detail">{CUSTOM_MIN_S}–{CUSTOM_MAX_S} s</span>
-      </button>
+    <div className="analysis-control-heading">
+      <div><label id="headway-selector-label" htmlFor="headway-slider">Headway</label><p className="analysis-help">Time between streetcars</p></div>
+      <span className="analysis-value">{Number((value / 60).toFixed(2))}<small> min</small></span>
     </div>
-    {customOpen && <label className="headway-custom">
-      Custom headway (s)
-      <input
-        type="number"
-        min={CUSTOM_MIN_S}
-        max={CUSTOM_MAX_S}
-        step={1}
-        value={draft}
-        disabled={disabled}
-        aria-invalid={Boolean(error)}
-        aria-describedby="headway-custom-help"
-        onChange={e => editCustom(e.target.value)}
-      />
-      <span id="headway-custom-help" className={error ? 'headway-custom-error' : 'headway-custom-help'}>
-        {error ?? 'Not one of the reviewed options; costs use the same formula and are indicative.'}
-      </span>
-    </label>}
+    <input id="headway-slider" type="range" min={CUSTOM_MIN_S} max={maximum} step={1}
+      value={Math.round(value)} disabled={disabled} aria-valuetext={`${display(value)} seconds between streetcars`}
+      style={{ '--range-progress': `${(value - CUSTOM_MIN_S) / (maximum - CUSTOM_MIN_S) * 100}%` } as CSSProperties}
+      onChange={event => edit(event.target.value)} />
+    <div className="analysis-range-labels"><span>3 min · more frequent</span><span>7 min · today</span></div>
+    <div className="headway-custom-row">
+      <label className="headway-custom" htmlFor="headway-custom">Custom headway (s)
+        <input id="headway-custom" type="number" required min={CUSTOM_MIN_S} max={maximum} step="any"
+          value={draft} disabled={disabled} aria-invalid={Boolean(error)} aria-describedby={error ? 'headway-custom-help' : undefined}
+          onChange={event => edit(event.target.value)} />
+      </label>
+      <button type="button" className="analysis-text-button" disabled={disabled} onClick={() => edit(String(maximum))}>Use today’s service ↗</button>
+    </div>
+    {error && <p id="headway-custom-help" className="analysis-field-error">{error}</p>}
   </div>
 }

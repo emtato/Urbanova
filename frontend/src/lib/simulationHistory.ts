@@ -3,8 +3,6 @@ import type { NativeBatch, NativeCaseResult } from './liveTypes'
 import type { Comparison } from './types'
 import { sampleComparison } from './sampleComparison'
 import baselineData from '../data/today_baseline.json'
-import growthData from '../data/mock_growth_baseline.json'
-
 export interface SavedSimulation {
   id: string
   name: string
@@ -13,13 +11,6 @@ export interface SavedSimulation {
 }
 export const todayBaseline = baselineData.batch as unknown as NativeBatch
 export const todayDate = baselineData.serviceDate
-export const mockGrowthBaseline = growthData.batch as unknown as NativeBatch
-export const mockGrowthSimulation: SavedSimulation = {
-  id: mockGrowthBaseline.id,
-  name: 'Phase 1+2 Growth',
-  createdAt: '2026-10-17T18:00:00.000Z',
-  batch: mockGrowthBaseline,
-}
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach(listener => listener())
 let database: Promise<IDBDatabase> | undefined
@@ -68,19 +59,30 @@ export function configurationSummary(batch: NativeBatch) {
 export async function rememberSimulation(batch: NativeBatch, createdAt: string | null = new Date().toISOString()) {
   if (typeof indexedDB === 'undefined') return
   const existing = await transaction<SavedSimulation | undefined>('readonly', store => store.get(batch.id))
-  if (existing) return
+  const resolvedName = batch.name || (existing ? existing.name : configurationName(batch))
+  if (existing) {
+    if (batch.name && existing.name !== batch.name) {
+      await transaction('readwrite', store => store.put({ ...existing, name: batch.name, batch: { ...existing.batch, name: batch.name } }))
+      notify()
+    }
+    return
+  }
   // Keep native inputs and summaries. Full replay logs remain stored by the API.
   const compact = { ...batch, individual_results: batch.individual_results.map(run => ({ ...run, streetcars: [], passengers: [], sim_log: [] })) }
-  await transaction('readwrite', store => store.put({ id: batch.id, name: configurationName(batch), createdAt, batch: compact } satisfies SavedSimulation))
+  await transaction('readwrite', store => store.put({ id: batch.id, name: resolvedName, createdAt, batch: compact } satisfies SavedSimulation))
   notify()
 }
-export async function renameSimulation(id: string, name: string) {
+export async function updateLocalSimulationName(id: string, name: string) {
+  if (typeof indexedDB === 'undefined') return
   const value = await transaction<SavedSimulation | undefined>('readonly', store => store.get(id))
   if (!value) throw new Error('This saved simulation is no longer available.')
   const trimmed = name.trim()
   if (!trimmed || trimmed.length > 80) throw new Error('Use a name between 1 and 80 characters.')
-  await transaction('readwrite', store => store.put({ ...value, name: trimmed }))
+  await transaction('readwrite', store => store.put({ ...value, name: trimmed, batch: { ...value.batch, name: trimmed } }))
   notify()
+}
+export async function renameSimulation(id: string, name: string) {
+  await updateLocalSimulationName(id, name)
 }
 export async function forgetSimulation(id: string) {
   if (typeof indexedDB === 'undefined') return
@@ -96,23 +98,15 @@ export function setActiveSimulation(id: string | null) {
   notify()
 }
 export function useSimulationHistory() {
-  const [history, setHistory] = useState<SavedSimulation[]>([mockGrowthSimulation])
+  const [history, setHistory] = useState<SavedSimulation[]>([])
   const [activeId, setActiveId] = useState<string | null>(activeSimulationId)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     let disposed = false
     const refresh = () => {
       setActiveId(activeSimulationId())
-      void readHistory().then(value => {
-        if (!disposed) {
-          const all = value.some(s => s.id === mockGrowthSimulation.id)
-            ? value
-            : [mockGrowthSimulation, ...value]
-          setHistory(all)
-          setError('')
-        }
-      })
+      void readHistory().then(value => { if (!disposed) { setHistory(value); setError('') } })
         .catch(reason => { if (!disposed) setError(reason instanceof Error ? reason.message : 'Saved simulations unavailable.') })
         .finally(() => { if (!disposed) setLoading(false) })
     }

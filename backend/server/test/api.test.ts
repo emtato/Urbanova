@@ -67,6 +67,17 @@ test('runSimulation, getSimulations and deleteSimulation run single situation, p
   assert.equal(fetched.body.length,2);
   assert.deepEqual(fetched.body.map((b:any)=>b.id),[second.body.id,first.body.id]);
 
+  const renamed=await request(app).post('/api/sim/rename').send({id:first.body.id,name:'My Custom Scenario'}).expect(200);
+  assert.deepEqual(renamed.body,{id:first.body.id,name:'My Custom Scenario',renamed:true});
+
+  const checkRenamed=await request(app).get('/api/sim/fetch').expect(200);
+  const found=checkRenamed.body.find((b:any)=>b.id===first.body.id);
+  assert.equal(found?.name,'My Custom Scenario');
+
+  await request(app).post('/api/sim/rename').send({id:first.body.id,name:''}).expect(422);
+  await request(app).post('/api/sim/rename').send({id:'not-a-uuid',name:'Valid'}).expect(422);
+  await request(app).post('/api/sim/rename').send({id:'00000000-0000-0000-0000-000000000000',name:'Valid'}).expect(404);
+
   const deleted=await request(app).post('/api/sim/delete').send({id:first.body.id}).expect(200);
   assert.deepEqual(deleted.body,{id:first.body.id,deleted:true});
   await request(app).post('/api/sim/delete').send({id:first.body.id}).expect(404);

@@ -3,10 +3,15 @@ import {
   generateCorridorLinksGeoJSON,
   generateCorridorStopsGeoJSON,
   generateDevelopmentsGeoJSON,
+  generate761ModelGeoJSON,
   generateWalkCatchmentsGeoJSON,
   generateSurroundingMassingGeoJSON,
+  updateDevelopmentsPhase,
   updateDevelopmentsVisibility,
   updateDevelopmentsSelected,
+  LAYER_761_MODEL,
+  MODEL_761_ID,
+  PHASE2_761_PLACEMENT,
 } from './MassingLayer'
 import sampleComparison from '../data/sample_comparison.json'
 import type { Comparison } from '../lib/types'
@@ -115,5 +120,57 @@ describe('MassingLayer GeoJSON Generators (Contract 1.0.0)', () => {
     // When unselected (null), opacity remains 1.0 (never see-thru)
     updateDevelopmentsSelected(mockMap, null)
     expect(paintProps['layer-developments-extrusion']['fill-extrusion-opacity']).toBe(1.0)
+  })
+
+  it('generates valid 3D model point feature for 761 Dundas with anchor and model ID', () => {
+    const modelFeatures = generate761ModelGeoJSON(data.scenario.developments)
+    expect(modelFeatures.type).toBe('FeatureCollection')
+    expect(modelFeatures.features.length).toBe(1)
+    const feature = modelFeatures.features[0]
+    expect(feature.properties?.dev_id).toBe('toronto-app-25-236949-ste-13-oz')
+    expect(feature.properties?.model_id).toBe(MODEL_761_ID)
+    expect(feature.properties?.phase).toBe(2)
+    const geom = feature.geometry as { type: string; coordinates: [number, number] }
+    expect(geom.type).toBe('Point')
+    expect(geom.coordinates).toEqual(PHASE2_761_PLACEMENT.anchor)
+  })
+
+  it('tags 761 Dundas with tier model in generateDevelopmentsGeoJSON to suppress extruded box', () => {
+    const devs = generateDevelopmentsGeoJSON(data.scenario.developments)
+    const dev761 = devs.features.find((f) => f.properties?.dev_id === 'toronto-app-25-236949-ste-13-oz')
+    expect(dev761).toBeDefined()
+    expect(dev761?.properties?.tier).toBe('model')
+    expect(dev761?.properties?.height_m).toBe(161.75)
+    expect(dev761?.geometry.type).toBe('Polygon')
+  })
+
+  it('updates 761 model visibility across phases and development selections', () => {
+    const filters: Record<string, any> = {}
+    const mockMap = {
+      getLayer: (_id: string) => true,
+      setFilter: (id: string, filter: any) => {
+        filters[id] = filter
+      },
+    } as any
+
+    // Phase 1: 761 model hidden
+    updateDevelopmentsPhase(mockMap, 1)
+    expect(filters[LAYER_761_MODEL]).toEqual(['==', ['get', 'phase'], -1])
+
+    // Phase 2: 761 model shown
+    updateDevelopmentsPhase(mockMap, 2)
+    expect(filters[LAYER_761_MODEL]).toEqual(['<=', ['get', 'phase'], 2])
+
+    // Visibility toggled off for 761
+    updateDevelopmentsVisibility(mockMap, ['toronto-app-22-124214-ste-13-oz'])
+    expect(filters[LAYER_761_MODEL]).toEqual(['==', ['get', 'dev_id'], '__none__'])
+
+    // Visibility toggled on for 761
+    updateDevelopmentsVisibility(mockMap, ['toronto-app-25-236949-ste-13-oz'])
+    expect(filters[LAYER_761_MODEL]).toEqual([
+      'any',
+      ['==', ['get', 'dev_id'], 'toronto-app-25-236949-ste-13-oz'],
+      ['==', ['get', 'dev_id'], 'fixture-development-3'],
+    ])
   })
 })

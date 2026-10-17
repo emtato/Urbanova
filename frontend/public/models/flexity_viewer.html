@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toronto TTC Flexity Outlook Streetcar - 3D Model Viewer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background: radial-gradient(circle at center, #1e2430 0%, #0e121a 100%);
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    /* Top Header Bar */
+    header {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 14px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+    }
+    .badge {
+      display: inline-block;
+      background: #c8102e;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subtext {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    /* Right Specs HUD */
+    .specs-panel {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 16px 20px;
+      width: 290px;
+      font-size: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .specs-panel h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .spec-label {
+      color: #94a3b8;
+    }
+    .spec-val {
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    /* Bottom Control Bar */
+    .toolbar {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    }
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .btn.active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+    .btn-red {
+      background: rgba(200, 16, 46, 0.2);
+      border-color: rgba(200, 16, 46, 0.4);
+      color: #fca5a5;
+    }
+    .btn-red:hover {
+      background: #c8102e;
+      color: #fff;
+    }
+
+    /* Loading Overlay */
+    #loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0b0f19;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      transition: opacity 0.4s ease;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #c8102e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="font-size: 14px; font-weight: 600; color: #94a3b8;">Loading Toronto Flexity Outlook 3D Model...</div>
+  </div>
+
+  <header>
+    <div class="badge">TTC Fleet #4404</div>
+    <h1>Bombardier Flexity Outlook 3D</h1>
+    <div class="subtext">Toronto Low-Floor Light Rail Vehicle &bull; 5-Module Articulated</div>
+  </header>
+
+  <div class="specs-panel">
+    <h3>Vehicle Specifications</h3>
+    <div class="spec-row">
+      <span class="spec-label">Route Display</span>
+      <span class="spec-val" style="color: #fbbf24;">505 DUNDAS</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Overall Length</span>
+      <span class="spec-val">30.20 m (99 ft)</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Width / Height</span>
+      <span class="spec-val">2.54 m / 3.84 m</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Track Gauge</span>
+      <span class="spec-val">1,495 mm (TTC Gauge)</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Configuration</span>
+      <span class="spec-val">5 Modules / 4 Bellows</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Bogie Trucks</span>
+      <span class="spec-val">3 Bo' Motor Bogies</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Current Collector</span>
+      <span class="spec-val">Pantograph + Trolley</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Polycount</span>
+      <span class="spec-val" id="polycount-val">12,318 Triangles</span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn" id="btn-cam-cine">🎬 Cinematic</button>
+    <button class="btn" id="btn-cam-side">🚋 Side View</button>
+    <button class="btn" id="btn-cam-front">🪟 Front Cab</button>
+    <button class="btn" id="btn-cam-roof">⚡ Pantograph</button>
+    <button class="btn" id="btn-cam-bogie">🛞 Bogie</button>
+    <button class="btn" id="btn-wireframe">🕸️ Wireframe</button>
+    <button class="btn" id="btn-lights">💡 Lights</button>
+    <button class="btn" id="btn-rotate">🔄 Auto-Rotate</button>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <script>
+    let scene, camera, renderer, controls, modelGroup;
+    let autoRotate = false;
+    let wireframeMode = false;
+    let lightsOn = true;
+
+    const container = document.getElementById('canvas-container');
+    const loaderEl = document.getElementById('loader');
+
+    function init() {
+      // 1. Scene setup
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0e121a);
+      scene.fog = new THREE.FogExp2(0x0e121a, 0.015);
+
+      // 2. Camera setup
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+      camera.position.set(22, 9, 25);
+
+      // 3. Renderer setup
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      // 4. Controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 + 0.02; // Don't flip below ground
+      controls.minDistance = 3;
+      controls.maxDistance = 80;
+      controls.target.set(0, 1.8, 0);
+
+      // 5. Lighting
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.85);
+      scene.add(hemiLight);
+
+      const sunLight = new THREE.DirectionalLight(0xfff6e8, 1.6);
+      sunLight.position.set(20, 30, 20);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.bias = -0.0005;
+      sunLight.shadow.camera.near = 1;
+      sunLight.shadow.camera.far = 80;
+      sunLight.shadow.camera.left = -22;
+      sunLight.shadow.camera.right = 22;
+      sunLight.shadow.camera.top = 22;
+      sunLight.shadow.camera.bottom = -22;
+      scene.add(sunLight);
+
+      const rimLight = new THREE.DirectionalLight(0x60a5fa, 0.65);
+      rimLight.position.set(-25, 12, -25);
+      scene.add(rimLight);
+
+      // 6. Ground & Railway Tracks (Toronto Gauge = 1.495m)
+      buildGroundAndTracks();
+
+      // 7. Load GLTF Model
+      loadModel();
+
+      // 8. Event Listeners
+      window.addEventListener('resize', onWindowResize);
+      setupButtons();
+
+      animate();
+    }
+
+    function buildGroundAndTracks() {
+      // Ground plane
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({
+        color: 0x141822,
+        roughness: 0.85,
+        metalness: 0.1
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.02;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Track rails (Toronto Broad Gauge 1.495m)
+      const gaugeHalf = 1.495 / 2;
+      const railGeo = new THREE.BoxGeometry(0.065, 0.08, 120);
+      const railMat = new THREE.MeshStandardMaterial({
+        color: 0x8892b0,
+        metalness: 0.85,
+        roughness: 0.25
+      });
+
+      const railLeft = new THREE.Mesh(railGeo, railMat);
+      railLeft.position.set(-gaugeHalf, 0.04, 0);
+      railLeft.receiveShadow = true;
+      scene.add(railLeft);
+
+      const railRight = new THREE.Mesh(railGeo, railMat);
+      railRight.position.set(gaugeHalf, 0.04, 0);
+      railRight.receiveShadow = true;
+      scene.add(railRight);
+
+      // Concrete street track ties / grooved pavement markings
+      const tieGeo = new THREE.BoxGeometry(2.4, 0.02, 0.25);
+      const tieMat = new THREE.MeshStandardMaterial({
+        color: 0x242a38,
+        roughness: 0.9
+      });
+      for (let z = -55; z <= 55; z += 1.2) {
+        const tie = new THREE.Mesh(tieGeo, tieMat);
+        tie.position.set(0, 0.005, z);
+        tie.receiveShadow = true;
+        scene.add(tie);
+      }
+    }
+
+    function loadModel() {
+      const loader = new THREE.GLTFLoader();
+      const modelUrl = 'flexity_outlook.glb';
+
+      loader.load(
+        modelUrl,
+        (gltf) => {
+          modelGroup = gltf.scene;
+
+          let triCount = 0;
+          let vertCount = 0;
+
+          modelGroup.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+
+              if (child.geometry) {
+                vertCount += child.geometry.attributes.position.count;
+                if (child.geometry.index) {
+                  triCount += child.geometry.index.count / 3;
+                } else {
+                  triCount += child.geometry.attributes.position.count / 3;
+                }
+              }
+
+              // Enhance glass & metallic materials
+              if (child.material) {
+                if (child.material.name.includes('glass')) {
+                  child.material.transparent = true;
+                  child.material.opacity = 0.65;
+                  child.material.roughness = 0.08;
+                  child.material.metalness = 0.2;
+                }
+                if (child.material.name.includes('dest_sign')) {
+                  child.material.emissiveIntensity = 1.6;
+                }
+              }
+            }
+          });
+
+          scene.add(modelGroup);
+
+          // Update HUD
+          document.getElementById('polycount-val').innerText = `${Math.round(triCount).toLocaleString()} Triangles`;
+
+          // Hide Loader
+          loaderEl.style.opacity = '0';
+          setTimeout(() => { loaderEl.style.display = 'none'; }, 400);
+        },
+        undefined,
+        (err) => {
+          console.error("Error loading GLB:", err);
+          loaderEl.innerHTML = `<div style="color:#ef4444; font-weight:600;">Failed to load flexity_outlook.glb</div>`;
+        }
+      );
+    }
+
+    function setupButtons() {
+      // Camera Views
+      document.getElementById('btn-cam-cine').addEventListener('click', () => {
+        animateCamera(new THREE.Vector3(20, 8, 22), new THREE.Vector3(0, 1.8, 4));
+      });
+      document.getElementById('btn-cam-side').addEventListener('click', () => {
+        animateCamera(new THREE.Vector3(34, 3.5, 0), new THREE.Vector3(0, 2.0, 0));
+      });
+      document.getElementById('btn-cam-front').addEventListener('click', () => {
+        animateCamera(new THREE.Vector3(3.5, 2.8, 20.5), new THREE.Vector3(0, 2.2, 14.5));
+      });
+      document.getElementById('btn-cam-roof').addEventListener('click', () => {
+        animateCamera(new THREE.Vector3(6, 9.5, 12), new THREE.Vector3(0, 4.2, 7.5));
+      });
+      document.getElementById('btn-cam-bogie').addEventListener('click', () => {
+        animateCamera(new THREE.Vector3(4.8, 1.0, 12.5), new THREE.Vector3(0, 0.45, 11.8));
+      });
+
+      // Wireframe toggle
+      const btnWire = document.getElementById('btn-wireframe');
+      btnWire.addEventListener('click', () => {
+        wireframeMode = !wireframeMode;
+        btnWire.classList.toggle('active', wireframeMode);
+        if (modelGroup) {
+          modelGroup.traverse((child) => {
+            if (child.isMesh && child.material) {
+              child.material.wireframe = wireframeMode;
+            }
+          });
+        }
+      });
+
+      // Lights toggle
+      const btnLights = document.getElementById('btn-lights');
+      btnLights.addEventListener('click', () => {
+        lightsOn = !lightsOn;
+        btnLights.classList.toggle('active', lightsOn);
+        if (modelGroup) {
+          modelGroup.traverse((child) => {
+            if (child.isMesh && child.material && child.material.name.includes('emissive')) {
+              child.material.emissiveIntensity = lightsOn ? 1.6 : 0.05;
+            }
+          });
+        }
+      });
+
+      // Auto-Rotate toggle
+      const btnRotate = document.getElementById('btn-rotate');
+      btnRotate.addEventListener('click', () => {
+        autoRotate = !autoRotate;
+        controls.autoRotate = autoRotate;
+        controls.autoRotateSpeed = 1.2;
+        btnRotate.classList.toggle('active', autoRotate);
+      });
+    }
+
+    function animateCamera(targetPos, targetLookAt) {
+      const startPos = camera.position.clone();
+      const startTarget = controls.target.clone();
+      const duration = 1000;
+      const startTime = performance.now();
+
+      function updateCam(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        // Smooth cubic ease out
+        const ease = 1 - Math.pow(1 - t, 3);
+
+        camera.position.lerpVectors(startPos, targetPos, ease);
+        controls.target.lerpVectors(startTarget, targetLookAt, ease);
+
+        if (t < 1) {
+          requestAnimationFrame(updateCam);
+        }
+      }
+      requestAnimationFrame(updateCam);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

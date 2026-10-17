@@ -9,6 +9,7 @@ import {
   runAnalysis,
   runSimulation,
   getSimulations,
+  renameSimulation,
   deleteSimulation,
   fetchNativeReplay,
   fetchNativeMetrics,
@@ -134,7 +135,12 @@ describe('Live B11 transport', () => {
         { inputs: { seed: 43 }, streetcars: [], passengers: [], sim_log: [], summary: { overview: {} as never, contract: { diagnostics: {} as never } } },
       ],
     }
-    const replies = [sampleBatch, [sampleBatch], { id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', deleted: true }]
+    const replies = [
+      sampleBatch,
+      [sampleBatch],
+      { id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', name: 'Renamed Batch', renamed: true },
+      { id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', deleted: true },
+    ]
     const fetchMock = vi.fn(async () => new Response(JSON.stringify(replies.shift()), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -142,12 +148,15 @@ describe('Live B11 transport', () => {
     expect(created).toEqual(sampleBatch)
     const fetched = await getSimulations()
     expect(fetched).toEqual([sampleBatch])
+    const renamed = await renameSimulation('3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', 'Renamed Batch')
+    expect(renamed).toEqual({ id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', name: 'Renamed Batch', renamed: true })
     const deleted = await deleteSimulation('3f6a29bc-49e0-47b7-b088-7e5bebf92ea3')
     expect(deleted).toEqual({ id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', deleted: true })
 
     expect(fetchMock.mock.calls.map(call => String((call as unknown[])[0]))).toEqual([
       `${API_BASE_URL}/run/simulation`,
       `${API_BASE_URL}/sim/fetch`,
+      `${API_BASE_URL}/sim/rename`,
       `${API_BASE_URL}/sim/delete`,
     ])
   })
