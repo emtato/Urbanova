@@ -4,6 +4,7 @@ import { createApp } from '../app.js';
 import { PgStore } from '../storage/store.js';
 import { startScheduler } from '../worker/scheduler.js';
 import { ComparisonSchema,ScenarioSchema } from '../shared/schemas.js';
+import { fixture } from '../services/bundle.js';
 const store=new PgStore();let closeWorker:(()=>Promise<void>)|undefined;
 let server:ReturnType<ReturnType<typeof createApp>['listen']>|undefined;
 try{
@@ -22,10 +23,22 @@ try{
   await call('/replay/'+job.comparison_id);
   const count=await store.pool.query('SELECT count(*)::int AS count FROM c_run_aggregates WHERE comparison_id=$1',[job.comparison_id]);
   if(count.rows[0].count!==c.cases.reduce((n,x)=>n+x.runs.length,0))throw Error('Run aggregate count mismatch');
+  // Explicitly synthetic persistence probe, not a delayed simulation result.
+  const delayJob=await store.enqueue(scenario,'delay-smoke-'+randomUUID(),{retain_replay:false});
+  const claimed=await store.pool.query("UPDATE c_jobs SET status='running',lease_token=$2 WHERE job_id=$1 RETURNING *",[delayJob.job_id,randomUUID()]);
+  await store.finish(claimed.rows[0],{comparison:fixture,delayedComparison:fixture,package_screen:[],notice:'SYNTHETIC storage probe only; identical fixtures exercise delayed-result persistence.'});
+  const delayStored=await store.job(delayJob.job_id),delay=await store.delayedComparison(delayStored!.comparison_id!);
+  if(!delay)throw Error('Delayed comparison not persisted');
+  const delayRuns=await store.pool.query('SELECT count(*)::int AS count FROM c_run_aggregates WHERE comparison_id=$1',[delay.comparison_id]);
+  if(delayRuns.rows[0].count!==9)throw Error('Delayed aggregates missing');
+  const delayReplay=await store.pool.query('SELECT count(*)::int AS count FROM c_replays WHERE comparison_id=ANY($1::uuid[])',[[delay.comparison_id,delayStored!.comparison_id]]);
+  if(delayReplay.rows[0].count!==0)throw Error('Unselected replay must not be stored');
+  const summary=await call('/results/'+delayStored!.comparison_id+'/summary');
+  if(summary.sensitivity.upgrade_delay.status!=='tested')throw Error('Stored delay was not consumed by summary');
   await call('/scenarios/'+scenario.scenario_id+'/patch',{version:1,patch:{demand_case:'high'}});
   const stale=await call('/jobs/'+job.job_id);if(!stale.stale)throw Error('Old job must be stale');
   const plan=await store.pool.query('SELECT a.development_id,s.name FROM c_development_access a JOIN c_stops s USING(data_version,stop_id) LIMIT 1');
   if(!plan.rowCount)throw Error('No access join rows');
-  console.log(JSON.stringify({status:'ok',storage:'Tiger Data',worker:'worker_threads',fixture:true,persisted_runs:count.rows[0].count,stale_edit:true,access_join:true}));
+  console.log(JSON.stringify({status:'ok',storage:'Tiger Data',worker:'worker_threads',fixture:true,persisted_runs:count.rows[0].count,delayed_fixture_runs:delayRuns.rows[0].count,unselected_replay_omitted:true,stale_edit:true,access_join:true}));
 }catch{console.error('Live storage smoke failed; check DB/network and worker configuration.');process.exitCode=1;}
 finally{if(closeWorker)await closeWorker();if(server)await new Promise<void>(r=>server!.close(()=>r()));await store.close();}

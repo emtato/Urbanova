@@ -17,5 +17,6 @@ COPY server/db ./server/db
 COPY data/contracts ./data/contracts
 COPY data/fixtures ./data/fixtures
 COPY data/reviewed ./data/reviewed
+COPY docs/lane-c.md ./docs/lane-c.md
 USER node
 CMD ["node","server/dist/server/src/index.js"]

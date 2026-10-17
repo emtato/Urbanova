@@ -5,6 +5,7 @@ import type { Comparison,Scenario } from '../src/shared/schemas.js';
 export function memoryStore():Store {
   const scenarios=new Map([[defaultScenario.scenario_id,[structuredClone(defaultScenario)]]]);
   const jobs=new Map<string,Job>(),results=new Map<string,Comparison>(),keys=new Map<string,string>();
+  const delays=new Map<string,Comparison>();
   return {
     async ping(){},async init(){},async close(){},async audit(){},
     async scenario(id,version){const all=scenarios.get(id);return structuredClone(all?.find(s=>version?s.version===version:s.version===all.at(-1)!.version)??null);},
@@ -13,7 +14,8 @@ export function memoryStore():Store {
     async job(id){return jobs.get(id)??null;},
     async claim(){const job=[...jobs.values()].find(j=>j.status==='queued');if(!job)return null;job.status='running';job.lease_token=randomUUID();return job;},
     async fail(job){job.status='failed';job.error='Evaluation unavailable';},
-    async finish(job,result){const id=randomUUID();results.set(id,{...result.comparison,comparison_id:id});job.comparison_id=id;job.status='completed';job.notice=result.notice;job.package_screen=result.package_screen;},
+    async finish(job,result){const id=randomUUID();results.set(id,{...result.comparison,comparison_id:id});if(result.delayedComparison)delays.set(id,result.delayedComparison);job.comparison_id=id;job.status='completed';job.notice=result.notice;job.package_screen=result.package_screen;},
+    async delayedComparison(id){return delays.get(id)??null;},
     async comparison(id){return results.get(id)??null;},async staleComparison(id){return [...jobs.values()].some(j=>j.comparison_id===id&&j.stale);},
   };
 }

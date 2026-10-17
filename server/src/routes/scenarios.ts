@@ -3,7 +3,11 @@ import * as z from 'zod';
 import { ApiError } from '../core/errors.js';
 import { defaultScenario } from '../services/bundle.js';
 import { applyPatch, parse, validateScenario } from '../services/validate.js';
-import { PatchSchema, QuestionSchema, ScenarioSchema, ParseAnswerSchema } from '../shared/schemas.js';
+import { PatchSchema, QuestionSchema, ScenarioSchema, ParseAnswerSchema,PackageScreenSchema,PackagePreviewSchema } from '../shared/schemas.js';
+import { PolicySchema } from '../shared/policy.js';
+import { checkedPolicy,loadPolicy } from '../services/policy.js';
+import { feasibility } from '../packages/feasibility.js';
+import { hash } from '../core/cache.js';
 import { parseQuestion } from '../ai/scenarioParser.js';
 import type { Generate } from '../ai/gemini.js';
 import type { Store } from '../storage/store.js';
@@ -16,6 +20,16 @@ export function scenariosRouter(store:Store,generate:Generate){
     await store.saveScenario(scenario);s.status(201).json(scenario);
   });
   r.get('/:id',async(q,s)=>{const scenario=await store.scenario(String(q.params.id));if(!scenario)throw new ApiError(404,'Scenario not found.');s.json(ScenarioSchema.parse(scenario));});
+  r.post('/:id/packages',async(q,s)=>{
+    const input=parse(z.strictObject({version:z.int().positive(),policy:PolicySchema.optional()}),q.body);
+    const scenario=await store.scenario(String(q.params.id));if(!scenario)throw new ApiError(404,'Scenario not found.');
+    if(scenario.version!==input.version)throw new ApiError(409,'Scenario version changed; reload before screening.');
+    validateScenario(scenario);
+    const phases=scenario.phases.map(p=>p.phase_id),policy=input.policy?checkedPolicy(input.policy,phases):loadPolicy(phases);
+    const screen=PackageScreenSchema.parse(feasibility(scenario,policy));
+    const delayed=PackageScreenSchema.parse(feasibility(scenario,policy,1));
+    s.json(PackagePreviewSchema.parse({scenario_id:scenario.scenario_id,scenario_version:scenario.version,status:'screen_only',policy_status:policy?'user_selected':'missing',policy,assumptions_id:hash({scenario,policy}),packages:screen,upgrade_delay:{years:1,packages:delayed},notice:'Cost/fleet/availability screen only. No ridership or service-outcome simulation has run. Submitted policy values are explicit assumptions, not verified TTC quotes.'}));
+  });
   r.post('/:id/patch',async(q,s)=>{
     const input=parse(z.strictObject({version:z.int().positive(),patch:PatchSchema}),q.body);
     const current=await store.scenario(String(q.params.id));if(!current)throw new ApiError(404,'Scenario not found.');

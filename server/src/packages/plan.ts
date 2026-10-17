@@ -3,6 +3,7 @@ import { ComparisonSchema,type Comparison } from '../shared/schemas.js';
 import { invariant } from '../core/errors.js';
 import { feasibility } from './feasibility.js';
 import type { EvaluationRequest } from './evaluate.js';
+import { checkedComparison } from '../services/comparisonIntegrity.js';
 export function evaluationPlan(request:EvaluationRequest) {
   const screen=feasibility(request.scenario,request.policy);
   const draws={seed_ids:[...request.random.seed_ids],draws_id:request.random.draws_id};
@@ -13,17 +14,20 @@ export function evaluationPlan(request:EvaluationRequest) {
       feasible_package_ids:screen.filter(p=>p.phase_id===phase.phase_id&&p.feasible).map(p=>p.package_id),
     }))),
     upgrade_delay:{years:1,meaning:'Re-evaluate upgrade availability one calendar year later, holding housing, demand and draws fixed.'},
+    delayed_screen:feasibility(request.scenario,request.policy,1),
     assumptions_id:hash({scenario:request.scenario,policy:request.policy}),
   };
 }
 export interface B11Adapter {evaluate(plan:ReturnType<typeof evaluationPlan>):{comparison:Comparison;delayedComparison:Comparison}}
 export function checkedB11Comparison(input:unknown,request:EvaluationRequest):Comparison {
-  const c=ComparisonSchema.parse(input);
+  const c=checkedComparison(input);
   invariant(!c.fixture,'A B11 result must not be fixture-derived.');
-  invariant(JSON.stringify(c.scenario)===JSON.stringify(request.scenario),'B11 must preserve the validated scenario and shared housing.');
+  invariant(hash(c.scenario)===hash(request.scenario),'B11 must preserve the validated scenario and shared housing.');
   const seeds=[...request.random.seed_ids].sort((a,b)=>a-b);
   invariant(new Set(seeds).size===seeds.length,'Random seed IDs must be unique.');
   const caseIds=new Set(c.cases.map(x=>x.case_id));
+  const expected=feasibility(request.scenario,request.policy).filter(p=>p.feasible).map(p=>p.package_id);
+  invariant(expected.every(id=>c.packages.some(p=>p.package_id===id)),'B11 must evaluate every feasible screened package.');
   invariant(caseIds.size===c.cases.length,'B11 case IDs must be unique.');
   for(const phase of request.scenario.phases)for(const demand of ['low','central','high']){
     const cases=c.cases.filter(x=>x.phase_id===phase.phase_id&&x.demand_case===demand);

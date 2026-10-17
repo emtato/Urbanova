@@ -4,6 +4,7 @@ export interface Policy {
   cycle_s:number;lane_cycle_s:number;baseline_headway_s:number;service_headway_s:number;
   peak_hours:number;service_days:number;cost_per_hour:Range;lane_capital:Range;lane_operating:Range;
   price_year:number;earliest_phase:string;source_ids:string[];assumption_label:string;
+  availability?:{lane:string;extra_service:string};
 }
 export interface Screen {
   package_id:string;phase_id:string;feasible:boolean;reasons:string[];
@@ -17,7 +18,7 @@ export function validatePolicy(p:Policy) {
   if(!p.assumption_label || !Number.isInteger(p.price_year)) throw Error('A policy needs a price year and explicit assumption/source label.');
   return p;
 }
-export function feasibility(s:Scenario, policy:Policy|null):Screen[] {
+export function feasibility(s:Scenario, policy:Policy|null,delayYears=0):Screen[] {
   if(policy) validatePolicy(policy);
   return s.phases.flatMap((phase,phaseIndex)=>['existing','lane','extra-service','both'].map(package_id=>{
     const lane=package_id==='lane'||package_id==='both', extra=package_id==='extra-service'||package_id==='both';
@@ -36,6 +37,11 @@ export function feasibility(s:Scenario, policy:Policy|null):Screen[] {
     if(added>s.fleet_allowance) result.reasons.push(`Extra fleet ${added} exceeds allowance ${s.fleet_allowance}.`);
     const earliest=s.phases.findIndex(p=>p.phase_id===policy.earliest_phase);
     if(earliest<0||earliest>phaseIndex) result.reasons.push('Upgrade unavailable in this phase.');
+    for(const [selected,kind] of [[lane,'lane'],[extra,'extra_service']] as const){
+      if(!selected)continue;
+      const available=s.phases.find(p=>p.phase_id===(policy.availability?.[kind]??policy.earliest_phase));
+      if(!available||available.year+delayYears>phase.year)result.reasons.push(`${kind} unavailable by phase year ${phase.year}${delayYears?` with ${delayYears}-year upgrade delay`:''}.`);
+    }
     if(policy.price_year!==s.budget_price_year) result.reasons.push('Costs and budgets use different price years.');
     result.feasible=!result.reasons.length;
     return result;

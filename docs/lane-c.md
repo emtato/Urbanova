@@ -1,6 +1,6 @@
 # Lane C: Express API, storage and grounded AI
 
-The requested Express service is implemented in `server/`. It consumes the frozen Comparison 2.0.0 JSON Schema and the same frontend TypeScript interfaces. Stop/Development and the Python simulator remain owned by Lane B. The existing FastAPI Railway configuration is preserved; the Express deployment is a separate, ready-to-select config.
+The requested Express service is implemented in `server/`. It consumes the frozen Comparison 2.0.0 JSON Schema and the same frontend TypeScript interfaces. Stop/Development and the Python simulator remain owned by Lane B. The root Railway configuration now targets Express.
 
 ## Run
 
@@ -32,6 +32,7 @@ The regular tests need no credentials/network/paid calls. The explicit database 
 | POST /api/scenarios | Create a scenario with `{scenario_id}` |
 | GET /api/scenarios/:id | Latest Scenario |
 | POST /api/scenarios/:id/patch | `{version, patch}`; validate and create next version |
+| POST /api/scenarios/:id/packages | Immediate cost/fleet/availability screen for `{version, policy?}`, including a one-year availability delay; no simulator required |
 | POST /api/scenarios/:id/parse | `{question}`; AI patch preview, never an automatic write |
 | POST /api/jobs | `{scenario_id, version, random:{seed_ids,draws_id}, retain_replay}`; 202 and polling ID, or cached completion |
 | GET /api/jobs/:id | Job status, explicit fixture notice, package screen and stale flag |
@@ -52,7 +53,7 @@ Job/patch/AI envelopes are explicit Zod schemas extending the transport around t
 
 The screen always lists existing, lane, extra service and both, retaining every infeasibility reason. Required vehicles are `ceil(cycle_s / headway_s)`. Incremental vehicles are nonnegative differences from baseline; annual operation is incremental vehicles × peak hours/day × service days/year × cost/hour, plus stated lane operation. High capital/annual operation bounds, extra fleet, price year and earliest phase are checked.
 
-No reviewed cycle, lane effect or intervention cost quotes exist yet. With no policy configured, upgrades are explicitly unavailable; the API does not invent prices. `server/config/package-policy.example.json` is an inactive synthetic example. Populate a reviewed/user-selected policy, retain its assumption label and source IDs, and set backend-only `PACKAGE_POLICY_PATH` to its path. Claimed source IDs must resolve to the reviewed manifest. Policy contents participate in the cache key. Costs and budgets use CAD at a common price year. Capital is one-time and operation annual; the decision ranks high-bound capital then annual operation lexicographically, stating that rule rather than adding unlike annual/one-time amounts.
+No reviewed cycle, lane effect or intervention cost quotes exist yet. Supply explicit assumptions through the package-preview/job endpoints or a configured policy file. With no policy supplied, upgrades are explicitly unavailable; the API does not invent prices. `server/config/package-policy.example.json` is an inactive synthetic example. Populate a reviewed/user-selected policy, retain its assumption label and source IDs, and set backend-only `PACKAGE_POLICY_PATH` to its path. Claimed source IDs must resolve to the reviewed manifest. Policy contents participate in the cache key. Costs and budgets use CAD at a common price year. Capital is one-time and operation annual; the decision ranks high-bound capital then annual operation lexicographically, stating that rule rather than adding unlike annual/one-time amounts.
 
 ## B11 boundary and fixture mode
 
@@ -78,10 +79,21 @@ The explainer receives only a stored Comparison. Its numeric tokens must appear 
 
 ## Railway
 
-Keep Root Directory at the repository root and select `server/railway.json` as the service's config file to deploy Express. It builds the server Dockerfile with Node 24; Railway performs the image build, so teammates do not need Docker installed. Use the same backend-only Tiger Data and Gemini variables and allow the real frontend origin in CORS_ORIGINS. The root `railway.json` continues to start FastAPI until the service configuration is switched intentionally. The Docker build context excludes `.env`, caches, raw downloads and local dependencies. The Docker image itself has not been locally built unless explicitly recorded in validation.
+Keep Root Directory at the repository root. Both railway.json and server/railway.json target Express. It builds the server Dockerfile with Node 24; Railway performs the image build, so teammates do not need Docker installed. Use the same backend-only Tiger Data and Gemini variables and allow the real frontend origin in CORS_ORIGINS. The root configuration builds and starts Express on the next Railway deployment. Confirm the public health endpoint after deployment. The Docker build context excludes `.env`, caches, raw downloads and local dependencies. The Docker image itself has not been locally built unless explicitly recorded in validation.
 
 Implementation references: [Node worker threads](https://nodejs.org/api/worker_threads.html), [node-postgres transactions](https://node-postgres.com/features/transactions), [Zod JSON Schema conversion](https://zod.dev/json-schema), [Google SDK content configuration](https://googleapis.github.io/js-genai/release_docs/interfaces/types.GenerateContentConfig.html).
 
 ## Executed verification
 
-The Tiger Data smoke passed through HTTP, a real worker thread, nine persisted fixture-run aggregates, retained replay, a development/stop join and stale-version marking. The parser prompt `scenario-patch-v2` passed all ten live fixed questions, and its live explanation passed the grounding check without fallback. Further live checks hit HTTP 429 quota/rate limiting; the code keeps forms and templates available in that state. Form-only criterion edits do not expand the live-tested model-facing patch schema. After incorporating the latest teammate commits, 20 Node tests and 112 Python tests passed, along with the frozen-contract check and frontend contract/build/lint checks. Docker image construction has not been tested locally.
+The Tiger Data smoke passed through HTTP, a real worker thread, nine persisted fixture-run aggregates, retained replay, a development/stop join and stale-version marking. The parser prompt `scenario-patch-v2` passed all ten live fixed questions, and its live explanation passed the grounding check without fallback. Further live checks hit HTTP 429 quota/rate limiting; the code keeps forms and templates available in that state. Form-only criterion edits do not expand the live-tested model-facing patch schema. After incorporating the latest teammate commits, 27 Node tests and 118 Python tests passed, along with the frozen-contract check and frontend contract/build/lint checks. Docker image construction has not been tested locally.
+
+
+## Work completed independently of B11
+
+The packages preview endpoint accepts the PolicySchema fields shown in server/config/package-policy.example.json. Its response labels all submitted values user_selected, echoes the assumptions and their digest, and returns four package screens with cost/fleet/availability reasons. Send the same policy in POST /api/jobs to pin those exact assumptions in the job and cache key. Source IDs must resolve, ranges must be ordered and finite, and availability may separately identify lane/extra_service phases. The example file is synthetic and is never applied automatically. No real costs have been inferred from it.
+
+One-year upgrade-delay cost/availability screens work now. Service-outcome sensitivity remains pending B11. Once the adapter returns a delayed Comparison, storage saves it and all its aggregates as a separately versioned comparison linked to the base result; summary and brief consume it, report whether the preferred package changes, and expose its comparison ID. Replay remains opt-in and is retained only for the selected base run.
+
+Stored/B11 Comparisons undergo semantic checks in addition to JSON Schema: source/reference integrity, complete phase/demand/cohort coverage, unique IDs, paired arrays, passenger conservation and numeric feasibility/criterion flags. Workers that exit without a result fail their job instead of hanging the scheduler. Shutdown waits for active work to settle. Jobs pin execution versions; results and polling detect model/data drift, and stale queued work is rejected rather than computed with mixed versions.
+
+The live Tiger Data persistence probe verified nine base fixture aggregates and nine explicitly synthetic delayed-fixture aggregates, summary retrieval, omitted unselected replay, stale edits and the development/stop join. These are storage probes, not real delayed-upgrade simulations. The AI prompt was unchanged in this follow-up; no additional paid model tests were necessary. Hosted image construction/public health still require confirmation in Railway; local tests do not establish deployment success.
