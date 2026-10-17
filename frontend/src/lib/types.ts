@@ -71,7 +71,7 @@ export interface Development {
   stage: string
   record_date: string
   kind: DevelopmentKind
-  coordinates: [number, number]
+  coordinates: [number, number] | number[]
   height_m?: number
   phase: number
   access: DevelopmentAccess[]
