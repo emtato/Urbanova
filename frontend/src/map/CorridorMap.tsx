@@ -19,6 +19,9 @@ export interface CorridorMapProps {
   className?: string
 }
 
+// OpenFreeMap Dark: free, fast CDN, dark theme vector tiles specifically built for MapLibre
+const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark'
+
 export const CorridorMap: FC<CorridorMapProps> = ({
   corridor,
   developments,
@@ -33,6 +36,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   const mapRef = useRef<MapLibreMap | null>(null)
   const [is3D, setIs3D] = useState(true)
   const [currentPhase, setCurrentPhase] = useState(activePhase)
+  const [mapLoaded, setMapLoaded] = useState(false)
 
   // Map initialization
   useEffect(() => {
@@ -43,21 +47,32 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
     const map = new MapLibreMap({
       container: mapContainerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      style: BASE_STYLE_URL,
       center: defaultCenter,
       zoom: 14.2,
-      pitch: 58,
+      pitch: 55,
       bearing: -25,
     })
 
     map.addControl(new NavigationControl({ showCompass: true }), 'top-right')
 
-    map.on('load', () => {
-      setupCorridorMapLayers(map, corridor, developments)
-      updateDevelopmentsPhase(map, currentPhase)
+    map.on('error', (e) => {
+      console.warn('MapLibre event warning:', e)
+    })
 
-      // Fit bounds to corridor stops
-      fitToCorridor(map, corridor.stops)
+    map.on('load', () => {
+      console.log('MapLibre style loaded successfully')
+      map.resize()
+
+      try {
+        setupCorridorMapLayers(map, corridor, developments)
+        updateDevelopmentsPhase(map, currentPhase)
+        fitToCorridor(map, corridor.stops)
+      } catch (err) {
+        console.error('Error adding corridor layers:', err)
+      }
+
+      setMapLoaded(true)
     })
 
     // Click handler for stops
@@ -98,7 +113,18 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
     mapRef.current = map
 
+    // Resize observer to ensure canvas matches container bounding box
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.resize()
+      }
+    })
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current)
+    }
+
     return () => {
+      resizeObserver.disconnect()
       map.remove()
       mapRef.current = null
     }
@@ -106,15 +132,15 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
   // React to phase changes
   useEffect(() => {
-    if (mapRef.current && mapRef.current.isStyleLoaded()) {
+    if (mapRef.current && mapLoaded) {
       updateDevelopmentsPhase(mapRef.current, activePhase)
       setCurrentPhase(activePhase)
     }
-  }, [activePhase])
+  }, [activePhase, mapLoaded])
 
   // Center camera when selected stop changes
   useEffect(() => {
-    if (!mapRef.current || !selectedStopId) return
+    if (!mapRef.current || !mapLoaded || !selectedStopId) return
     const stop = corridor.stops.find((s) => s.stop_id === selectedStopId)
     if (stop) {
       mapRef.current.flyTo({
@@ -123,11 +149,11 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         speed: 1.2,
       })
     }
-  }, [selectedStopId, corridor.stops])
+  }, [selectedStopId, corridor.stops, mapLoaded])
 
   // Center camera when selected development changes
   useEffect(() => {
-    if (!mapRef.current || !selectedDevId) return
+    if (!mapRef.current || !mapLoaded || !selectedDevId) return
     const dev = developments.find((d) => d.dev_id === selectedDevId)
     if (dev) {
       mapRef.current.flyTo({
@@ -136,14 +162,14 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         speed: 1.2,
       })
     }
-  }, [selectedDevId, developments])
+  }, [selectedDevId, developments, mapLoaded])
 
   // Fit bounds helper
   const fitToCorridor = (map: MapLibreMap, stops: Stop[]) => {
     if (stops.length === 0) return
     const bounds = new LngLatBounds()
     stops.forEach((s) => bounds.extend([s.lon, s.lat]))
-    map.fitBounds(bounds, { padding: 60, maxZoom: 15.5, duration: 1000 })
+    map.fitBounds(bounds, { padding: 70, maxZoom: 15.5, duration: 800 })
   }
 
   // Toggle 2D / 3D tilt
@@ -152,7 +178,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     const next3D = !is3D
     setIs3D(next3D)
     mapRef.current.easeTo({
-      pitch: next3D ? 58 : 0,
+      pitch: next3D ? 55 : 0,
       bearing: next3D ? -25 : 0,
       duration: 800,
     })
@@ -160,15 +186,37 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
   const handlePhaseChange = (phase: number) => {
     setCurrentPhase(phase)
-    if (mapRef.current) {
+    if (mapRef.current && mapLoaded) {
       updateDevelopmentsPhase(mapRef.current, phase)
     }
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }} className={className}>
-      {/* MapLibre DOM Target */}
-      <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+      }}
+      className={className}
+    >
+      {/* MapLibre Canvas Container */}
+      <div
+        ref={mapContainerRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+        }}
+      />
 
       {/* Floating Map Controls Overlay */}
       <div
@@ -245,7 +293,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
               border: '1px solid var(--border-subtle)',
             }}
           >
-            {is3D ? '3D View (58°)' : '2D Plan'}
+            {is3D ? '3D View (55°)' : '2D Plan'}
           </button>
 
           <button

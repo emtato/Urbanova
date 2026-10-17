@@ -41,9 +41,9 @@ export function generateSurroundingMassingGeoJSON(corridor: Corridor): FeatureCo
   corridor.stops.forEach((stop, i) => {
     const offsetNorth = 0.0008 + (i % 3) * 0.0004
     const offsetSouth = -0.0008 - ((i + 1) % 3) * 0.0004
-    const width = 0.001
-    const heightNorth = 16 + ((i * 7) % 35)
-    const heightSouth = 12 + (((i + 2) * 5) % 28)
+    const width = 0.0012
+    const heightNorth = 18 + ((i * 7) % 35)
+    const heightSouth = 14 + (((i + 2) * 5) % 28)
 
     // North side building block
     features.push({
@@ -59,8 +59,8 @@ export function generateSurroundingMassingGeoJSON(corridor: Corridor): FeatureCo
         coordinates: [[
           [stop.lon - width / 2, stop.lat + offsetNorth],
           [stop.lon + width / 2, stop.lat + offsetNorth],
-          [stop.lon + width / 2, stop.lat + offsetNorth + 0.0006],
-          [stop.lon - width / 2, stop.lat + offsetNorth + 0.0006],
+          [stop.lon + width / 2, stop.lat + offsetNorth + 0.0007],
+          [stop.lon - width / 2, stop.lat + offsetNorth + 0.0007],
           [stop.lon - width / 2, stop.lat + offsetNorth],
         ]],
       },
@@ -80,8 +80,8 @@ export function generateSurroundingMassingGeoJSON(corridor: Corridor): FeatureCo
         coordinates: [[
           [stop.lon - width / 2, stop.lat + offsetSouth],
           [stop.lon + width / 2, stop.lat + offsetSouth],
-          [stop.lon + width / 2, stop.lat + offsetSouth - 0.0006],
-          [stop.lon - width / 2, stop.lat + offsetSouth - 0.0006],
+          [stop.lon + width / 2, stop.lat + offsetSouth - 0.0007],
+          [stop.lon - width / 2, stop.lat + offsetSouth - 0.0007],
           [stop.lon - width / 2, stop.lat + offsetSouth],
         ]],
       },
@@ -97,7 +97,7 @@ export function generateSurroundingMassingGeoJSON(corridor: Corridor): FeatureCo
 export function generateDevelopmentsGeoJSON(developments: Development[]): FeatureCollection {
   const features: Feature[] = developments.map((dev) => {
     const [lon, lat] = dev.coordinates
-    const size = 0.0007 // roughly 50m x 50m tower footprint
+    const size = 0.0008 // roughly 60m x 60m tower footprint
 
     return {
       type: 'Feature',
@@ -107,7 +107,7 @@ export function generateDevelopmentsGeoJSON(developments: Development[]): Featur
         units: dev.units,
         stage: dev.stage,
         phase: dev.phase,
-        height_m: dev.height_m || Math.max(30, Math.min(160, dev.units * 0.18)),
+        height_m: dev.height_m || Math.max(35, Math.min(180, dev.units * 0.18)),
         kind: dev.kind,
       },
       geometry: {
@@ -146,6 +146,7 @@ export function generateWalkCatchmentsGeoJSON(
             dev_id: dev.dev_id,
             stop_id: stop.stop_id,
             walk_m: acc.walk_m,
+            phase: dev.phase,
           },
           geometry: {
             type: 'LineString',
@@ -224,10 +225,10 @@ export function setupCorridorMapLayers(
       type: 'fill-extrusion',
       source: SOURCE_BUILDINGS,
       paint: {
-        'fill-extrusion-color': '#1e293b',
+        'fill-extrusion-color': '#2a374a',
         'fill-extrusion-height': ['get', 'height_m'],
         'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.55,
+        'fill-extrusion-opacity': 0.65,
       },
     })
   }
@@ -242,9 +243,9 @@ export function setupCorridorMapLayers(
       source: SOURCE_WALK_LINKS,
       paint: {
         'line-color': '#06b6d4',
-        'line-width': 1.5,
+        'line-width': 2,
         'line-dasharray': [2, 3],
-        'line-opacity': 0.6,
+        'line-opacity': 0.75,
       },
     })
   }
@@ -267,7 +268,7 @@ export function setupCorridorMapLayers(
         ],
         'fill-extrusion-height': ['get', 'height_m'],
         'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.88,
+        'fill-extrusion-opacity': 0.92,
       },
     })
   }
@@ -284,7 +285,7 @@ export function setupCorridorMapLayers(
       source: SOURCE_CORRIDOR_LINKS,
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
-        'line-color': 'rgba(218, 41, 28, 0.4)', // TTC red glow
+        'line-color': 'rgba(239, 68, 68, 0.45)', // TTC red glow
         'line-width': 8,
         'line-blur': 2,
       },
@@ -314,9 +315,9 @@ export function setupCorridorMapLayers(
       type: 'circle',
       source: SOURCE_CORRIDOR_STOPS,
       paint: {
-        'circle-radius': 9,
+        'circle-radius': 11,
         'circle-color': '#06b6d4',
-        'circle-opacity': 0.25,
+        'circle-opacity': 0.35,
       },
     })
 
@@ -326,14 +327,14 @@ export function setupCorridorMapLayers(
       type: 'circle',
       source: SOURCE_CORRIDOR_STOPS,
       paint: {
-        'circle-radius': 5,
+        'circle-radius': 6,
         'circle-color': '#ffffff',
         'circle-stroke-width': 2,
         'circle-stroke-color': '#0f172a',
       },
     })
 
-    // Stop Labels
+    // Stop Labels (without hardcoded fonts so it resolves against any base style glyphs)
     map.addLayer({
       id: LAYER_STOPS_LABEL,
       type: 'symbol',
@@ -341,15 +342,14 @@ export function setupCorridorMapLayers(
       layout: {
         'text-field': ['get', 'name'],
         'text-size': 11,
-        'text-offset': [0, 1.2],
+        'text-offset': [0, 1.4],
         'text-anchor': 'top',
-        'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
         'text-optional': true,
       },
       paint: {
-        'text-color': '#f8fafc',
-        'text-halo-color': '#0f172a',
-        'text-halo-width': 1.5,
+        'text-color': '#ffffff',
+        'text-halo-color': '#0a0f1d',
+        'text-halo-width': 2,
       },
     })
   }
@@ -366,9 +366,9 @@ export function setupCorridorMapLayers(
       type: 'circle',
       source: SOURCE_VEHICLES,
       paint: {
-        'circle-radius': 7,
+        'circle-radius': 8,
         'circle-color': '#3b82f6', // Streetcar Blue
-        'circle-stroke-width': 2,
+        'circle-stroke-width': 2.5,
         'circle-stroke-color': '#ffffff',
       },
     })
@@ -385,15 +385,9 @@ export function updateDevelopmentsPhase(map: MapLibreMap, activePhase: number): 
   if (activePhase === 0) {
     // Today: Hide proposed developments
     map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['==', ['get', 'phase'], -1])
-    if (map.getLayer(LAYER_WALK_LINKS)) {
-      map.setFilter(LAYER_WALK_LINKS, ['==', ['get', 'phase'], -1])
-    }
   } else {
     // Show developments up to activePhase
     map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['<=', ['get', 'phase'], activePhase])
-    if (map.getLayer(LAYER_WALK_LINKS)) {
-      map.setFilter(LAYER_WALK_LINKS, null)
-    }
   }
 }
 
