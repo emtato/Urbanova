@@ -97,16 +97,26 @@ def handle_stop_passengers(
     streetcar: Streetcar,
     passengers: dict[str, Passenger],
     time_s: float,
-) -> None:
+    *,
+    check_denials: bool = True,
+) -> dict[str, list[str]]:
     """Alight arriving riders, board waiting riders up to capacity, and mark overcrowding.
 
     Also handles the terminus (inputs.stops[-1]): riders boarding at or riding
     past TMU with destination_stop_id=None still board and record wait/denied-boarding
     state before crossing the corridor boundary as status='beyond_segment'.
+
+    Returns the lists of passenger IDs that alighted, boarded, were denied boarding,
+    or crossed the terminus boundary during this call.
     """
     if streetcar.status != "at_stop" or streetcar.current_stop_id is None:
         raise ValueError("A streetcar must be at a stop to serve passengers")
     stop = next(s for s in inputs.stops if s.id == streetcar.current_stop_id)
+
+    alighted_ids: list[str] = []
+    boarded_ids: list[str] = []
+    denied_ids: list[str] = []
+    beyond_segment_ids: list[str] = []
 
     # 1. Alight passengers whose destination is this stop.
     remaining_onboard: list[str] = []
@@ -116,6 +126,7 @@ def handle_stop_passengers(
             passenger.status = "arrived"
             passenger.exit_time_s = time_s
             passenger.streetcar_id = None
+            alighted_ids.append(pid)
         else:
             remaining_onboard.append(pid)
     streetcar.onboard_passenger_ids = remaining_onboard
@@ -128,11 +139,13 @@ def handle_stop_passengers(
         passenger.streetcar_id = streetcar.id
         passenger.boarding_time_s = time_s
         streetcar.onboard_passenger_ids.append(pid)
+        boarded_ids.append(pid)
 
-    # 3. Overcrowding: anyone still waiting in the queue could not board this car.
-    if len(streetcar.onboard_passenger_ids) >= streetcar.capacity:
+    # 3. Overcrowding: anyone still waiting in the queue when the car is full could not board.
+    if check_denials and len(streetcar.onboard_passenger_ids) >= streetcar.capacity:
         for pid in stop.waiting_passenger_ids:
             passengers[pid].denied_boarding_once = True
+            denied_ids.append(pid)
 
     # 4. At the terminus, riders heading beyond the modelled segment cross the boundary.
     if stop.id == inputs.stops[-1].id:
@@ -143,9 +156,17 @@ def handle_stop_passengers(
                 passenger.status = "beyond_segment"
                 passenger.exit_time_s = time_s
                 passenger.streetcar_id = None
+                beyond_segment_ids.append(pid)
             else:
                 still_onboard.append(pid)
         streetcar.onboard_passenger_ids = still_onboard
+
+    return {
+        "alighted": alighted_ids,
+        "boarded": boarded_ids,
+        "denied": denied_ids,
+        "beyond_segment": beyond_segment_ids,
+    }
 
 
 def terminate_streetcar(inputs: SimulationInput, streetcar: Streetcar) -> None:

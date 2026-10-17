@@ -160,6 +160,50 @@ def test_terminus_boarding_handles_overcrowding_and_wait_detection():
     assert summary["overview"]["conservation_valid"] is True
     assert summary["overcrowding"]["worst_stop_by_denied_share"]["stop_id"] == "s1"
 
+    # Verify that SimLog captured passenger_arrive, board, deny, and beyond_segment events with stop_queues.
+    actions = [e["action"] for e in res["sim_log"]]
+    assert "passenger_arrive" in actions
+    assert "board" in actions
+    assert "deny" in actions
+    assert "beyond_segment" in actions
+    deny_events = [e for e in res["sim_log"] if e["action"] == "deny"]
+    assert len(deny_events) == 1
+    assert deny_events[0]["stop_id"] == "s1"
+    assert deny_events[0]["count"] == 1
+    assert deny_events[0]["passenger_ids"] == ["p2"]
+    assert deny_events[0]["waiting_count_after"] == 1
+    assert deny_events[0]["stop_queues"] == {"s0": 0, "s1": 1}
+
+    # Reusing `inputs` after a run that leaves queued riders must reset stop queues cleanly.
+    short_inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(10.0,),
+        streetcar_capacity=1,
+        headway_s=20.0,
+        rush_hour_duration_s=30.0,
+        trips_per_resident_in_window=0.3,
+        start_time_s=0,
+        end_time_s=10,
+    )
+    run_simulation(
+        short_inputs,
+        {
+            "q1": Passenger(id="q1", origin_stop_id="s0", destination_stop_id="s1", get_to_stop_time=0, rider_group="existing"),
+            "q2": Passenger(id="q2", origin_stop_id="s0", destination_stop_id="s1", get_to_stop_time=0, rider_group="existing"),
+        },
+    )
+    assert len(stops[0].waiting_passenger_ids) == 1
+    res_reuse = run_simulation(
+        short_inputs,
+        {
+            "fresh": Passenger(id="fresh", origin_stop_id="s0", destination_stop_id="s1", get_to_stop_time=0, rider_group="existing"),
+        },
+    )
+    assert res_reuse["summary"]["overview"]["conservation_valid"] is True
+    assert res_reuse["summary"]["overview"]["remaining_queue_passengers"] == 0
+
 
 def test_run_simulation_generates_passengers_via_commute_helper():
     from backend.simulation.inputs import SimulationInput
@@ -215,6 +259,9 @@ def test_run_simulation_generates_passengers_via_commute_helper():
     assert summary["by_development"][0]["development_id"] == "dev-500-dundas"
     assert summary["by_development"][0]["passengers"] == len(new_riders)
     assert len(summary["contract"]["stop_results"]) == 2 * len(corridor_stops)
+    assert summary["contract"]["case_metrics"]["mean_wait_s"] == pytest.approx(
+        summary["wait_times_s"]["completed_trips"]["overall"]["mean_s"]
+    )
 
 
 def test_corridor_505_share_bands():
@@ -234,4 +281,5 @@ def test_corridor_505_share_bands():
     assert corridor_505_share(LAT - (0.30 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 1.0
     assert corridor_505_share(LAT - (0.50 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.5
     assert corridor_505_share(LAT - (0.70 * DUNDAS_TO_QUEEN_M) / METRES_PER_DEG_LAT, lon_at(0), CORRIDOR) == 0.0
+
 

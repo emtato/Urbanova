@@ -222,10 +222,15 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     # Generate passengers from housing inputs via commute.py's sample_streetcar_trip
     # unless the caller explicitly passed a custom passengers dict (e.g. in unit tests).
     use_incoming_broadview_load = passengers is None and bool(inputs.existing_residences or inputs.developments)
+    for stop in inputs.stops:
+        stop.waiting_passenger_ids.clear()
+        stop.serving_streetcar_id = None
     if passengers is None:
-        for stop in inputs.stops:
-            stop.waiting_passenger_ids.clear()
         passengers = generate_passengers(inputs)
+    else:
+        for passenger in passengers.values():
+            if passenger.status == "waiting":
+                stops_by_id[passenger.origin_stop_id].waiting_passenger_ids.append(passenger.id)
 
     # Sort scheduled passengers by arrival time at stop so we can enqueue them in order.
     scheduled_passengers = sorted(
@@ -244,22 +249,115 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     dwell_rng = Random(f"{inputs.seed}:dwell_times")
     incoming_rng = Random(f"{inputs.seed}:incoming_loads")
 
+    def current_stop_queues() -> dict[str, int]:
+        return {stop.id: len(stop.waiting_passenger_ids) for stop in inputs.stops}
+
     # Preserve each action's state in the shared history for saving and replaying the run.
-    def record(time_s: int, action: SimAction, streetcar: Streetcar) -> None:
-        sim_log.append(SimLog(time_s, action, deepcopy(streetcar)))
+    def record(
+        time_s: int,
+        action: SimAction,
+        streetcar: Streetcar | None,
+        *,
+        stop_id: str | None = None,
+        passenger_ids: list[str] | tuple[str, ...] = (),
+        onboard_override: list[str] | None = None,
+    ) -> None:
+        car_copy = deepcopy(streetcar) if streetcar is not None else None
+        if car_copy is not None and onboard_override is not None:
+            car_copy.onboard_passenger_ids = list(onboard_override)
+        resolved_stop_id = stop_id
+        if resolved_stop_id is None and car_copy is not None:
+            resolved_stop_id = car_copy.current_stop_id or car_copy.previous_stop_id
+        pids = list(passenger_ids)
+        existing_cnt = sum(1 for pid in pids if passengers[pid].rider_group == "existing")
+        new_cnt = sum(1 for pid in pids if passengers[pid].rider_group == "new")
+        queues = current_stop_queues()
+        sim_log.append(
+            SimLog(
+                time_s=time_s,
+                action=action,
+                streetcar=car_copy,
+                stop_id=resolved_stop_id,
+                count=len(pids),
+                existing_count=existing_cnt,
+                new_count=new_cnt,
+                passenger_ids=pids,
+                onboard_count_after=len(car_copy.onboard_passenger_ids) if car_copy is not None else None,
+                waiting_count_after=queues.get(resolved_stop_id) if resolved_stop_id is not None else None,
+                stop_queues=queues,
+            )
+        )
+
+    def serve_and_log_stop_passengers(
+        streetcar: Streetcar,
+        time_s: int,
+        *,
+        check_denials: bool,
+    ) -> None:
+        stop_id = streetcar.current_stop_id
+        pre_onboard_ids = list(streetcar.onboard_passenger_ids)
+        events = handle_stop_passengers(
+            inputs,
+            streetcar,
+            passengers,
+            time_s,
+            check_denials=check_denials,
+        )
+        alighted_set = set(events["alighted"])
+        after_alight_ids = [pid for pid in pre_onboard_ids if pid not in alighted_set]
+        after_board_ids = after_alight_ids + list(events["boarded"])
+
+        if events["alighted"]:
+            record(
+                time_s,
+                "alight",
+                streetcar,
+                stop_id=stop_id,
+                passenger_ids=events["alighted"],
+                onboard_override=after_alight_ids,
+            )
+        if events["boarded"]:
+            record(
+                time_s,
+                "board",
+                streetcar,
+                stop_id=stop_id,
+                passenger_ids=events["boarded"],
+                onboard_override=after_board_ids,
+            )
+        if events["denied"]:
+            record(
+                time_s,
+                "deny",
+                streetcar,
+                stop_id=stop_id,
+                passenger_ids=events["denied"],
+                onboard_override=after_board_ids,
+            )
+        if events["beyond_segment"]:
+            record(
+                time_s,
+                "beyond_segment",
+                streetcar,
+                stop_id=stop_id,
+                passenger_ids=events["beyond_segment"],
+            )
 
     # Serve passengers upon reaching a stop; terminate at TMU or schedule 15-30s stop dwell.
     def begin_stop_service(streetcar: Streetcar, time_s: int) -> None:
-        # handle_stop_passengers (from streetcars.py):
-        # 1) Alights onboard passengers whose destination_stop_id == streetcar.current_stop_id
-        # 2) Boards stop.waiting_passenger_ids FIFO up to streetcar.capacity (sets boarding_time_s)
-        # 3) Sets denied_boarding_once=True on remaining waiting passengers if car is full
-        # 4) If at inputs.stops[-1] (TMU), transitions destination_stop_id=None riders to
-        #    status="beyond_segment" and clears onboard_passenger_ids before termination.
-        handle_stop_passengers(inputs, streetcar, passengers, time_s)
-        if streetcar.current_stop_id == inputs.stops[-1].id:
+        stop = stops_by_id[streetcar.current_stop_id]
+        stop.serving_streetcar_id = streetcar.id
+        is_terminus = streetcar.current_stop_id == inputs.stops[-1].id
+        serve_and_log_stop_passengers(
+            streetcar,
+            time_s,
+            check_denials=is_terminus or time_s >= duration_s,
+        )
+        if is_terminus:
+            if stop.serving_streetcar_id == streetcar.id:
+                stop.serving_streetcar_id = None
             terminate_streetcar(inputs, streetcar)
-            record(time_s, "terminate", streetcar)
+            record(time_s, "terminate", streetcar, stop_id=stop.id)
             active_streetcars.pop(streetcar.id)
         else:
             dwell_low_s, dwell_high_s = STOP_DWELL_RANGE_S
@@ -267,7 +365,10 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
 
     # Depart a non-terminus stop once its 15-30s dwell time has elapsed.
     def finish_dwell_and_depart(streetcar: Streetcar, time_s: int) -> None:
-        handle_stop_passengers(inputs, streetcar, passengers, time_s)
+        stop = stops_by_id[streetcar.current_stop_id]
+        serve_and_log_stop_passengers(streetcar, time_s, check_denials=True)
+        if stop.serving_streetcar_id == streetcar.id:
+            stop.serving_streetcar_id = None
         planned_departure_s.pop(streetcar.id, None)
         depart_streetcar(inputs, streetcar, time_s)
 
@@ -279,7 +380,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
                 base_duration_s * (1 + travel_variation_share),
             )
             streetcar.expected_arrival_time_s = time_s + travel_duration_s
-        record(time_s, "depart", streetcar)
+        record(time_s, "depart", streetcar, stop_id=stop.id)
 
     # Advance one second at a time, including final arrivals at the reporting cutoff.
     for time_s in range(start_time, end_time + 1):
@@ -293,19 +394,32 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             passenger = scheduled_passengers[next_passenger_idx]
             if passenger.status == "scheduled":
                 passenger.status = "waiting"
-                stops_by_id[passenger.origin_stop_id].waiting_passenger_ids.append(passenger.id)
+                stop = stops_by_id[passenger.origin_stop_id]
+                stop.waiting_passenger_ids.append(passenger.id)
+                record(
+                    elapsed_s,
+                    "passenger_arrive",
+                    None,
+                    stop_id=stop.id,
+                    passenger_ids=[passenger.id],
+                )
             next_passenger_idx += 1
 
         # Update travelling cars that have reached their next stop and dwelling cars ready to depart.
         for streetcar in list(active_streetcars.values()):
             if streetcar.status == "in_transit" and elapsed_s >= streetcar.expected_arrival_time_s:
                 arrive_streetcar(streetcar, elapsed_s)
-                record(elapsed_s, "arrive", streetcar)
+                record(elapsed_s, "arrive", streetcar, stop_id=streetcar.current_stop_id)
                 begin_stop_service(streetcar, elapsed_s)
             elif streetcar.status == "at_stop" and streetcar.id in planned_departure_s:
-                handle_stop_passengers(inputs, streetcar, passengers, elapsed_s)
                 if elapsed_s >= planned_departure_s[streetcar.id]:
                     finish_dwell_and_depart(streetcar, elapsed_s)
+                else:
+                    serve_and_log_stop_passengers(
+                        streetcar,
+                        elapsed_s,
+                        check_denials=elapsed_s >= duration_s,
+                    )
 
         # Introduce cars whose entry time has been reached while the entry window is open.
         while elapsed_s < entry_end_s and next_entry_s is not None and elapsed_s >= next_entry_s:
@@ -315,7 +429,13 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
                 seed_incoming_passengers(inputs, streetcar, passengers, incoming_rng, elapsed_s)
             streetcars.append(streetcar)
             active_streetcars[streetcar.id] = streetcar
-            record(elapsed_s, "generate", streetcar)
+            record(
+                elapsed_s,
+                "generate",
+                streetcar,
+                stop_id=streetcar.current_stop_id,
+                passenger_ids=list(streetcar.onboard_passenger_ids),
+            )
             begin_stop_service(streetcar, elapsed_s)
             next_entry_s = next(entry_times, None)
 

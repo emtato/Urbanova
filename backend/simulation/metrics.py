@@ -1,10 +1,177 @@
-"""Post-simulation analyzer computing corridor, stop, development, and fleet metrics.
+"""Post-simulation analyzer and complete frontend reference for `run_simulation()` output.
 
-Accepts the dictionary returned by `run_simulation()` (or raw simulation objects)
-and produces a structured summary dictionary suitable for:
-  1. Resident-facing commute summaries & scenario comparison cards
-  2. Stop-by-stop bottleneck and crowding analysis
-  3. Contract-validated `Diagnostics` and `StopResult` payloads
+================================================================================
+FRONTEND & API REFERENCE: `result = run_simulation(inputs)` RETURN VALUE
+================================================================================
+
+`run_simulation(inputs)` returns a JSON-ready Python `dict` with 5 top-level keys:
+
+```python
+{
+    "inputs": {...},       # 1. Exact scenario inputs used for this simulation run
+    "streetcars": [...],   # 2. Final state of every generated streetcar
+    "passengers": [...],   # 3. Final state & trip timestamps of every passenger
+    "sim_log": [...],      # 4. Chronological event stream for visual map/street replay
+    "summary": {...},      # 5. Pre-computed analytics, stop tables & headline metrics
+}
+```
+
+All time durations have an `_s` suffix and are in **seconds**.
+All `time_s`, `get_to_stop_time`, `boarding_time_s`, `exit_time_s`, `departure_time_s`,
+and `expected_arrival_time_s` values in the output are **elapsed seconds from the start
+of the simulation (`0` = `inputs["start_time_s"]`, e.g. 07:00 AM)**.
+All shares (`_share`) are fractions in `[0.0, 1.0]` (multiply by `100` for `%`).
+
+--------------------------------------------------------------------------------
+1. `result["inputs"]` (dict) — Scenario Configuration
+--------------------------------------------------------------------------------
+ Mirrors `SimulationInput` (`backend/simulation/inputs.py`):
+  - `stops`: `list[dict]` — Ordered westbound 505 stops (0 = Broadview -> 8 = TMU):
+      `{ "id", "name", "sequence", "latitude", "longitude", "waiting_passenger_ids", "serving_streetcar_id" }`
+  - `existing_residences`: `list[dict]` — Baseline neighbourhood housing clusters
+  - `developments`: `list[dict]` — Proposed towers (239, 500, 761 Dundas St E)
+  - `link_travel_times_s`: `list[float]` — Scheduled link travel times between adjacent stops
+  - `streetcar_capacity`: `int` — Max passengers per streetcar (e.g., 130 planned or 251 crush)
+  - `headway_s`: `float` — Mean streetcar dispatch interval at Broadview (seconds)
+  - `rush_hour_duration_s`: `float` — Passenger arrival window length (e.g., 7200.0 = 2 hours)
+  - `trips_per_resident_in_window`: `float` — Commuter trip rate per resident
+  - `start_time_s`, `end_time_s`: `int` — Service-day clock bounds in seconds past midnight
+  - `headway_randomness_s`: `float` — Entry headway variation bound (seconds)
+  - `commuter_distribution`: `list[float]` — Relative arrival weights across rush-hour bins
+  - `seed`: `int` — Random seed used for reproducible comparisons
+  - `link_travel_time_variation_share`: `float` — Fractional link travel-time variability
+
+--------------------------------------------------------------------------------
+2. `result["streetcars"]` (list[dict]) — Final Vehicle State
+--------------------------------------------------------------------------------
+One dict per dispatched streetcar (`streetcar-1`, `streetcar-2`, ...):
+  - `id`: `str` — e.g. `"streetcar-1"`
+  - `capacity`: `int` — Vehicle capacity
+  - `onboard_passenger_ids`: `list[str]` — Passenger IDs still onboard at run end (`[]` if finished)
+  - `status`: `"at_stop" | "in_transit" | "finished"`
+  - `current_stop_id`: `str | None` — Set when `status == "at_stop"` or `"finished"` (at TMU)
+  - `previous_stop_id`: `str | None` — Origin stop of current link when `status == "in_transit"`
+  - `next_stop_id`: `str | None` — Target stop of current link when `status == "in_transit"`
+  - `departure_time_s`: `float | None` — When the car started its current link
+  - `expected_arrival_time_s`: `float | None` — When the car will reach `next_stop_id`
+
+--------------------------------------------------------------------------------
+3. `result["passengers"]` (list[dict]) — Every Simulated Passenger
+--------------------------------------------------------------------------------
+Includes both corridor-boarding riders (from `existing_residences` and `developments`)
+and incoming Broadview riders (12–24 riders seeded onto each streetcar at Broadview):
+  - `id`: `str` — e.g. `"passenger-1"`
+  - `origin_stop_id`: `str` — Boarding stop ID along the 505 corridor
+  - `destination_stop_id`: `str | None` — Alighting stop ID, or `None` if riding west past TMU
+  - `get_to_stop_time`: `float` — Elapsed seconds when the passenger arrived at `origin_stop_id`
+  - `rider_group`: `"existing" | "new"` — `"new"` = from a proposed development
+  - `development_id`: `str | None` — Development ID if `rider_group == "new"`, else `None`
+  - `status`: `"scheduled" | "waiting" | "onboard" | "arrived" | "beyond_segment"`
+      * `"arrived"`: Alighted at `destination_stop_id` on the corridor
+      * `"beyond_segment"`: Reached TMU terminus and continued west past Yonge
+      * `"waiting"`: Still waiting in the queue at `origin_stop_id` at run end
+      * `"onboard"`: Still riding a streetcar at run end
+  - `streetcar_id`: `str | None` — Current vehicle ID if `"onboard"`, else `None`
+  - `boarding_time_s`: `float | None` — Elapsed seconds when they boarded (`wait = boarding_time_s - get_to_stop_time`)
+  - `exit_time_s`: `float | None` — Elapsed seconds when they alighted or passed TMU (`ride = exit_time_s - boarding_time_s`)
+  - `denied_boarding_once`: `bool` — `True` if at least one full streetcar passed them while waiting
+
+--------------------------------------------------------------------------------
+4. `result["sim_log"]` (list[dict]) — Complete Visual Replay Event Stream
+--------------------------------------------------------------------------------
+Chronological list of all passenger, stop-queue, and streetcar actions:
+  - `time_s`: `int` — Elapsed whole seconds from simulation start
+  - `action`: `"passenger_arrive" | "generate" | "arrive" | "alight" | "board" | "deny" | "beyond_segment" | "depart" | "terminate"`
+      * `"passenger_arrive"`: A passenger reaches `stop_id` and joins its waiting queue (`streetcar` is `None`)
+      * `"generate"`: Streetcar enters at Broadview (`stops[0]`) with 12–24 incoming riders (`count`)
+      * `"arrive"`: Streetcar reaches a downstream stop (`stop_id`), before serving passengers
+      * `"alight"`: `count` passengers exit `streetcar` at `stop_id`
+      * `"board"`: `count` waiting passengers board `streetcar` at `stop_id`
+      * `"deny"`: `count` waiting passengers at `stop_id` are left behind by a full `streetcar`
+      * `"beyond_segment"`: `count` onboard passengers continue west past the TMU terminus (`stops[-1]`)
+      * `"depart"`: Streetcar finishes 15–30s stop dwell at `stop_id` (`previous_stop_id`) and starts link
+                    to `next_stop_id` (`departure_time_s` -> `expected_arrival_time_s`)
+      * `"terminate"`: Streetcar finishes service at the TMU terminus (`stops[-1]`)
+  - `streetcar`: `dict | None` — Deep-copied snapshot of the `Streetcar` at that exact step (`None` for `"passenger_arrive"`)
+  - `stop_id`: `str | None` — Stop ID where this event occurred (or departed from on `"depart"`)
+  - `count`: `int` — Total passengers involved in this event (`0` for pure movement events)
+  - `existing_count`: `int` — Existing-residence riders involved in this event
+  - `new_count`: `int` — New-development riders involved in this event
+  - `passenger_ids`: `list[str]` — IDs of the passengers involved in this event
+  - `onboard_count_after`: `int | None` — Streetcar load immediately after this event (`None` for `"passenger_arrive"`)
+  - `waiting_count_after`: `int | None` — Waiting queue length at `stop_id` immediately after this event
+  - `stop_queues`: `dict[str, int]` — Snapshot of `{stop_id: waiting_count}` across all 9 stops at this moment
+
+--------------------------------------------------------------------------------
+5. `result["summary"]` (dict) — Pre-Computed Tables & Headline Analytics
+--------------------------------------------------------------------------------
+Produced by `analyze_simulation(result)`:
+
+  A. `result["summary"]["overview"]` (dict — Headline KPI Cards / Overall Table)
+     - `corridor_passengers`: `int` — Total riders who walked to a 505 stop (`existing` + `new`)
+     - `existing_corridor_passengers`: `int` — Existing neighbourhood residents at 505 stops
+     - `new_development_passengers`: `int` — New development residents at 505 stops
+     - `incoming_broadview_passengers`: `int` — Pre-boarded riders entering at Broadview
+     - `total_passengers_in_sim`: `int` — `corridor_passengers + incoming_broadview_passengers`
+     - `boarded_corridor_passengers`: `int` — Corridor riders who successfully boarded
+     - `completed_corridor_passengers`: `int` — Corridor riders who reached their destination / TMU
+     - `unresolved_passengers`: `int` — Riders still waiting in queues or onboard at cutoff
+     - `remaining_queue_passengers`: `int` — Riders stranded in stop queues at cutoff
+     - `onboard_at_end_passengers`: `int` — Riders still on a moving streetcar at cutoff
+     - `denied_boarding_count`: `int` — Corridor riders denied boarding at least once
+     - `denied_boarding_share`: `float | None` — Share of corridor riders denied boarding (0–1)
+     - `existing_denied_boarding_share`: `float | None` — Denied share among existing residents
+     - `new_denied_boarding_share`: `float | None` — Denied share among new-development residents
+     - `mean_wait_s`, `median_wait_s`, `p95_wait_s`, `max_wait_s`: `float | None` — Stop wait times
+     - `mean_ride_time_s`: `float | None` — Mean in-vehicle time on the corridor
+     - `mean_commute_time_s`, `p95_commute_time_s`: `float | None` — Total wait + ride time
+     - `streetcar_capacity`: `int` — Vehicle capacity
+     - `streetcars_dispatched`, `streetcars_completed`: `int`
+     - `mean_departure_load`: `float | None` — Mean onboard load leaving stops
+     - `peak_streetcar_load`: `int` — Max onboard load observed on any streetcar
+     - `full_departures_count`: `int` — Number of link departures at 100% capacity
+     - `full_departures_share`: `float | None` — Share of link departures at 100% capacity
+     - `conservation_valid`: `bool` — `True` when all passenger & capacity invariants hold
+
+  B. `result["summary"]["by_stop"]` (list[dict] — 9 Stop Rows, Broadview -> TMU)
+     Each item represents one stop along the corridor:
+     - `stop_id`: `str`, `stop_name`: `str`, `sequence`: `int` (0 to 8)
+     - `streetcar_arrivals`: `int` — Number of streetcars that served this stop
+     - `mean_headway_s`, `min_headway_s`, `max_headway_s`, `headway_cv`: `float | None`
+     - `bunched_arrivals_count`, `gapped_arrivals_count`: `int`
+     - `mean_arrival_load`, `peak_arrival_load`: `float | int | None`
+     - `mean_departure_load`, `peak_departure_load`: `float | int | None` (`None` at TMU terminus)
+     - `full_departures_count`: `int` — Streetcars leaving this stop completely full
+     - `alighted_passengers`: `int` — Riders who got off at this stop
+     - `beyond_segment_passengers`: `int` — Riders continuing west past TMU (non-zero at TMU)
+     - `passengers`: `int` — Total corridor riders waiting/boarding at this stop
+     - `boarded_passengers`, `completed_passengers`, `remaining_queue`: `int`
+     - `denied_boarding_count`: `int`, `denied_at_least_once_share`: `float | None`
+     - `mean_wait_s`, `p95_wait_s`: `float | None` — Wait times for riders boarding at this stop
+     - `completed_mean_wait_s`, `completed_p95_wait_s`: `float | None`
+     - `by_rider_group`: `{"existing": {...}, "new": {...}}` — Same passenger metrics split by cohort
+
+  C. `result["summary"]["by_development"]` (list[dict] — 3 Proposed Developments)
+     Each item summarizes one development (`239`, `500`, `761 Dundas St E`):
+     - `development_id`, `name`, `net_added_units`, `occupied_share`, `accessible_stop_ids`
+     - `passengers`: `int` — Number of westbound 505 riders generated by this building
+     - `boarded_passengers`, `completed_passengers`, `remaining_queue`: `int`
+     - `denied_boarding_count`: `int`, `denied_at_least_once_share`: `float | None`
+     - `mean_wait_s`, `p95_wait_s`, `mean_ride_time_s`, `mean_commute_time_s`: `float | None`
+
+  D. `result["summary"]["overcrowding"]` (dict — Bottleneck Callouts)
+     - `overall`, `existing`, `new`: cohort overcrowding summaries
+     - `worst_stop_by_denied_share`: `{ "stop_id", "stop_name", "denied_at_least_once_share", "denied_boarding_count", "passengers" } | None`
+     - `worst_stop_by_p95_wait`: `{ "stop_id", "stop_name", "p95_wait_s", "mean_wait_s", "passengers" } | None`
+     - `worst_stop_by_remaining_queue`: `{ "stop_id", "stop_name", "remaining_queue", "passengers" } | None`
+
+  E. `result["summary"]["wait_times_s"]`, `result["summary"]["journey_times_s"]`, `result["summary"]["fleet"]`
+     Full distribution breakdowns (`count`, `mean_s`, `median_s`, `p95_s`, `min_s`, `max_s`)
+     for charts and detailed inspection.
+
+  F. `result["summary"]["contract"]` (dict — Frozen Schema Match)
+     - `diagnostics`: Matches `backend/schemas/run.py` (`Diagnostics`)
+     - `stop_results`: Matches `backend/schemas/results.py` (`list[StopResult]`)
 """
 
 from __future__ import annotations
@@ -170,15 +337,10 @@ def analyze_simulation(
     loads_within_capacity = all(
         0 <= len(entry["streetcar"].get("onboard_passenger_ids", ())) <= entry["streetcar"].get("capacity", capacity)
         for entry in sim_log
+        if entry.get("streetcar") is not None
     ) and all(
         0 <= len(car.get("onboard_passenger_ids", ())) <= car.get("capacity", capacity)
         for car in streetcars
-    )
-    conservation_valid = (
-        all_statuses_valid
-        and waiting_in_stops == waiting_passengers_total
-        and onboard_in_streetcars == onboard_passengers_total
-        and loads_within_capacity
     )
 
     # Wait time distributions (corridor-boarding riders only).
@@ -198,6 +360,20 @@ def analyze_simulation(
     waiting_existing = [p for p in existing_corridor if p["status"] == "waiting"]
     waiting_new = [p for p in new_corridor if p["status"] == "waiting"]
 
+    corridor_created = len(corridor_passengers)
+    corridor_arrived = len(completed_corridor)
+    corridor_waiting = len(waiting_corridor)
+    corridor_onboard = sum(1 for p in corridor_passengers if p["status"] == "onboard")
+    corridor_unresolved = corridor_waiting + corridor_onboard
+
+    conservation_valid = (
+        all_statuses_valid
+        and waiting_in_stops == waiting_passengers_total
+        and onboard_in_streetcars == onboard_passengers_total
+        and loads_within_capacity
+        and corridor_created == corridor_arrived + corridor_waiting + corridor_onboard
+    )
+
     # Ride time & total commute time distributions.
     ride_times_corridor = [r for p in completed_corridor if (r := _ride_time_s(p)) is not None]
     ride_times_existing = [r for p in completed_existing if (r := _ride_time_s(p)) is not None]
@@ -214,6 +390,8 @@ def analyze_simulation(
 
     peak_load_by_car: dict[str, int] = {car["id"]: len(car.get("onboard_passenger_ids", ())) for car in streetcars}
     for entry in sim_log:
+        if entry.get("streetcar") is None:
+            continue
         car_id = entry["streetcar"]["id"]
         load = len(entry["streetcar"]["onboard_passenger_ids"])
         if load > peak_load_by_car.get(car_id, 0):
@@ -289,7 +467,7 @@ def analyze_simulation(
             bunched_count = 0
             gapped_count = 0
 
-        # Streetcar departure loads leaving this stop (or arrival loads at the TMU terminus).
+        # Streetcar departure loads leaving non-terminus stops onto the next corridor link.
         stop_depart_entries = [
             entry for entry in depart_events
             if entry["streetcar"]["previous_stop_id"] == stop_id
@@ -447,18 +625,12 @@ def analyze_simulation(
             }
         )
 
-    # Contract-compatible Diagnostics (over active corridor-boarding passengers).
-    corridor_created = len(corridor_passengers)
-    corridor_arrived = len(completed_corridor)
-    corridor_waiting = len(waiting_corridor)
-    corridor_onboard = sum(1 for p in corridor_passengers if p["status"] == "onboard")
-    corridor_unresolved = corridor_waiting + corridor_onboard
-
     overall_overcrowding = _summarize_overcrowding_group(corridor_passengers)
     existing_overcrowding = _summarize_overcrowding_group(existing_corridor)
     new_overcrowding = _summarize_overcrowding_group(new_corridor)
 
     boarded_wait_summary = summarize_distribution(boarded_waits_all)
+    completed_wait_summary = summarize_distribution(completed_waits_all)
     ride_time_summary = summarize_distribution(ride_times_corridor)
     commute_time_summary = summarize_distribution(commute_times_corridor)
 
@@ -513,7 +685,6 @@ def analyze_simulation(
                 "new": len(new_corridor),
                 "scheduled_after_horizon": len(scheduled_not_yet_arrived),
                 "by_status": {
-                    "scheduled": len(scheduled_not_yet_arrived),
                     "waiting": corridor_waiting,
                     "onboard": corridor_onboard,
                     "arrived": sum(1 for p in corridor_passengers if p["status"] == "arrived"),
@@ -544,7 +715,7 @@ def analyze_simulation(
                 "new": summarize_distribution(boarded_waits_new),
             },
             "completed_trips": {
-                "overall": summarize_distribution(completed_waits_all),
+                "overall": completed_wait_summary,
                 "existing": summarize_distribution(completed_waits_existing),
                 "new": summarize_distribution(completed_waits_new),
             },
@@ -635,12 +806,15 @@ def analyze_simulation(
                 "passengers_arrived": corridor_arrived,
                 "passengers_waiting": corridor_waiting,
                 "passengers_onboard": corridor_onboard,
-                "conservation": (
-                    conservation_valid
-                    and corridor_created == corridor_arrived + corridor_waiting + corridor_onboard
-                ),
+                "conservation": conservation_valid,
                 "unresolved_passengers": corridor_unresolved,
                 "runtime_s": max(0.0, float(runtime_s)),
+            },
+            "case_metrics": {
+                "mean_wait_s": completed_wait_summary["mean_s"],
+                "p95_wait_s": completed_wait_summary["p95_s"],
+                "denied_share": overall_overcrowding["denied_at_least_once_share"],
+                "unresolved_passengers": corridor_unresolved,
             },
             "stop_results": contract_stop_results,
         },
