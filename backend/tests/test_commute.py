@@ -108,7 +108,7 @@ def test_real_data_returns_valid_corridor_trips():
 def test_terminus_boarding_handles_overcrowding_and_wait_detection():
     from backend.simulation.inputs import SimulationInput
     from backend.simulation.objects import Passenger, Stop
-    from backend.simulation.runner import STOP_DWELL_RANGE_S, run_simulation
+    from backend.simulation.runner import run_simulation
 
     stops = (
         Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
@@ -138,8 +138,8 @@ def test_terminus_boarding_handles_overcrowding_and_wait_detection():
     assert len(depart_events) == 2
     car1_dwell_s = depart_events[0]["time_s"] - 0
     car2_dwell_s = depart_events[1]["time_s"] - 20
-    assert STOP_DWELL_RANGE_S[0] <= car1_dwell_s <= STOP_DWELL_RANGE_S[1]
-    assert STOP_DWELL_RANGE_S[0] <= car2_dwell_s <= STOP_DWELL_RANGE_S[1]
+    assert inputs.stop_dwell_range_s[0] <= car1_dwell_s <= inputs.stop_dwell_range_s[1]
+    assert inputs.stop_dwell_range_s[0] <= car2_dwell_s <= inputs.stop_dwell_range_s[1]
 
     assert passengers["p1"].status == "beyond_segment"
     assert passengers["p1"].boarding_time_s == 0

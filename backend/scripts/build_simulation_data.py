@@ -209,6 +209,20 @@ def travel_context(path):
                 caveat="CSV contains an 8:59 pm typo on AM rows; adjacent AM transit row specifies am. These are expanded resident-trip survey estimates, not trips originating in the area or observed 505 boardings.")
 
 
+def apply_model_assumptions(bundle, selection):
+    """Copy the simulator's model assumptions into the inputs, with unit, status and ranges in field_metadata.
+
+    The simulator reads these from SimulationInput instead of module constants, so the
+    values, the documentation and any sensitivity run share one source.
+    """
+    for name, spec in selection["model_assumptions"].items():
+        bundle["inputs"][name] = spec["value"]
+        bundle["field_metadata"][name] = {key: spec[key] for key in
+                                          ("unit", "status", "source_ids", "meaning", "sensitivity", "sensitivity_note", "defined_in")
+                                          if key in spec}
+    return bundle
+
+
 def build(*, refresh=False, expand_buildings=True):
     selection = json.loads(SELECTION.read_text(encoding="utf-8"))
     corridor = json.loads((REVIEWED / "corridor.json").read_text(encoding="utf-8"))
@@ -335,6 +349,7 @@ def build(*, refresh=False, expand_buildings=True):
         "commuter_distribution": dict(unit="relative arrival weights", status="assumed", source_ids=[], meaning="A single bin assumes uniform arrivals over the window."),
         "seed": dict(unit="integer", status="internal", source_ids=[], meaning="Reproducible random seed; not real-world data."),
     }
+    apply_model_assumptions(bundle, selection)
     write_json(REVIEWED / "registered_rental_input.json", bundle)
     write_json(REVIEWED / "simulation_input.json", bundle)
     write_json(REVIEWED / "simulation_sources.json", sources)

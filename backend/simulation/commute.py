@@ -75,6 +75,7 @@ def corridor_505_share(
     home_lat: float,
     home_lon: float,
     corridor_stops: Iterable[ object ] | None = None,
+    bands: tuple[float, float] = (PARALLEL_FULL_SHARE_BAND, PARALLEL_HALF_SHARE_BAND),
 ) -> float:
     """Return the fraction of a building's commuters assigned to the 505 vs. Queen/College.
 
@@ -91,9 +92,10 @@ def corridor_505_share(
     north_south_m = (home_lat - nearest_stop.latitude) * METRES_PER_DEG_LAT
     span_m = DUNDAS_TO_COLLEGE_M if north_south_m >= 0 else DUNDAS_TO_QUEEN_M
     fraction_to_parallel_route = abs(north_south_m) / span_m
-    if fraction_to_parallel_route < PARALLEL_FULL_SHARE_BAND:
+    full_band, half_band = bands
+    if fraction_to_parallel_route < full_band:
         return 1.0
-    if fraction_to_parallel_route <= PARALLEL_HALF_SHARE_BAND:
+    if fraction_to_parallel_route <= half_band:
         return 0.5
     return 0.0
 
@@ -333,8 +335,10 @@ def load_commute_model(scope: Literal["cma", "city"] = "city", **params) -> Comm
 def sample_streetcar_trip(
     home_lat: float, home_lon: float, rng: Random, *,
     accessible_stop_ids: Iterable[str] | None = None,
+    walk_limit_m: float = WALK_LIMIT_M,
+    westward_share: float = WESTWARD_SHARE,
 ) -> StreetcarTrip | None:
     """One commuter: where they board/alight the westbound 505, or None if they don't use it."""
-    return load_commute_model().assign(
+    return load_commute_model(walk_limit_m=walk_limit_m, westward_share=westward_share).assign(
         home_lat, home_lon, rng, accessible_stop_ids=accessible_stop_ids
     ).streetcar

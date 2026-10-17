@@ -927,7 +927,21 @@
       1.0
     ],
     "seed": 0,
-    "link_travel_time_variation_share": 0.0
+    "link_travel_time_variation_share": 0.0,
+    "westward_share": 0.6,
+    "walk_limit_m": 750.0,
+    "parallel_route_bands": [
+      0.4,
+      0.6
+    ],
+    "incoming_load_range": [
+      12,
+      24
+    ],
+    "stop_dwell_range_s": [
+      15,
+      30
+    ]
   },
   "evidence": {
     "developments": [
@@ -1137,6 +1151,80 @@
       "status": "internal",
       "source_ids": [],
       "meaning": "Reproducible random seed; not real-world data."
+    },
+    "westward_share": {
+      "unit": "share of commuters",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Share of generated commuters given a workplace west of home; the rest are placed anywhere else. Uncalibrated; employment locations alone do not establish commute direction.",
+      "sensitivity": {
+        "low": 0.4,
+        "central": 0.6,
+        "high": 0.8
+      },
+      "defined_in": "docs/commute-demand-assumptions.md"
+    },
+    "walk_limit_m": {
+      "unit": "metres of walking route",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Longest walk to work, to a useful Line 1 station or to/from a 505 stop. Walking distance is straight-line distance times the reviewed detour factor.",
+      "sensitivity": {
+        "low": 500.0,
+        "central": 750.0,
+        "high": 1000.0
+      },
+      "defined_in": "docs/commute-demand-assumptions.md"
+    },
+    "parallel_route_bands": {
+      "unit": "fraction of the distance from Dundas to College/Carlton (north) or Queen (south)",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Below the first value all commuters consider the 505; up to the second, half do; beyond it they are assumed to use the 506 or 501 and leave the model.",
+      "defined_in": "docs/commute-demand-assumptions.md"
+    },
+    "incoming_load_range": {
+      "unit": "passengers already aboard per car at Broadview & Dundas",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Each car entering the segment draws its starting load uniformly from this range. No observed incoming occupancy exists; this is the input most likely to change who is left behind.",
+      "sensitivity": {
+        "low": [
+          0,
+          6
+        ],
+        "central": [
+          12,
+          24
+        ],
+        "high": [
+          65,
+          130
+        ]
+      },
+      "sensitivity_note": "Proposed range for sensitivity runs. The high case tops out at TTC's historical planned load of 130; it is not an observation.",
+      "defined_in": "backend/simulation/runner.py (seed_incoming_passengers)"
+    },
+    "stop_dwell_range_s": {
+      "unit": "seconds per non-terminus stop",
+      "status": "assumed",
+      "source_ids": [],
+      "meaning": "Each stop's dwell is drawn uniformly from this range. Scheduled link times may already include some dwell, so this can double count.",
+      "sensitivity": {
+        "low": [
+          10,
+          20
+        ],
+        "central": [
+          15,
+          30
+        ],
+        "high": [
+          20,
+          45
+        ]
+      },
+      "defined_in": "backend/simulation/runner.py (run_simulation)"
     }
   }
 }

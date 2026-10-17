@@ -1,36 +1,139 @@
 {
   "model_scope": "Partial registered-rental housing scenario; not all corridor housing or observed 505 demand.",
   "housing_screen_m": 500,
-  "housing_postal_areas": ["M5A", "M5B", "M4M", "M4K"],
+  "housing_postal_areas": [
+    "M5A",
+    "M5B",
+    "M4M",
+    "M4K"
+  ],
   "existing_occupied_share": 0.97,
   "new_occupied_share": 1.0,
   "am_window_transfer_factor": 0.6666666666666666,
   "streetcar_capacity": 251,
   "headway_randomness_s": 0.0,
   "link_travel_time_variation_share": 0.0,
-  "commuter_distribution": [1.0],
+  "commuter_distribution": [
+    1.0
+  ],
   "seed": 0,
   "development_reconciliation": {
     "22 124214 STE 13 OZ": {
       "adopted_total_units": 632,
       "removed_existing_units": 8,
       "status": "sourced_report_revision",
-      "source_ids": ["planning-239-2024"],
+      "source_ids": [
+        "planning-239-2024"
+      ],
       "note": "Use the internally consistent May 2024 decision-report revision: 632 total minus 8 removed = 624 net. Pipeline snapshot says 630; preserve that conflict rather than combining revisions. Future site delivery is unobserved."
     },
     "26 122451 STE 13 OZ": {
       "adopted_total_units": 413,
       "removed_existing_units": 0,
       "status": "derived_site_description",
-      "source_ids": ["planning-500-2026"],
+      "source_ids": [
+        "planning-500-2026"
+      ],
       "note": "June 2026 report describes a sales centre and surface parking on the current site. Zero current homes is derived from that description, not the earlier whole Regent Park demolition programme."
     },
     "25 236949 STE 13 OZ": {
       "adopted_total_units": 1197,
       "removed_existing_units": 0,
       "status": "assumed_replacement_count",
-      "source_ids": ["planning-761-consultation"],
+      "source_ids": [
+        "planning-761-consultation"
+      ],
       "note": "Consultation confirms 1,197 proposed units but not the existing residential count. Zero existing homes remains an assumption requiring current application review, not a confirmed net-new total. Historical report downloads returned 404 and are not relied on."
+    }
+  },
+  "model_assumptions": {
+    "westward_share": {
+      "value": 0.6,
+      "unit": "share of commuters",
+      "status": "assumed",
+      "meaning": "Share of generated commuters given a workplace west of home; the rest are placed anywhere else. Uncalibrated; employment locations alone do not establish commute direction.",
+      "sensitivity": {
+        "low": 0.4,
+        "central": 0.6,
+        "high": 0.8
+      },
+      "source_ids": [],
+      "defined_in": "docs/commute-demand-assumptions.md"
+    },
+    "walk_limit_m": {
+      "value": 750.0,
+      "unit": "metres of walking route",
+      "status": "assumed",
+      "meaning": "Longest walk to work, to a useful Line 1 station or to/from a 505 stop. Walking distance is straight-line distance times the reviewed detour factor.",
+      "sensitivity": {
+        "low": 500.0,
+        "central": 750.0,
+        "high": 1000.0
+      },
+      "source_ids": [],
+      "defined_in": "docs/commute-demand-assumptions.md"
+    },
+    "parallel_route_bands": {
+      "value": [
+        0.4,
+        0.6
+      ],
+      "unit": "fraction of the distance from Dundas to College/Carlton (north) or Queen (south)",
+      "status": "assumed",
+      "meaning": "Below the first value all commuters consider the 505; up to the second, half do; beyond it they are assumed to use the 506 or 501 and leave the model.",
+      "source_ids": [],
+      "defined_in": "docs/commute-demand-assumptions.md"
+    },
+    "incoming_load_range": {
+      "value": [
+        12,
+        24
+      ],
+      "unit": "passengers already aboard per car at Broadview & Dundas",
+      "status": "assumed",
+      "meaning": "Each car entering the segment draws its starting load uniformly from this range. No observed incoming occupancy exists; this is the input most likely to change who is left behind.",
+      "sensitivity": {
+        "low": [
+          0,
+          6
+        ],
+        "central": [
+          12,
+          24
+        ],
+        "high": [
+          65,
+          130
+        ]
+      },
+      "sensitivity_note": "Proposed range for sensitivity runs. The high case tops out at TTC's historical planned load of 130; it is not an observation.",
+      "source_ids": [],
+      "defined_in": "backend/simulation/runner.py (seed_incoming_passengers)"
+    },
+    "stop_dwell_range_s": {
+      "value": [
+        15,
+        30
+      ],
+      "unit": "seconds per non-terminus stop",
+      "status": "assumed",
+      "meaning": "Each stop's dwell is drawn uniformly from this range. Scheduled link times may already include some dwell, so this can double count.",
+      "sensitivity": {
+        "low": [
+          10,
+          20
+        ],
+        "central": [
+          15,
+          30
+        ],
+        "high": [
+          20,
+          45
+        ]
+      },
+      "source_ids": [],
+      "defined_in": "backend/simulation/runner.py (run_simulation)"
     }
   }
 }

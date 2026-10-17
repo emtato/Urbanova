@@ -43,6 +43,16 @@ def load_simulation_input(path: Path = DEFAULT_PATH, *, overrides: dict | None =
         raise ValueError("Travel-time variation must be a finite fraction from zero up to, but excluding, one")
     if not result.commuter_distribution or any(not math.isfinite(value) or value < 0 for value in result.commuter_distribution) or sum(result.commuter_distribution) <= 0:
         raise ValueError("Arrival weights must be finite, nonnegative and have a positive sum")
+    if not 0 <= result.westward_share <= 1:
+        raise ValueError("Westward share must be a fraction")
+    if not math.isfinite(result.walk_limit_m) or result.walk_limit_m <= 0:
+        raise ValueError("Walk limit must be finite and positive")
+    if not 0 <= result.parallel_route_bands[0] <= result.parallel_route_bands[1] <= 1:
+        raise ValueError("Parallel-route bands must be ordered fractions")
+    if not 0 <= result.incoming_load_range[0] <= result.incoming_load_range[1] <= result.streetcar_capacity:
+        raise ValueError("Incoming load range must be ordered and within streetcar capacity")
+    if not 0 <= result.stop_dwell_range_s[0] <= result.stop_dwell_range_s[1]:
+        raise ValueError("Stop dwell range must be ordered nonnegative seconds")
     housing = [*result.existing_residences, *result.developments]
     if len({item.id for item in housing}) != len(housing):
         raise ValueError("Existing and new housing IDs must be unique")
