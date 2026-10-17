@@ -47,6 +47,7 @@ describe('MassingLayer GeoJSON Generators (Contract 1.0.0)', () => {
 
   it('generates surrounding background 3D massing blocks', () => {
     const massing = generateSurroundingMassingGeoJSON(data.corridor)
-    expect(massing.features.length).toBe(14) // 2 blocks per stop for 7 stops
+    expect(massing.features.length).toBeGreaterThanOrEqual(14)
+    expect(massing.features[0].properties?.height_m).toBeGreaterThan(0)
   })
 })

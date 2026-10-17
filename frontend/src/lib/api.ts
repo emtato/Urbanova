@@ -48,24 +48,33 @@ export async function fetchComparison(scenarioId?: string): Promise<Comparison> 
     }
   }
 
-  const endpoint = scenarioId
-    ? `${API_BASE_URL}/scenarios/${encodeURIComponent(scenarioId)}/comparison`
-    : `${API_BASE_URL}/results/comparison`
+  try {
+    const endpoint = scenarioId
+      ? `${API_BASE_URL}/scenarios/${encodeURIComponent(scenarioId)}/comparison`
+      : `${API_BASE_URL}/results/comparison`
 
-  const response = await fetch(endpoint, {
-    headers: { Accept: 'application/json' },
-  })
+    const response = await fetch(endpoint, {
+      headers: { Accept: 'application/json' },
+    })
 
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch comparison from backend: ${response.status} ${response.statusText}`
-    )
-  }
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch comparison from backend: ${response.status} ${response.statusText}`
+      )
+    }
 
-  const data = (await response.json()) as Comparison
-  return {
-    ...data,
-    fixture: false,
+    const data = (await response.json()) as Comparison
+    return {
+      ...data,
+      fixture: false,
+    }
+  } catch (err) {
+    console.warn('Backend API unavailable, serving verified baseline fixture dataset:', err)
+    const fixtureData = cloneFixture(sampleComparison as unknown as Comparison)
+    return {
+      ...fixtureData,
+      fixture: true,
+    }
   }
 }
 

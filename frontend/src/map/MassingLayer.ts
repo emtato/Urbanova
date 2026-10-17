@@ -10,6 +10,19 @@
 import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl'
 import type { Feature, FeatureCollection } from 'geojson'
 import type { Corridor, Development, Stop } from '../lib/types'
+import { corridorMassing, reviewedWalkingRoutes } from '../data'
+
+// Existing building IDs directly on the development parcels to swap out during phases
+export const OVERWRITTEN_BASE_BUILDING_IDS_P1 = [
+  'osm-796691153',
+  'osm-796691158',
+  'osm-796691168',
+  'osm-966945936',
+]
+export const OVERWRITTEN_BASE_BUILDING_IDS_P2 = [
+  'osm-195214196',
+  'osm-1446334055',
+]
 
 // Source IDs
 export const SOURCE_CORRIDOR_LINKS = 'source-corridor-links'
@@ -31,62 +44,66 @@ export const LAYER_STOPS_LABEL = 'layer-stops-label'
 export const LAYER_VEHICLES = 'layer-vehicles'
 
 /**
- * Creates surrounding city building footprint polygons around Dundas Street
- * for realistic background 3D context.
+ * Loads real City of Toronto corridor building footprint polygons with actual heights,
+ * falling back to synthetic perimeter blocks if offline or unbundled.
  */
-export function generateSurroundingMassingGeoJSON(corridor: Corridor): FeatureCollection {
+export function generateSurroundingMassingGeoJSON(corridor?: Corridor): FeatureCollection {
+  if (corridorMassing && corridorMassing.features && corridorMassing.features.length > 0) {
+    return corridorMassing as unknown as FeatureCollection
+  }
+
   const features: Feature[] = []
+  if (corridor && corridor.stops) {
+    corridor.stops.forEach((stop, i) => {
+      const offsetNorth = 0.0008 + (i % 3) * 0.0004
+      const offsetSouth = -0.0008 - ((i + 1) % 3) * 0.0004
+      const width = 0.0012
+      const heightNorth = 18 + ((i * 7) % 35)
+      const heightSouth = 14 + (((i + 2) * 5) % 28)
 
-  // Generate synthetic perimeter blocks along the corridor stops
-  corridor.stops.forEach((stop, i) => {
-    const offsetNorth = 0.0008 + (i % 3) * 0.0004
-    const offsetSouth = -0.0008 - ((i + 1) % 3) * 0.0004
-    const width = 0.0012
-    const heightNorth = 18 + ((i * 7) % 35)
-    const heightSouth = 14 + (((i + 2) * 5) % 28)
+      // North side building block
+      features.push({
+        type: 'Feature',
+        properties: {
+          id: `mass_n_${stop.stop_id}`,
+          name: `Existing City Block ${i + 1}N`,
+          height_m: heightNorth,
+          kind: 'existing',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [stop.lon - width / 2, stop.lat + offsetNorth],
+            [stop.lon + width / 2, stop.lat + offsetNorth],
+            [stop.lon + width / 2, stop.lat + offsetNorth + 0.0007],
+            [stop.lon - width / 2, stop.lat + offsetNorth + 0.0007],
+            [stop.lon - width / 2, stop.lat + offsetNorth],
+          ]],
+        },
+      })
 
-    // North side building block
-    features.push({
-      type: 'Feature',
-      properties: {
-        id: `mass_n_${stop.stop_id}`,
-        name: `Existing City Block ${i + 1}N`,
-        height_m: heightNorth,
-        kind: 'existing',
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [stop.lon - width / 2, stop.lat + offsetNorth],
-          [stop.lon + width / 2, stop.lat + offsetNorth],
-          [stop.lon + width / 2, stop.lat + offsetNorth + 0.0007],
-          [stop.lon - width / 2, stop.lat + offsetNorth + 0.0007],
-          [stop.lon - width / 2, stop.lat + offsetNorth],
-        ]],
-      },
+      // South side building block
+      features.push({
+        type: 'Feature',
+        properties: {
+          id: `mass_s_${stop.stop_id}`,
+          name: `Existing City Block ${i + 1}S`,
+          height_m: heightSouth,
+          kind: 'existing',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [stop.lon - width / 2, stop.lat + offsetSouth],
+            [stop.lon + width / 2, stop.lat + offsetSouth],
+            [stop.lon + width / 2, stop.lat + offsetSouth - 0.0007],
+            [stop.lon - width / 2, stop.lat + offsetSouth - 0.0007],
+            [stop.lon - width / 2, stop.lat + offsetSouth],
+          ]],
+        },
+      })
     })
-
-    // South side building block
-    features.push({
-      type: 'Feature',
-      properties: {
-        id: `mass_s_${stop.stop_id}`,
-        name: `Existing City Block ${i + 1}S`,
-        height_m: heightSouth,
-        kind: 'existing',
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [stop.lon - width / 2, stop.lat + offsetSouth],
-          [stop.lon + width / 2, stop.lat + offsetSouth],
-          [stop.lon + width / 2, stop.lat + offsetSouth - 0.0007],
-          [stop.lon - width / 2, stop.lat + offsetSouth - 0.0007],
-          [stop.lon - width / 2, stop.lat + offsetSouth],
-        ]],
-      },
-    })
-  })
+  }
 
   return { type: 'FeatureCollection', features }
 }
@@ -152,12 +169,29 @@ export function generateDevelopmentsGeoJSON(developments: Development[]): Featur
 }
 
 /**
- * Builds walking connection lines from developments to accessible stops
+ * Builds walking connection lines from developments to accessible stops.
+ * Uses official surveyed OSM pedestrian routes if available.
  */
 export function generateWalkCatchmentsGeoJSON(
   developments: Development[],
   stops: Stop[]
 ): FeatureCollection {
+  if (reviewedWalkingRoutes && reviewedWalkingRoutes.features && reviewedWalkingRoutes.features.length > 0) {
+    const devMap = new Map<string, Development>(developments.map((d) => [d.dev_id, d]))
+    const features: Feature[] = (reviewedWalkingRoutes.features as any[]).map((f) => {
+      const dev = devMap.get(f.properties?.dev_id)
+      const phase = dev ? getDevelopmentPhase(dev) : (DEV_PHASES[f.properties?.dev_id] || 2)
+      return {
+        ...f,
+        properties: {
+          ...f.properties,
+          phase,
+        },
+      }
+    })
+    return { type: 'FeatureCollection', features }
+  }
+
   const stopMap = new Map<string, Stop>(stops.map((s) => [s.stop_id, s]))
   const features: Feature[] = []
 
@@ -252,10 +286,10 @@ export function setupCorridorMapLayers(
       type: 'fill-extrusion',
       source: SOURCE_BUILDINGS,
       paint: {
-        'fill-extrusion-color': '#2a374a',
+        'fill-extrusion-color': '#1e293b',
         'fill-extrusion-height': ['get', 'height_m'],
         'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.65,
+        'fill-extrusion-opacity': 0.85,
       },
     })
   }
@@ -295,7 +329,7 @@ export function setupCorridorMapLayers(
         ],
         'fill-extrusion-height': ['get', 'height_m'],
         'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.92,
+        'fill-extrusion-opacity': 0.95,
       },
     })
   }
@@ -405,17 +439,48 @@ export function setupCorridorMapLayers(
 
 /**
  * Toggles visibility or height of developments based on the active planning phase.
- * Today = 0 (no new towers), Phase 1 = 1 (Phase 1 towers), Phase 2 = 2 (Phase 1 + 2 towers)
+ * Today = 0 (no new towers, show original baseline buildings)
+ * Phase 1 = 1 (Phase 1 Cyan tower replaces 239 Dundas parcel)
+ * Phase 2 = 2 (Phase 1 + 2 towers replace 239, 500, and 761 Dundas parcels)
  */
 export function updateDevelopmentsPhase(map: MapLibreMap, activePhase: number): void {
-  if (!map.getLayer(LAYER_DEVELOPMENTS_EXTRUSION)) return
+  // 1. Proposed Development Towers
+  if (map.getLayer(LAYER_DEVELOPMENTS_EXTRUSION)) {
+    if (activePhase === 0) {
+      map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['==', ['get', 'phase'], -1])
+    } else {
+      map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['<=', ['get', 'phase'], activePhase])
+    }
+  }
 
-  if (activePhase === 0) {
-    // Today: Hide proposed developments
-    map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['==', ['get', 'phase'], -1])
-  } else {
-    // Show developments up to activePhase
-    map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['<=', ['get', 'phase'], activePhase])
+  // 2. Overwrite / hide baseline buildings on development parcels when phase is active
+  if (map.getLayer(LAYER_BUILDINGS_EXISTING)) {
+    if (activePhase === 0) {
+      map.setFilter(LAYER_BUILDINGS_EXISTING, null)
+    } else if (activePhase === 1) {
+      map.setFilter(LAYER_BUILDINGS_EXISTING, [
+        '!',
+        ['in', ['get', 'id'], ['literal', OVERWRITTEN_BASE_BUILDING_IDS_P1]],
+      ])
+    } else {
+      map.setFilter(LAYER_BUILDINGS_EXISTING, [
+        '!',
+        [
+          'in',
+          ['get', 'id'],
+          ['literal', [...OVERWRITTEN_BASE_BUILDING_IDS_P1, ...OVERWRITTEN_BASE_BUILDING_IDS_P2]],
+        ],
+      ])
+    }
+  }
+
+  // 3. Walk catchments follow active phase
+  if (map.getLayer(LAYER_WALK_LINKS)) {
+    if (activePhase === 0) {
+      map.setFilter(LAYER_WALK_LINKS, ['==', ['get', 'phase'], -1])
+    } else {
+      map.setFilter(LAYER_WALK_LINKS, ['<=', ['get', 'phase'], activePhase])
+    }
   }
 }
 
