@@ -7,6 +7,7 @@ The requested Express service is implemented in `server/`. It consumes the froze
 Use Node 24 and the existing repository-root `.env` with `DATABASE_URL`, `GEMINI_API_KEY`, `GEMINI_MODEL`, and optional `CORS_ORIGINS` (JSON array). No database credentials belong in frontend variables.
 
 ```sh
+python -m pip install -r backend/integration/requirements.txt
 npm ci --prefix server
 npm run db:init --prefix server
 npm start --prefix server
@@ -17,6 +18,7 @@ npm start --prefix server
 ```sh
 npm test --prefix server
 npm run smoke:db --prefix server
+npm run smoke:b11 --prefix server
 npm run test:parser:live --prefix server
 ```
 
@@ -35,12 +37,12 @@ The regular tests need no credentials/network/paid calls. The explicit database 
 | POST /api/scenarios/:id/packages | Immediate cost/fleet/availability screen for `{version, policy?}`, including a one-year availability delay; no simulator required |
 | POST /api/scenarios/:id/parse | `{question}`; AI patch preview, never an automatic write |
 | POST /api/jobs | `{scenario_id, version, random:{seed_ids,draws_id}, retain_replay}`; 202 and polling ID, or cached completion |
-| GET /api/jobs/:id | Job status, explicit fixture notice, package screen and stale flag |
+| GET /api/jobs/:id | Job status, evaluator notice, package screen and stale flag |
 | GET /api/results/:comparison_id | Frozen Comparison; fixture and stale response headers |
 | GET /api/results/:comparison_id/summary | Tested-package decision and sensitivity report |
 | POST /api/results/:comparison_id/explain | Grounded explanation or template fallback |
 | GET /api/results/:comparison_id/brief | Text brief including costs, outcomes, uncertainty and versions |
-| GET /api/replay/:comparison_id | Retained frozen ReplayStream; 404 if not selected |
+| GET /api/replay/:comparison_id | Selected B11 b11-events-v1 replay, or frozen fixture ReplayStream; 404 if not selected |
 | GET /api/fixtures/sample-comparison | Explicitly labelled original contract example |
 
 Example patch: `{"version":1,"patch":{"phase_years":[{"phase_id":"phase-1","year":2028}],"capital_budget_cad":2500000}}`. Patch fields are strict: unknown keys/IDs and out-of-range values fail with 422 and field constraints. Housing locations, access/demographic inputs, phases, intervention options and availability must remain in the reviewed catalogue. A stale version fails with 409. A parse preview goes through the same validation as a form edit. Natural-language requests without a required year get a plain clarification response rather than a fabricated date.
@@ -55,17 +57,27 @@ The screen always lists existing, lane, extra service and both, retaining every 
 
 No reviewed cycle, lane effect or intervention cost quotes exist yet. Supply explicit assumptions through the package-preview/job endpoints or a configured policy file. With no policy supplied, upgrades are explicitly unavailable; the API does not invent prices. `server/config/package-policy.example.json` is an inactive synthetic example. Populate a reviewed/user-selected policy, retain its assumption label and source IDs, and set backend-only `PACKAGE_POLICY_PATH` to its path. Claimed source IDs must resolve to the reviewed manifest. Policy contents participate in the cache key. Costs and budgets use CAD at a common price year. Capital is one-time and operation annual; the decision ranks high-bound capital then annual operation lexicographically, stating that rule rather than adding unlike annual/one-time amounts.
 
-## B11 boundary and fixture mode
+## B11 computation and explicit fixture mode
 
-The latest Lane B commits add passenger generation, commute selection and boarding/alighting, but the runner still marks summary metrics and dwell as TODO and does not yet supply a B11 Comparison adapter. **C5 therefore uses the authorized fixture stub.** It returns the unchanged, labelled hand-worked example: its housing, seed IDs, capacities and two tested packages remain synthetic. It is not relabelled as a computation of the requested scenario or as evaluation of the four screened packages. The job stores the actual requested scenario separately; the notice makes the mismatch explicit. Fixture figures must never be displayed as real analysis.
+B11 is the default evaluator. Express queues work in a Node worker thread, which starts an isolated Python process using `backend.integration.b11`. It uses Lane B's runner and summary metrics; it does not implement another simulator or change Lane B's files. Python must be installed locally (the root `.venv` is detected), or set `PYTHON_EXECUTABLE`. The Railway image includes a minimal Python environment.
 
-`packages/plan.ts` defines the paired B11 plan: the same scenario housing, seed IDs, draws ID and low/central/high cases for each feasible package, plus an upgrade-availability delay of one year. `B11Adapter` is the attachment point in the worker evaluator. Production mode is not enabled until Lane B supplies that adapter with full, frozen Comparison outputs for base and delayed availability. The boundary rejects fixture outputs, changed housing, missing evaluations, unpaired seeds and different stop/cohort counts. It does not implement a second simulator.
+For each phase, low/central/high demand case and requested seed, sample the corridor cohort once and reuse it across packages. Incoming riders still consume capacity: injecting a cohort must preserve B11's incoming-generation path. Effective engine seeds derive from SHA256 of draws ID, phase, demand and requested seed ID. The run retains the requested seed ID. Random streams are shared, but event-dependent draw consumption can differ across packages. Identical effective inputs reuse computed outputs.
 
-The comparison code identifies dominance and selects a least-cost tested option passing every selected case/run, with the wording **best among the tested packages under these assumptions**. If none passes, it reports alternatives. Low/central/high choices and repeated worst stops can be computed from the fixture today. Upgrade-delay outcomes remain `pending_b11` until independently evaluated; moving phase labels is not treated as a new run.
+Without a policy, existing service runs against the reviewed housing; upgrades remain unavailable. With an explicit policy and sufficient budgets/fleet, the adapter constructs existing, lane, extra-service and both. The combined package accounts for fleet savings from the lane. Capital and annual costs, effects, availability and reasons are preserved. The frozen extra-service contract requires at least one added vehicle; an otherwise feasible zero-added-vehicle service assumption returns 422 instead of invented fleet. Packages unavailable in every phase are screened out and their reasons retained.
+
+All runs use actual B11 output. The latest B11 metrics distinguish neutral cutoff riders (onboard or awaiting a first car) from denied riders still stranded, and use riders who encountered a car as the denied-share denominator. The frozen Comparison 2.0.0 requires all arrivals in its denominator and all waiting/onboard riders in unresolved counts. The adapter explicitly projects physical passenger state into those existing definitions, retaining completed-rider waits from B11. Its comparison/criterion decisions therefore retain the conservative frozen cutoff definition. The unmodified native B11 contract and overview are stored for every run in `c_b11_run_metrics` and exposed at `GET /api/results/:comparison_id/b11-metrics` with `format_version:"b11-metrics-v1"`. Clients needing the neutral-cutoff presentation should use those native counts, not relabel the frozen fields. Moving neutral-cutoff decisions into the frozen comparison needs an agreed contract version change. Stop p95 across multiple seeds is computed from pooled completed-passenger waits, never averaged stop percentiles. Remaining queues and unresolved passengers accompany completed-rider metrics. The one-year upgrade delay is a separate Comparison with independently materialized availability and stored aggregates; identical inputs may reuse actual computed results. Summary and brief link the delayed comparison and report whether the preferred tested package changes.
+
+Submit `{scenario_id, version, random:{seed_ids:[42],draws_id:"demo"}, retain_replay:true}` to `POST /api/jobs`. Optional `policy` pins user-selected costs/effects. Optional `demand_factors` defaults to `{low:0.8,central:1,high:1.2}` and multiplies the all-mode trip rate; these are sensitivity assumptions, not measured confidence intervals. Every run carries model and data digests. The boundary checks the materialized scenario, feasible package coverage, phases/demand cases, paired seed IDs, stop/cohort counts, versions, conservation, references and numeric criterion flags.
+
+`evaluator:"fixture"` explicitly requests the unchanged hand-worked contract sample. It retains fixture labels and synthetic housing/seeds; it is never presented as the requested scenario's calculation. Omit this option for real B11 runs.
+
+Frozen Comparison 2.0.0 remains unchanged, with `replay:null` for B11. `GET /api/replay/:comparison_id` returns a separate strict `format_version:"b11-events-v1"` envelope for a retained B11 run: arrival/boarding/denial/dwell-related movement events, incoming passengers, final passenger records, stops and source/model/data/run IDs. Clients must branch on this version before rendering; the original fixture replay renderer cannot consume it directly. Only one selected base run retains its full log; all runs retain aggregates. A B11 replay is never disguised as an initial-queues-only fixture replay.
+
+The decision wording remains **best among the tested packages under these assumptions**. Results are scenario experiments, not calibrated forecasts. Housing estimates, unreviewed entrances/crossings, assumed incoming loads/dwell/demand factors and possible scheduled-time/dwell double counting remain visible limitations. Long source-query URLs and date-only retrieval metadata are normalized for the frozen SourceRef limits, with exact originals/checksums preserved in reviewed manifests.
 
 ## Storage, jobs and cache
 
-The API enqueues only; computation runs in `worker_threads`. One active thread per process is bounded by a 120-second timeout. PostgreSQL leases, SKIP LOCKED claims and lease tokens prevent multiple instances completing the same job. Expired leases can be reclaimed after a restart. Scenarios are versioned and edits serialized; old jobs/results become stale. Cache keys include the complete validated scenario, policy, replay selection, reviewed data digest, model version, seed IDs and draws ID. Failed cached jobs can be retried. Bump MODEL_VERSION when installing/changing the evaluator.
+The API enqueues only; computation runs in `worker_threads`. One active thread per process is bounded by a ten-minute timeout (override with JOB_TIMEOUT_MS). A 30-second heartbeat renews its 150-second lease. Timeout, shutdown and worker failure terminate the Python child. PostgreSQL leases, SKIP LOCKED claims and lease tokens prevent multiple instances completing the same job. Expired leases can be reclaimed after a restart. Scenarios are versioned and edits serialized; old jobs/results become stale. Cache keys include the complete validated scenario, policy, replay selection, reviewed data digest, model version, seed IDs and draws ID. Failed cached jobs can be retried. Simulation/adapter/package source changes automatically change the B11 model digest; MODEL_VERSION separately versions the orchestrator.
 
 All runs retain aggregates and actual run/source/assumption versions. Replay events are separated from comparison payloads and stored only when requested. `server/db/queries.sql` contains the three judge queries: reviewed development access joined to stops, worst stops for a phase, and package results across runs/assumption versions. It includes no unmeasured speed-up claim. Run EXPLAIN ANALYZE with real parameters before claiming one.
 
@@ -79,21 +91,14 @@ The explainer receives only a stored Comparison. Its numeric tokens must appear 
 
 ## Railway
 
-Keep Root Directory at the repository root. Both railway.json and server/railway.json target Express. It builds the server Dockerfile with Node 24; Railway performs the image build, so teammates do not need Docker installed. Use the same backend-only Tiger Data and Gemini variables and allow the real frontend origin in CORS_ORIGINS. The root configuration builds and starts Express on the next Railway deployment. Confirm the public health endpoint after deployment. The Docker build context excludes `.env`, caches, raw downloads and local dependencies. The Docker image itself has not been locally built unless explicitly recorded in validation.
+Keep Root Directory at the repository root. Both railway.json and server/railway.json target Express. It builds the server Dockerfile with Node 24 and Python; Railway performs the image build, so teammates do not need Docker installed. Use the same backend-only Tiger Data and Gemini variables and allow the real frontend origin in CORS_ORIGINS. The root configuration builds and starts Express on the next Railway deployment. Confirm the public health endpoint after deployment. The Docker build context excludes `.env`, caches, raw downloads and local dependencies. The Docker image itself has not been locally built unless explicitly recorded in validation.
 
 Implementation references: [Node worker threads](https://nodejs.org/api/worker_threads.html), [node-postgres transactions](https://node-postgres.com/features/transactions), [Zod JSON Schema conversion](https://zod.dev/json-schema), [Google SDK content configuration](https://googleapis.github.io/js-genai/release_docs/interfaces/types.GenerateContentConfig.html).
 
 ## Executed verification
 
-The Tiger Data smoke passed through HTTP, a real worker thread, nine persisted fixture-run aggregates, retained replay, a development/stop join and stale-version marking. The parser prompt `scenario-patch-v2` passed all ten live fixed questions, and its live explanation passed the grounding check without fallback. Further live checks hit HTTP 429 quota/rate limiting; the code keeps forms and templates available in that state. Form-only criterion edits do not expand the live-tested model-facing patch schema. After incorporating the latest teammate commits, 27 Node tests and 118 Python tests passed, along with the frozen-contract check and frontend contract/build/lint checks. Docker image construction has not been tested locally.
+The real Tiger Data smoke passed HTTP enqueue, worker thread/Python computation, all four packages, 15 persisted base run aggregates, a separately stored delay comparison, 2,566 selected native replay events and a cache hit. Costs in this probe were explicitly synthetic test assumptions; service metrics came from B11. The regular suite includes a real B11 regression checking incoming loads and p95 against actual passenger waits. Run `npm run smoke:b11 --prefix server` to repeat the full database check; it creates a labelled smoke scenario/result.
 
+The existing ten live Gemini questions and grounded explanation passed before this integration; the prompt was unchanged, so no additional paid calls were made. Forms and templated explanations remain available when Gemini fails. Docker image construction and the public Railway health endpoint have not been verified locally.
 
-## Work completed independently of B11
-
-The packages preview endpoint accepts the PolicySchema fields shown in server/config/package-policy.example.json. Its response labels all submitted values user_selected, echoes the assumptions and their digest, and returns four package screens with cost/fleet/availability reasons. Send the same policy in POST /api/jobs to pin those exact assumptions in the job and cache key. Source IDs must resolve, ranges must be ordered and finite, and availability may separately identify lane/extra_service phases. The example file is synthetic and is never applied automatically. No real costs have been inferred from it.
-
-One-year upgrade-delay cost/availability screens work now. Service-outcome sensitivity remains pending B11. Once the adapter returns a delayed Comparison, storage saves it and all its aggregates as a separately versioned comparison linked to the base result; summary and brief consume it, report whether the preferred package changes, and expose its comparison ID. Replay remains opt-in and is retained only for the selected base run.
-
-Stored/B11 Comparisons undergo semantic checks in addition to JSON Schema: source/reference integrity, complete phase/demand/cohort coverage, unique IDs, paired arrays, passenger conservation and numeric feasibility/criterion flags. Workers that exit without a result fail their job instead of hanging the scheduler. Shutdown waits for active work to settle. Jobs pin execution versions; results and polling detect model/data drift, and stale queued work is rejected rather than computed with mixed versions.
-
-The live Tiger Data persistence probe verified nine base fixture aggregates and nine explicitly synthetic delayed-fixture aggregates, summary retrieval, omitted unselected replay, stale edits and the development/stop join. These are storage probes, not real delayed-upgrade simulations. The AI prompt was unchanged in this follow-up; no additional paid model tests were necessary. Hosted image construction/public health still require confirmation in Railway; local tests do not establish deployment success.
+Final local checks: 31 Node tests, 129 Python tests, frozen-contract validation, and frontend contract/build checks passed. Frontend lint completed with existing warnings, including the vendored map worker.

@@ -38,6 +38,14 @@ CREATE TABLE IF NOT EXISTS c_delayed_comparisons (
  comparison_id uuid PRIMARY KEY REFERENCES c_comparisons(comparison_id),
  delayed_comparison_id uuid NOT NULL UNIQUE REFERENCES c_comparisons(comparison_id)
 );
+CREATE TABLE IF NOT EXISTS c_b11_run_metrics (
+  comparison_id uuid NOT NULL REFERENCES c_comparisons(comparison_id) ON DELETE CASCADE,
+  run_id text NOT NULL, payload jsonb NOT NULL, PRIMARY KEY(comparison_id,run_id)
+);
+CREATE TABLE IF NOT EXISTS c_b11_replays (
+ comparison_id uuid PRIMARY KEY REFERENCES c_comparisons(comparison_id),
+ run_id text NOT NULL,payload jsonb NOT NULL
+);
 CREATE TABLE IF NOT EXISTS c_development_access (
  data_version text NOT NULL,development_id text NOT NULL,stop_id text NOT NULL,source_ids jsonb NOT NULL,
  PRIMARY KEY(data_version,development_id,stop_id)

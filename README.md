@@ -1,5 +1,5 @@
 # FutureProof
-Lane C Express API: [run, endpoint contracts, worker/storage and fixture limits](docs/lane-c.md). Start it with `npm ci --prefix server`, `npm run db:init --prefix server`, then `npm start --prefix server`. The root Railway config now targets Express.
+Lane C Express API: [run, endpoint contracts, worker/storage and B11 integration](docs/lane-c.md). Install Python bridge dependencies with `python -m pip install -r backend/integration/requirements.txt`. Start it with `npm ci --prefix server`, `npm run db:init --prefix server`, then `npm start --prefix server`. The root Railway config now targets Express.
 FutureProof explores housing and transit readiness; this commit supplies the shared development foundation.
 Prerequisites: Python 3.11, Node 24 LTS, and a Tiger Data Shared (free) PostgreSQL service.
 Run the following commands from the repository root unless a command explicitly changes directories.

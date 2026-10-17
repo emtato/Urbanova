@@ -1,0 +1,4 @@
+# Only the B11 runtime bridge; full geospatial/data tooling stays in backend/requirements.txt.
+pydantic==2.11.4
+pydantic-settings==2.9.1
+python-dotenv==1.1.0

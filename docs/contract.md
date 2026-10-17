@@ -95,3 +95,5 @@ Run python -m backend.scripts.build_fixture only to intentionally re-author the 
 The fixture endpoint is GET /api/fixtures/sample-comparison, validates its response with Comparison and returns X-FutureProof-Fixture: true. It does not save or simulate anything. The frontend currently loads the same checked-in fixture without a network dependency and displays a sticky FIXTURE banner, assumptions and a replay scrubber. The full production map, scenario runner, persistence and Gemini explanation are later lane work.
 
 Owners can build against contract 2.0.0. Change units, field meanings or required fields only with a contract version change, corresponding Python/TypeScript updates and a reviewed replacement sample. Keep fixture labels on every fixture-derived presentation.
+
+The Lane C API now computes real B11 Comparisons; see [the integration and replay transport](lane-c.md). Comparison 2.0.0 remains frozen. Real B11 replay is a separate `b11-events-v1` transport because it includes timed passenger arrivals and incoming riders that the fixture ReplayStream cannot represent. Frontend integration must explicitly handle this version.
