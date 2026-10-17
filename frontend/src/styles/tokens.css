@@ -1,0 +1,311 @@
+/**
+ * Urbanova® Design Tokens & Cinematic Theme
+ *
+ * Minimalist, cinematic glassmorphism with Instrument Serif & Inter.
+ */
+
+:root {
+  /* =========================================================================
+     1. Fonts
+     ========================================================================= */
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+
+  /* =========================================================================
+     2. Color Theme (HSL Values)
+     ========================================================================= */
+  --background: 201 100% 13%; /* deep navy blue */
+  --foreground: 0 0% 100%;    /* white */
+  --muted-foreground: 240 4% 66%; /* muted gray */
+
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 4%;
+
+  --secondary: 0 0% 10%;
+  --muted: 0 0% 10%;
+  --accent: 0 0% 10%;
+
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+
+  /* Concrete color references */
+  --bg-app: hsl(var(--background));
+  --text-primary: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+
+  /* Phase Accents */
+  --phase-today: #94a3b8;
+  --phase-1: #06b6d4;
+  --phase-2: #f59e0b;
+
+  /* Status Tokens */
+  --status-sourced: #10b981;
+  --status-sourced-bg: rgba(16, 185, 129, 0.12);
+  --status-sourced-border: #059669;
+
+  --status-assumed: #8b5cf6;
+  --status-assumed-bg: rgba(139, 92, 246, 0.14);
+  --status-assumed-border: #7c3aed;
+
+  --status-user: #3b82f6;
+  --status-user-bg: rgba(59, 130, 246, 0.14);
+  --status-user-border: #2563eb;
+
+  --metric-danger: #ef4444;
+}
+
+/* =========================================================================
+   3. Liquid Glass Effect
+   ========================================================================= */
+.liquid-glass {
+  background: rgba(15, 23, 42, 0.45);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  color: #f8fafc;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Subtler panel variation */
+.liquid-glass-panel {
+  background: rgba(8, 20, 36, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* =========================================================================
+   3b. Sunlight Theme - Light Liquid Glass Mode with Crisp Black Text
+   ========================================================================= */
+.theme-sunlight .liquid-glass,
+.liquid-glass.light-glass {
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 12px 32px 0 rgba(71, 85, 105, 0.2), inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  color: #0f172a !important;
+}
+
+.theme-sunlight .liquid-glass::before,
+.liquid-glass.light-glass::before {
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 30%,
+    rgba(255,255,255,0) 50%,
+    rgba(255,255,255,0.4) 80%, rgba(255,255,255,0.95) 100%) !important;
+}
+
+.theme-sunlight .liquid-glass-panel,
+.liquid-glass-panel.light-glass {
+  background: rgba(255, 255, 255, 0.84) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 24px 50px rgba(51, 65, 85, 0.22), inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  color: #0f172a !important;
+}
+
+/* Text & border adaptations when sunlight theme is active */
+.theme-sunlight {
+  --foreground: 222 47% 11%;
+  --muted-foreground: 215 16% 40%;
+}
+
+.theme-sunlight .text-foreground {
+  color: #0f172a !important;
+}
+.theme-sunlight .text-muted-foreground {
+  color: #334155 !important;
+}
+.theme-sunlight header {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-bottom-color: rgba(203, 213, 225, 0.8) !important;
+}
+.theme-sunlight .border-border\/30,
+.theme-sunlight .border-border\/40,
+.theme-sunlight .border-border\/60 {
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+.theme-sunlight .bg-black\/30,
+.theme-sunlight .bg-black\/40 {
+  background-color: rgba(241, 245, 249, 0.75) !important;
+}
+.theme-sunlight .bg-amber-950\/40,
+.theme-sunlight .bg-amber-950\/30 {
+  background-color: rgba(254, 243, 199, 0.75) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+.theme-sunlight .text-orange-300 {
+  color: #c2410c !important;
+}
+.theme-sunlight .text-amber-300,
+.theme-sunlight .text-amber-200 {
+  color: #b45309 !important;
+}
+.theme-sunlight .bg-emerald-950\/40,
+.theme-sunlight .bg-emerald-950\/30 {
+  background-color: rgba(209, 250, 229, 0.75) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+.theme-sunlight .text-emerald-300 {
+  color: #047857 !important;
+}
+.theme-sunlight .text-cyan-200,
+.theme-sunlight .text-cyan-300 {
+  color: #0e7490 !important;
+}
+.theme-sunlight .text-rose-400 {
+  color: #be123c !important;
+}
+.theme-sunlight .status-chip-sourced {
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #047857 !important;
+  border-color: #059669 !important;
+}
+.theme-sunlight .status-chip-assumed {
+  background: rgba(139, 92, 246, 0.16) !important;
+  color: #6d28d9 !important;
+  border-color: #7c3aed !important;
+}
+
+/* =========================================================================
+   4. Animations
+   ========================================================================= */
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.8s ease-out both;
+}
+
+.animate-fade-rise-delay {
+  animation: fade-rise 0.8s ease-out 0.2s both;
+}
+
+.animate-fade-rise-delay-2 {
+  animation: fade-rise 0.8s ease-out 0.4s both;
+}
+
+/* =========================================================================
+   5. Accessible Status Chips & Phase Pills
+   ========================================================================= */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+.status-chip-sourced {
+  background: var(--status-sourced-bg);
+  color: var(--status-sourced);
+  border: 1px solid var(--status-sourced-border);
+}
+.status-chip-sourced::before {
+  content: '●';
+  font-size: 0.5rem;
+}
+
+.status-chip-assumed {
+  background: var(--status-assumed-bg);
+  color: var(--status-assumed);
+  border: 1px dashed var(--status-assumed-border);
+}
+.status-chip-assumed::before {
+  content: '▲';
+  font-size: 0.45rem;
+}
+
+.status-chip-user {
+  background: var(--status-user-bg);
+  color: var(--status-user);
+  border: 1px dotted var(--status-user-border);
+}
+.status-chip-user::before {
+  content: '◆';
+  font-size: 0.45rem;
+}
+
+.phase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.phase-pill-today {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--phase-today);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.phase-pill-1 {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--phase-1);
+  border: 1px solid rgba(6, 182, 212, 0.5);
+}
+
+.phase-pill-2 {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--phase-2);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+}
+
+/* Fixture Mode Banner */
+.fixture-banner {
+  background: rgba(180, 83, 9, 0.85);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.4);
+  z-index: 1000;
+}
