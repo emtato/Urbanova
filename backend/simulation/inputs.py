@@ -121,12 +121,11 @@ class SimulationInput:
     start_time_s: int  # usser provided (seconds after midnight)
     end_time_s: int  # User-provided reporting cutoff in service-day seconds.
 
-    # Optional bounded variation in entry gaps; 0 = regular service.
-    headway_randomness_s: float = 0.0  # User-selected seconds: 30 with a 300 s headway gives 270–330 s gaps.
-    # Arrival weights over equal time bins; e.g. (1, 4, 6, 4, 1) for a bell-shaped peak.
-    commuter_distribution: tuple[float, ...] = (1.0,)
+    # User-provided scenario inputs for service variability and arrival shape.
+    headway_randomness_s: float = 0.0  # User input (seconds): 30 with a 300 s headway gives 270–330 s gaps; 0 = regular service.
+    commuter_distribution: tuple[float, ...] = (1.0,)  # User input: arrival weights over equal time bins; e.g. (1, 4, 6, 4, 1).
     seed: int = 0  # Reproduce random choices when comparing scenarios.
-    link_travel_time_variation_share: float = 0.0  # User-selected: 0.25 means 90–150 s for a 120 s link; 0 keeps fixed times.
+    link_travel_time_variation_share: float = 0.0  # User input: 0.25 means 90–150 s for a 120 s link; 0 keeps fixed times.
 
 
 # CURRENT DATA AUDIT — repository files checked on 2026-10-17 9AM.
@@ -185,3 +184,53 @@ class SimulationInput:
 #   be explicit user assumptions; they must not be labelled as collected facts.
 #
 # data/fixtures/ contains synthetic examples; its numbers do not fill these data gaps.
+
+
+# DATA & SIMULATION PROGRESS UPDATE — checked on 2026-10-17 (11:45 AM).
+# Sources: data/reviewed/simulation_input.json, data/simulation_input.py,
+# backend/simulation/commute.py, backend/simulation/runner.py, and docs/simulation-data.md.
+#
+# ALL SimulationInput DTO FIELDS ARE NOW POPULATED AND VALIDATED:
+# - Loader: `from data.simulation_input import load_simulation_input` loads
+#   `data/reviewed/simulation_input.json` directly into `SimulationInput` with fresh
+#   empty `Stop` queues and validates all field types and invariants.
+# - existing_residences (RESOLVED): 591 residential building records (30,663 total units:
+#   58 RentSafeTO apartment registrations with 6,269 units + 533 expanded mapped residential
+#   buildings from `building_unit_inventory.json`). Populated with `occupied_share=0.97`
+#   (CMHC 2025 rental vacancy), `residents_per_occupied_unit` (1.6–2.2 from 2021 Census
+#   neighbourhood profiles), `transit_share=0.2981` (2022 TTS Ward 13 AM share), and up
+#   to 2 OSM network-walk `accessible_stop_ids` (<= 500 m).
+# - developments (RESOLVED): All 3 proposed developments are populated with `net_added_units`
+#   (`624` at 239 Dundas St E, `413` at 500 Dundas St E, `1,197` at 761 Dundas St E;
+#   replacement units are already handled / ignored where zero), `occupied_share=1.0`,
+#   2021 Census neighbourhood household size, 2022 TTS `transit_share`, and up to 2 OSM
+#   network-walk `accessible_stop_ids`.
+# - streetcar_capacity (RESOLVED): Sourced at `251` (TTC Flexity Outlook LFLRV physical
+#   crush limit: 70 seated + 181 standing; historical 2019 planned load of `130` is also
+#   recorded in `simulation_sources.json` and can be passed via `overrides`).
+# - trips_per_resident_in_window (RESOLVED): Sourced/derived at `0.231057` trips/resident
+#   for the 2-hour 07:00–09:00 window (2022 TTS Ward 13 AM peak resident trips scaled by 2/3).
+#
+# 505-SPECIFIC COMMUTE DEMAND, ROUTING, INCOMING LOADS & DWELL (RESOLVED IN CODE):
+# - Workplace destinations & Line 1 stations: `data/reviewed/workplaces_2021.json` (585
+#   City of Toronto census tracts weighted by 2021 employment), `line1_stations.json`,
+#   and full-route `route_505.json` are loaded by `backend/simulation/commute.py`.
+# - Parallel streetcar catchment split (`corridor_505_share` in `commute.py`): Accounts
+#   for 506 College (~580 m north) and 501 Queen (~450 m south): <40% of distance to
+#   College/Queen -> 100% evaluated for 505; 40%–60% -> 50%; >60% -> 0% (use Queen/College).
+# - 750 m routing rule (`sample_streetcar_trip` in `commute.py`): Samples a workplace
+#   (60% west of home, 40% elsewhere) and filters out walk-to-work (<= 750 m), direct
+#   Line 1 subway trips, and unserved trips; returns westbound 505 boarding and alighting
+#   stops (or `None` / `beyond_segment` when riding past TMU).
+# - Incoming Broadview streetcar load (`seed_incoming_passengers` in `runner.py`):
+#   Streetcars entering at Broadview & Dundas (`ttc-stop-1756`) are seeded with a hardcoded
+#   random range of `12–24` already-onboard passengers (`INCOMING_BROADVIEW_LOAD_RANGE = (12, 24)`).
+# - Stop dwell time (`STOP_DWELL_RANGE_S = (15, 30)` in `runner.py`): Hardcoded random
+#   variable of `15–30` seconds per non-terminus stop (sampled via `dwell_rng` from `inputs.seed`)
+#   while boarding/alighting passengers before departing to the next link.
+#
+# USER-PROVIDED SCENARIO INPUTS:
+# - `headway_randomness_s`, `link_travel_time_variation_share`, and `commuter_distribution`
+#   (along with `start_time_s`, `end_time_s`, and `rush_hour_duration_s`) are treated as
+#   direct user/scenario inputs, requiring no further external data collection.
+

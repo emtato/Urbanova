@@ -108,7 +108,7 @@ def test_real_data_returns_valid_corridor_trips():
 def test_terminus_boarding_handles_overcrowding_and_wait_detection():
     from backend.simulation.inputs import SimulationInput
     from backend.simulation.objects import Passenger, Stop
-    from backend.simulation.runner import run_simulation
+    from backend.simulation.runner import STOP_DWELL_RANGE_S, run_simulation
 
     stops = (
         Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
@@ -124,23 +124,30 @@ def test_terminus_boarding_handles_overcrowding_and_wait_detection():
         rush_hour_duration_s=30.0,
         trips_per_resident_in_window=0.3,
         start_time_s=0,
-        end_time_s=40,
+        end_time_s=70,
     )
     # p1 boards at s0 and rides past s1 (occupies the 1-person streetcar through s1).
-    # p2 waits at s1 (TMU terminus) at t=5s to ride beyond_segment: denied on car 1 at t=10s, boards car 2 at t=30s.
+    # p2 waits at s1 (TMU terminus) at t=5s to ride beyond_segment: denied on car 1, boards car 2.
     passengers = {
         "p1": Passenger(id="p1", origin_stop_id="s0", destination_stop_id=None, get_to_stop_time=0, rider_group="existing"),
         "p2": Passenger(id="p2", origin_stop_id="s1", destination_stop_id=None, get_to_stop_time=5, rider_group="existing"),
     }
-    run_simulation(inputs, passengers)
+    res = run_simulation(inputs, passengers)
+
+    depart_events = [e for e in res["sim_log"] if e["action"] == "depart"]
+    assert len(depart_events) == 2
+    car1_dwell_s = depart_events[0]["time_s"] - 0
+    car2_dwell_s = depart_events[1]["time_s"] - 20
+    assert STOP_DWELL_RANGE_S[0] <= car1_dwell_s <= STOP_DWELL_RANGE_S[1]
+    assert STOP_DWELL_RANGE_S[0] <= car2_dwell_s <= STOP_DWELL_RANGE_S[1]
 
     assert passengers["p1"].status == "beyond_segment"
     assert passengers["p1"].boarding_time_s == 0
-    assert passengers["p1"].exit_time_s == 10
+    assert passengers["p1"].exit_time_s == car1_dwell_s + 10
 
     assert passengers["p2"].denied_boarding_once is True
-    assert passengers["p2"].boarding_time_s == 30
-    assert passengers["p2"].boarding_time_s - passengers["p2"].get_to_stop_time == 25
+    assert passengers["p2"].boarding_time_s == 20 + car2_dwell_s + 10
+    assert passengers["p2"].boarding_time_s - passengers["p2"].get_to_stop_time == 15 + car2_dwell_s + 10
     assert passengers["p2"].status == "beyond_segment"
     assert len(stops[1].waiting_passenger_ids) == 0
 

@@ -60,7 +60,7 @@ def generate_streetcar(inputs: SimulationInput, streetcar_id: str) -> Streetcar:
 
 
 def depart_streetcar(inputs: SimulationInput, streetcar: Streetcar, time_s: float) -> None:
-    """Start the next link; this first version assumes zero dwell at stops."""
+    """Start the next link once stop dwell and passenger boarding/alighting complete."""
     if streetcar.status != "at_stop":
         raise ValueError("A streetcar must be at a stop before departing")
     stop_index = next(index for index, stop in enumerate(inputs.stops)

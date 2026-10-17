@@ -126,6 +126,9 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
 # arrives at Broadview & Dundas (from Broadview Station / Broadview Ave north of Dundas).
 INCOMING_BROADVIEW_LOAD_RANGE = (12, 24)
 
+# Hardcoded random stop dwell time range in seconds (boarding/alighting dwell at each stop).
+STOP_DWELL_RANGE_S = (15, 30)
+
 
 def seed_incoming_passengers(
     inputs: SimulationInput,
@@ -181,7 +184,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     Entry stops at the earlier of the rush-window end or run end.
     Cars still travelling at run end stay in transit in the saved state.
     """
-    # TODO: Add boarding/alighting dwell time and summary metrics.
+    # TODO: Add summary metrics.
 
     # Read the clock boundaries that control how long this simulation runs.
     start_time = inputs.start_time_s
@@ -210,6 +213,7 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     entry_end_s = min(inputs.rush_hour_duration_s, duration_s)
     streetcars: list[Streetcar] = []
     active_streetcars: dict[str, Streetcar] = {}
+    planned_departure_s: dict[str, float] = {}
     stops_by_id = {stop.id: stop for stop in inputs.stops}
     sim_log: list[SimLog] = []
 
@@ -233,16 +237,17 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
     entry_times = streetcar_entry_times(inputs)
     next_entry_s = next(entry_times, None)
 
-    # Give link travel times and incoming Broadview loads repeatable random streams.
+    # Give link travel times, stop dwell times, and incoming Broadview loads repeatable random streams.
     travel_rng = Random(f"{inputs.seed}:link_travel_times")
+    dwell_rng = Random(f"{inputs.seed}:dwell_times")
     incoming_rng = Random(f"{inputs.seed}:incoming_loads")
 
     # Preserve each action's state in the shared history for saving and replaying the run.
     def record(time_s: int, action: SimAction, streetcar: Streetcar) -> None:
         sim_log.append(SimLog(time_s, action, deepcopy(streetcar)))
 
-    # Serve passengers at the current stop (including TMU terminus), then depart or terminate.
-    def continue_or_terminate(streetcar: Streetcar, time_s: int) -> None:
+    # Serve passengers upon reaching a stop; terminate at TMU or schedule 15-30s stop dwell.
+    def begin_stop_service(streetcar: Streetcar, time_s: int) -> None:
         # handle_stop_passengers (from streetcars.py):
         # 1) Alights onboard passengers whose destination_stop_id == streetcar.current_stop_id
         # 2) Boards stop.waiting_passenger_ids FIFO up to streetcar.capacity (sets boarding_time_s)
@@ -255,18 +260,24 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             record(time_s, "terminate", streetcar)
             active_streetcars.pop(streetcar.id)
         else:
-            # TODO: Add dwell before starting the next link.
-            depart_streetcar(inputs, streetcar, time_s)
+            dwell_low_s, dwell_high_s = STOP_DWELL_RANGE_S
+            planned_departure_s[streetcar.id] = time_s + dwell_rng.randint(dwell_low_s, dwell_high_s)
 
-            # Sample this car's link duration once, then save that plan in its departure record.
-            if travel_variation_share > 0:
-                base_duration_s = streetcar.expected_arrival_time_s - time_s
-                travel_duration_s = travel_rng.uniform(
-                    base_duration_s * (1 - travel_variation_share),
-                    base_duration_s * (1 + travel_variation_share),
-                )
-                streetcar.expected_arrival_time_s = time_s + travel_duration_s
-            record(time_s, "depart", streetcar)
+    # Depart a non-terminus stop once its 15-30s dwell time has elapsed.
+    def finish_dwell_and_depart(streetcar: Streetcar, time_s: int) -> None:
+        handle_stop_passengers(inputs, streetcar, passengers, time_s)
+        planned_departure_s.pop(streetcar.id, None)
+        depart_streetcar(inputs, streetcar, time_s)
+
+        # Sample this car's link duration once, then save that plan in its departure record.
+        if travel_variation_share > 0:
+            base_duration_s = streetcar.expected_arrival_time_s - time_s
+            travel_duration_s = travel_rng.uniform(
+                base_duration_s * (1 - travel_variation_share),
+                base_duration_s * (1 + travel_variation_share),
+            )
+            streetcar.expected_arrival_time_s = time_s + travel_duration_s
+        record(time_s, "depart", streetcar)
 
     # Advance one second at a time, including final arrivals at the reporting cutoff.
     for time_s in range(start_time, end_time + 1):
@@ -283,6 +294,17 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
                 stops_by_id[passenger.origin_stop_id].waiting_passenger_ids.append(passenger.id)
             next_passenger_idx += 1
 
+        # Update travelling cars that have reached their next stop and dwelling cars ready to depart.
+        for streetcar in list(active_streetcars.values()):
+            if streetcar.status == "in_transit" and elapsed_s >= streetcar.expected_arrival_time_s:
+                arrive_streetcar(streetcar, elapsed_s)
+                record(elapsed_s, "arrive", streetcar)
+                begin_stop_service(streetcar, elapsed_s)
+            elif streetcar.status == "at_stop" and streetcar.id in planned_departure_s:
+                handle_stop_passengers(inputs, streetcar, passengers, elapsed_s)
+                if elapsed_s >= planned_departure_s[streetcar.id]:
+                    finish_dwell_and_depart(streetcar, elapsed_s)
+
         # Introduce cars whose entry time has been reached while the entry window is open.
         while elapsed_s < entry_end_s and next_entry_s is not None and elapsed_s >= next_entry_s:
             streetcar = generate_streetcar(inputs, f"streetcar-{len(streetcars) + 1}")
@@ -292,15 +314,8 @@ def run_simulation(inputs: SimulationInput, passengers: dict[str, Passenger] | N
             streetcars.append(streetcar)
             active_streetcars[streetcar.id] = streetcar
             record(elapsed_s, "generate", streetcar)
-            continue_or_terminate(streetcar, elapsed_s)
+            begin_stop_service(streetcar, elapsed_s)
             next_entry_s = next(entry_times, None)
-
-        # Update travelling cars that have reached their next stop by this second.
-        for streetcar in list(active_streetcars.values()):
-            if elapsed_s >= streetcar.expected_arrival_time_s:
-                arrive_streetcar(streetcar, elapsed_s)
-                record(elapsed_s, "arrive", streetcar)
-                continue_or_terminate(streetcar, elapsed_s)
 
     # Package the inputs, final state and activity history as JSON-ready saved-run data.
     saved_inputs = asdict(inputs)
