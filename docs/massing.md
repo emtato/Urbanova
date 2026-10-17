@@ -1,11 +1,12 @@
-# Building heights, proposal masses and sun positions
-Data for the 3D map and shadow views. Rebuild with `python -m backend.scripts.build_massing` after `build_building_inventory`.
+# Building heights, proposal masses, sun positions and shadows
+Data for the 3D map and shadow views. Rebuild with `python -m backend.scripts.build_massing` after `build_building_inventory`, then `python -m backend.scripts.build_shadows`.
 
 ## Files
 | File | Contents |
 | --- | --- |
 | `data/reviewed/buildings_3d.geojson` | 2,444 existing buildings (same `building_id` as `building_unit_inventory.json`) plus 4 proposal tower masses, as EPSG:4326 polygons with heights |
 | `data/reviewed/sun_positions.json` | Sun altitude/azimuth every 15 minutes, 05:00–21:00 local, on the 21st of each month and the solstices/equinoxes |
+| `data/reviewed/shadows.geojson` | Ground shadows today, plus shadow added and removed by the proposals, at 12 preset times (see Shadows) |
 
 For MapLibre, use `buildings_3d.geojson` directly as a `fill-extrusion` source: `fill-extrusion-base` = `base_height_m`, `fill-extrusion-height` = `height_m`. Filter or style on `kind` (`existing` / `proposed`) and `on_proposal_site` to toggle a proposal on and off.
 
@@ -162,7 +163,55 @@ The two 761 towers are placed side by side east–west, 20 m apart. Their real a
 - Positions use the NOAA solar equations at the inventory's centre, in America/Toronto time (daylight time is applied). Refraction is ignored.
 - Azimuth is clockwise from true north; a shadow points to azimuth + 180°. `shadow_length_per_metre` × building height gives the flat-ground shadow length.
 - Each building also has `shadow_at_solar_noon_m` for the spring equinox, summer solstice and winter solstice. At winter solstice noon the sun is 22.9° high, so shadows are about 2.4 × the building height.
-- These are flat-ground shadow lengths only. Computing which places are shaded needs the shadow polygons cast by the 3D scene, which ignores terrain here.
+- These are flat-ground shadow lengths only. For the shaded areas themselves, use `shadows.geojson` below.
+
+## Shadows: `shadows.geojson`
+MapLibre's `fill-extrusion` lights building walls but does not cast shadows, so shadows are precomputed as flat polygons the map can draw as ordinary `fill` layers under the buildings.
+
+**Method.** Each building is a flat-roofed prism at `height_m`. Its shadow is the footprint swept along the shadow direction (azimuth + 180°) for `height_m / tan(sun altitude)` metres, on flat ground. Shadows are merged, building footprints are removed (only open ground is shaded) and the result is clipped to the inventory's bounding box. The code is `data/sources/shadows.py`.
+
+**Three layers per time**, in feature property `layer`:
+
+| Layer | Meaning | Map styling idea |
+| --- | --- | --- |
+| `today` | Open ground shaded by existing buildings | Grey |
+| `added` | Sunny today, shaded once the proposals are built | Orange: sunlight lost |
+| `removed` | Shaded today, sunny once buildings on the proposal sites are cleared | Green: sunlight gained |
+
+The view with the proposals is `today` + `added` − `removed`, so there is no separate layer for it. To show it, draw `today`, then `removed` in the sunny ground colour, then `added`. Ground under a building in either scenario is excluded from `added` and `removed`.
+
+**Why these layers.** The comparison residents need is with versus without the proposals at the same date and time. `added` and `removed` answer it directly, so the map doesn't have to subtract polygons. Showing `removed` keeps gains alongside losses, as the product description asks.
+
+**Times.** The spring equinox (20 March), summer solstice (21 June) and winter solstice (21 December), each at 09:00, 12:00, 15:00 and 18:00 local. On 21 December at 18:00 the sun is down, so that time has no features. Its entry in `metadata.times` has `sun_up: false`. For other times, run:
+
+```sh
+python -m backend.scripts.build_shadows --at 2026-12-21T15:30 2026-07-01T08:00
+```
+
+**Feature properties.**
+
+| Field | Meaning |
+| --- | --- |
+| `layer` | `today`, `added` or `removed` |
+| `label` | `spring_equinox`, `summer_solstice`, `winter_solstice` or `custom` |
+| `local_time`, `utc_offset` | Toronto local time (`YYYY-MM-DDTHH:MM`) and its UTC offset |
+| `sun_altitude_deg`, `sun_azimuth_deg` | Sun position used |
+| `area_m2` | Area of this layer in square metres |
+
+`metadata.times` lists every time with `today_m2`, `added_m2` and `removed_m2`, which are useful for a text summary. For example: at the winter solstice at 09:00, the proposals add about 32,800 m² of shadow on open ground across the area.
+
+**File details.** Geometries are `MultiPolygon` in EPSG:4326, simplified by 0.5 m and snapped to 6 decimals, and all are valid. The file is written without indentation to stay small (about 7 MB; almost all of it is the `today` layer).
+
+**Accuracy and limits.**
+- Directions and lengths are geometrically correct for the stated heights and sun positions.
+- Ground is treated as flat; slopes towards the Don River lengthen or shorten real shadows.
+- Each building is one flat-roofed prism at its average roof height, so towers on podiums are approximated.
+- Shadows falling on walls and roofs are not shown.
+- Proposal masses are simplified boxes, so their shadows are indicative, not a design study.
+- Trees and canopies are not modelled.
+- Near the edges of the clip box, shadows from buildings outside the inventory are missing.
+
+Good enough to show roughly which areas lose sun and when, with and without the proposals. Not precise enough for a single spot at an exact minute.
 
 ## Sources
 - [City of Toronto 3D Massing](https://open.toronto.ca/dataset/3d-massing/), 2025 shapefile (DBF updated 2025-12-02), Open Government Licence – Toronto. Downloaded to ignored `data/raw/`.
