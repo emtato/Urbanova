@@ -27,8 +27,8 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
     assert comparison.corridor.mode == "streetcar"
     assert comparison.corridor.direction == "westbound"
     assert comparison.corridor.route_pattern == "505:1:shp-505-60"
-    assert comparison.corridor.stops[0].gtfs_stop_id == "1756"
-    assert comparison.corridor.stops[-1].gtfs_stop_id == "2136"
+    assert comparison.corridor.stops[0].id == "ttc-stop-1756"
+    assert comparison.corridor.stops[-1].id == "ttc-stop-2136"
     assert len(comparison.corridor.stops) == 9
     assert [case.per_run_mean_wait_s[0] for case in comparison.cases[:3]] == [12, 95.625, 111.5]
     assert [case.unresolved_passengers for case in comparison.cases[:3]] == [0, 2, 0]
@@ -50,7 +50,7 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
     (("scenario", "phases", 0, "occupied_share"), 1.5),
     (("scenario", "phases", 0, "development_ids"), []),
     (("scenario", "developments", 0, "accessible_stop_ids"), ["unknown"]),
-    (("scenario", "developments", 0, "accessible_stop_ids"), ["ttc-stop-2130", "ttc-stop-2130"]),
+    (("scenario", "developments", 0, "accessible_stop_ids"), ["ttc-stop-2119", "ttc-stop-2119"]),
     (("scenario", "developments", 0, "id"), ""),
     (("scenario", "developments", 0, "longitude"), 200),
     (("scenario", "developments", 0, "net_added_units"), -1),
@@ -124,7 +124,7 @@ def test_shared_objects_round_trip_json_without_losing_simulation_fields(sample)
     assert type(restored.corridor.stops[0]) is Stop
     assert restored.corridor.stops[0].waiting_passenger_ids == deque(["passenger-1"])
     assert restored.corridor.stops[0].serving_streetcar_id == "streetcar-1"
-    assert restored.scenario.developments[0].accessible_stop_ids == ("ttc-stop-2130",)
+    assert restored.scenario.developments[0].accessible_stop_ids == ("ttc-stop-2119",)
     assert restored.scenario.developments[0].net_added_units == 100
 
 
@@ -134,7 +134,7 @@ def test_api_serializes_shared_objects_using_simulation_field_names():
     payload = response.json()
     stop = payload["corridor"]["stops"][0]
     development = payload["scenario"]["developments"][0]
-    assert stop["id"] == "ttc-stop-2118"
+    assert stop["id"] == "ttc-stop-1756"
     assert stop["sequence"] == 0
     assert stop["waiting_passenger_ids"] == []
     assert "stop_id" not in stop

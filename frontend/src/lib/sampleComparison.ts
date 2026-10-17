@@ -2,7 +2,7 @@
 import type { Comparison } from "./types"
 
 export const sampleComparison = {
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "comparison_id": "fixture-505-broadview-tmu",
   "fixture": true,
   "product_label": "scenario experiment",
@@ -11,93 +11,42 @@ export const sampleComparison = {
     "version": 1,
     "developments": [
       {
-        "dev_id": "toronto-app-22-124214-ste-13-oz",
-        "pipeline_ref": "22 124214 STE 13 OZ",
-        "address": "239 DUNDAS ST E",
-        "units": 630,
-        "stage": "Active",
-        "record_date": "2022-03-18",
-        "kind": "proposal",
-        "footprint": null,
-        "footprint_status": "unavailable",
-        "access": [
-          {
-            "stop_id": "ttc-stop-2119",
-            "walk_m": 271.7,
-            "status": "estimated",
-            "source_ids": [
-              "toronto-development-pipeline",
-              "toronto-address-796104",
-              "ttc-gtfs",
-              "osm-walk-239"
-            ]
-          }
-        ],
-        "source_ids": [
-          "toronto-development-pipeline",
-          "toronto-address-796104",
-          "ttc-gtfs",
-          "osm-walk-239"
+        "id": "fixture-development-1",
+        "name": "Fixture development 1",
+        "latitude": 43.657162,
+        "longitude": -79.374377,
+        "net_added_units": 100,
+        "occupied_share": 0.5,
+        "residents_per_occupied_unit": 2.0,
+        "transit_share": 0.5,
+        "accessible_stop_ids": [
+          "ttc-stop-2119"
         ]
       },
       {
-        "dev_id": "toronto-app-26-122451-ste-13-oz",
-        "pipeline_ref": "26 122451 STE 13 OZ",
-        "address": "500 DUNDAS ST E",
-        "units": 413,
-        "stage": "Under Review",
-        "record_date": "2026-02-27",
-        "kind": "proposal",
-        "footprint": null,
-        "footprint_status": "unavailable",
-        "access": [
-          {
-            "stop_id": "ttc-stop-2125",
-            "walk_m": 229.13,
-            "status": "estimated",
-            "source_ids": [
-              "toronto-development-pipeline",
-              "toronto-address-30009862",
-              "ttc-gtfs",
-              "osm-walk-500"
-            ]
-          }
-        ],
-        "source_ids": [
-          "toronto-development-pipeline",
-          "toronto-address-30009862",
-          "ttc-gtfs",
-          "osm-walk-500"
+        "id": "fixture-development-2",
+        "name": "Fixture development 2",
+        "latitude": 43.65951,
+        "longitude": -79.365882,
+        "net_added_units": 100,
+        "occupied_share": 0.5,
+        "residents_per_occupied_unit": 2.0,
+        "transit_share": 0.5,
+        "accessible_stop_ids": [
+          "ttc-stop-2125"
         ]
       },
       {
-        "dev_id": "toronto-app-25-236949-ste-13-oz",
-        "pipeline_ref": "25 236949 STE 13 OZ",
-        "address": "761 DUNDAS ST E",
-        "units": 1197,
-        "stage": "Under Review",
-        "record_date": "2025-10-08",
-        "kind": "proposal",
-        "footprint": null,
-        "footprint_status": "unavailable",
-        "access": [
-          {
-            "stop_id": "ttc-stop-2127",
-            "walk_m": 269.63,
-            "status": "estimated",
-            "source_ids": [
-              "toronto-development-pipeline",
-              "toronto-address-7667205",
-              "ttc-gtfs",
-              "osm-walk-761"
-            ]
-          }
-        ],
-        "source_ids": [
-          "toronto-development-pipeline",
-          "toronto-address-7667205",
-          "ttc-gtfs",
-          "osm-walk-761"
+        "id": "fixture-development-3",
+        "name": "Fixture development 3",
+        "latitude": 43.661284,
+        "longitude": -79.358,
+        "net_added_units": 100,
+        "occupied_share": 0.5,
+        "residents_per_occupied_unit": 2.0,
+        "transit_share": 0.5,
+        "accessible_stop_ids": [
+          "ttc-stop-2127"
         ]
       }
     ],
@@ -106,9 +55,9 @@ export const sampleComparison = {
         "phase_id": "phase-1",
         "year": 2030,
         "development_ids": [
-          "toronto-app-22-124214-ste-13-oz",
-          "toronto-app-26-122451-ste-13-oz",
-          "toronto-app-25-236949-ste-13-oz"
+          "fixture-development-1",
+          "fixture-development-2",
+          "fixture-development-3"
         ],
         "occupied_share": 0.5
       }
@@ -189,103 +138,85 @@ export const sampleComparison = {
     },
     "stops": [
       {
-        "stop_id": "ttc-stop-1756",
-        "gtfs_stop_id": "1756",
+        "id": "ttc-stop-1756",
         "name": "Broadview Ave at Dundas St East",
-        "seq": 0,
-        "lon": -79.351506,
-        "lat": 43.6626,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 0,
+        "latitude": 43.6626,
+        "longitude": -79.351506,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-2127",
-        "gtfs_stop_id": "2127",
+        "id": "ttc-stop-2127",
         "name": "Dundas St East at River St",
-        "seq": 1,
-        "lon": -79.358,
-        "lat": 43.661284,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 1,
+        "latitude": 43.661284,
+        "longitude": -79.358,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-15873",
-        "gtfs_stop_id": "15873",
+        "id": "ttc-stop-15873",
         "name": "Dundas St East at Regent Park Blvd",
-        "seq": 2,
-        "lon": -79.361739,
-        "lat": 43.66045,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 2,
+        "latitude": 43.66045,
+        "longitude": -79.361739,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-2125",
-        "gtfs_stop_id": "2125",
+        "id": "ttc-stop-2125",
         "name": "Dundas St East at Parliament St",
-        "seq": 3,
-        "lon": -79.365882,
-        "lat": 43.65951,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 3,
+        "latitude": 43.65951,
+        "longitude": -79.365882,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-2123",
-        "gtfs_stop_id": "2123",
+        "id": "ttc-stop-2123",
         "name": "Dundas St East at Ontario St",
-        "seq": 4,
-        "lon": -79.368357,
-        "lat": 43.658961,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 4,
+        "latitude": 43.658961,
+        "longitude": -79.368357,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-2131",
-        "gtfs_stop_id": "2131",
+        "id": "ttc-stop-2131",
         "name": "Dundas St East at Sherbourne St",
-        "seq": 5,
-        "lon": -79.370878,
-        "lat": 43.658406,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 5,
+        "latitude": 43.658406,
+        "longitude": -79.370878,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-2119",
-        "gtfs_stop_id": "2119",
+        "id": "ttc-stop-2119",
         "name": "Dundas St East at Jarvis St",
-        "seq": 6,
-        "lon": -79.374377,
-        "lat": 43.657162,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 6,
+        "latitude": 43.657162,
+        "longitude": -79.374377,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-2117",
-        "gtfs_stop_id": "2117",
+        "id": "ttc-stop-2117",
         "name": "Dundas St East at Church St",
-        "seq": 7,
-        "lon": -79.376993,
-        "lat": 43.656583,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 7,
+        "latitude": 43.656583,
+        "longitude": -79.376993,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       },
       {
-        "stop_id": "ttc-stop-2136",
-        "gtfs_stop_id": "2136",
+        "id": "ttc-stop-2136",
         "name": "Dundas St East at Yonge St - Dundas Station",
-        "seq": 8,
-        "lon": -79.380755,
-        "lat": 43.656426,
-        "source_ids": [
-          "ttc-gtfs"
-        ]
+        "sequence": 8,
+        "latitude": 43.656426,
+        "longitude": -79.380755,
+        "waiting_passenger_ids": [],
+        "serving_streetcar_id": null
       }
     ],
     "links": [
@@ -381,6 +312,9 @@ export const sampleComparison = {
       "ttc-stop-2117": 1,
       "ttc-stop-2136": 1
     },
+    "source_ids": [
+      "ttc-gtfs"
+    ],
     "incoming_load": {
       "key": "incoming_load",
       "unit": "passengers/vehicle",
@@ -394,10 +328,7 @@ export const sampleComparison = {
       },
       "status": "assumed",
       "source_ids": []
-    },
-    "source_ids": [
-      "ttc-gtfs"
-    ]
+    }
   },
   "cases": [
     {
@@ -2829,6 +2760,48 @@ export const sampleComparison = {
       },
       "status": "assumed",
       "source_ids": []
+    },
+    {
+      "key": "net_added_units",
+      "unit": "homes/development",
+      "meaning": "Each synthetic fixture development adds 100 homes; not a claim about any real proposal.",
+      "low": 100,
+      "central": 100,
+      "high": 100,
+      "allowed_range": {
+        "low": 0,
+        "high": 2000
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "residents_per_occupied_unit",
+      "unit": "residents/home",
+      "meaning": "Synthetic fixture household size; not measured occupancy.",
+      "low": 2,
+      "central": 2,
+      "high": 2,
+      "allowed_range": {
+        "low": 0,
+        "high": 10
+      },
+      "status": "assumed",
+      "source_ids": []
+    },
+    {
+      "key": "transit_share",
+      "unit": "share",
+      "meaning": "Synthetic fraction of trips using transit; fixture rider counts are still hand-authored.",
+      "low": 0.5,
+      "central": 0.5,
+      "high": 0.5,
+      "allowed_range": {
+        "low": 0,
+        "high": 1
+      },
+      "status": "assumed",
+      "source_ids": []
     }
   ],
   "sources": [
@@ -2840,93 +2813,12 @@ export const sampleComparison = {
       "version": "S1000542",
       "licence": "https://open.toronto.ca/open-data-licence/",
       "retrieved_at": "2026-10-17T06:36:33.015052+00:00"
-    },
-    {
-      "source_id": "toronto-development-pipeline",
-      "title": "Development Pipeline",
-      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/a7a327c5-4e25-4881-816d-c8b145e02832/resource/dc28845a-299f-4562-b605-27b6fefc17e0/download/development-pipeline.csv",
-      "publisher": "City of Toronto / City Planning",
-      "version": "2026-10-08T07:24:47.445084",
-      "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:36:34.968042+00:00"
-    },
-    {
-      "source_id": "toronto-address-796104",
-      "title": "Toronto One Address Repository: 239 Dundas St E",
-      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22239+Dundas+St+E%22%7D&limit=100",
-      "publisher": "City of Toronto",
-      "version": "retrieved snapshot",
-      "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:16.078288+00:00"
-    },
-    {
-      "source_id": "toronto-address-30009862",
-      "title": "Toronto One Address Repository: 500 Dundas St E",
-      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22500+Dundas+St+E%22%7D&limit=100",
-      "publisher": "City of Toronto",
-      "version": "retrieved snapshot",
-      "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:20.211229+00:00"
-    },
-    {
-      "source_id": "toronto-address-7667205",
-      "title": "Toronto One Address Repository: 761 Dundas St E",
-      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22761+Dundas+St+E%22%7D&limit=100",
-      "publisher": "City of Toronto",
-      "version": "retrieved snapshot",
-      "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:21.663662+00:00"
-    },
-    {
-      "source_id": "toronto-address-7650832",
-      "title": "Toronto One Address Repository: 401 Dundas St E",
-      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22401+Dundas+St+E%22%7D&limit=100",
-      "publisher": "City of Toronto",
-      "version": "retrieved snapshot",
-      "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:22.462487+00:00"
-    },
-    {
-      "source_id": "toronto-address-796099",
-      "title": "Toronto One Address Repository: 218 Dundas St E",
-      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22218+Dundas+St+E%22%7D&limit=100",
-      "publisher": "City of Toronto",
-      "version": "retrieved snapshot",
-      "licence": "https://open.toronto.ca/open-data-licence/",
-      "retrieved_at": "2026-10-17T06:38:23.357595+00:00"
-    },
-    {
-      "source_id": "osm-walk-239",
-      "title": "OpenStreetMap pedestrian map around 239 DUNDAS ST E",
-      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.375,43.6565,-79.3705,43.659",
-      "publisher": "OpenStreetMap contributors",
-      "version": "retrieved snapshot",
-      "licence": "https://www.openstreetmap.org/copyright",
-      "retrieved_at": "2026-10-17T06:49:48.203776+00:00"
-    },
-    {
-      "source_id": "osm-walk-500",
-      "title": "OpenStreetMap pedestrian map around 500 DUNDAS ST E",
-      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.3675,43.658,-79.3615,43.662",
-      "publisher": "OpenStreetMap contributors",
-      "version": "retrieved snapshot",
-      "licence": "https://www.openstreetmap.org/copyright",
-      "retrieved_at": "2026-10-17T06:52:29.237546+00:00"
-    },
-    {
-      "source_id": "osm-walk-761",
-      "title": "OpenStreetMap pedestrian map around 761 DUNDAS ST E",
-      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.361,43.6595,-79.354,43.663",
-      "publisher": "OpenStreetMap contributors",
-      "version": "retrieved snapshot",
-      "licence": "https://www.openstreetmap.org/copyright",
-      "retrieved_at": "2026-10-17T06:52:31.884378+00:00"
     }
   ],
   "warnings": [
     "FIXTURE: synthetic passengers, costs, service, budgets and results; not a real 505 forecast.",
-    "Real GTFS geometry and proposed units do not validate the fixture demand. Housing totals are identical across packages.",
-    "Walking entrances/crossings need manual review; footprints unavailable, not invented.",
+    "Westbound Broadview-to-TMU GTFS geometry does not validate the synthetic fixture demand.",
+    "Housing IDs, net added units, occupancy, household size and transit share are synthetic. Locations coincide with fixture stops; accessible stops are illustrative, not reviewed walking access. Housing totals are identical across packages.",
     "Wait statistics include completed riders only; unresolved riders are separately reported. P95 uses nearest rank.",
     "Fixture time starts at zero, representing 07:00 local; two illustrative dispatches do not represent the full AM service.",
     "Zero dwell, empty incoming vehicles, four-place capacity and fleet-cycle feasibility are fixture assumptions."
