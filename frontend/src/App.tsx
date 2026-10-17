@@ -166,7 +166,7 @@ export function App() {
       </div>
 
       {/* Main Workspace Area: 3D Map + Overlay Inspector */}
-      <main className="relative flex-1 w-full h-full overflow-hidden">
+      <main className="relative flex-1 min-h-0 w-full overflow-hidden">
         <CorridorMap
           corridor={comparison.corridor}
           developments={comparison.developments}
@@ -185,7 +185,7 @@ export function App() {
 
         {/* Selected Entity Inspector Panel (Floating Top Right) */}
         {(selectedStop || selectedDev) && (
-          <div className="liquid-glass-panel rounded-2xl p-6 absolute top-6 right-6 w-[340px] z-30 max-h-[calc(100vh-14rem)] overflow-y-auto animate-fade-rise">
+          <div className="!absolute top-6 right-6 w-[360px] z-30 max-h-[calc(100vh-14rem)] overflow-y-auto animate-fade-rise liquid-glass-panel rounded-2xl p-6 shadow-2xl">
             {selectedStop && (
               <div>
                 <div className="flex justify-between items-start mb-3">

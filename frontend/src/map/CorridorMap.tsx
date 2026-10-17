@@ -97,7 +97,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         bearing: -25,
       })
 
-      map.addControl(new NavigationControl({ showCompass: true }), 'top-right')
+      map.addControl(new NavigationControl({ showCompass: true }), 'bottom-right')
 
       map.on('error', (e) => {
         console.warn('MapLibre event:', e)
@@ -273,7 +273,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       )}
 
       {/* Floating Map Controls Overlay (Top Left) */}
-      <div className="absolute top-5 left-6 flex flex-col gap-2.5 z-10">
+      <div className="!absolute top-5 left-6 flex flex-col gap-2.5 z-20">
         {/* Phase Toggle Controls */}
         <div className="liquid-glass rounded-full px-4 py-1.5 flex items-center gap-2 text-xs">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-1">
@@ -337,7 +337,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       </div>
 
       {/* Legend Badge Bottom Left */}
-      <div className="liquid-glass rounded-2xl p-4 text-xs flex flex-col gap-2 absolute bottom-6 left-6 z-10 min-w-[200px]">
+      <div className="!absolute bottom-6 left-6 z-20 min-w-[200px] liquid-glass rounded-2xl p-4 text-xs flex flex-col gap-2">
         <div
           className="text-sm tracking-tight text-foreground"
           style={{ fontFamily: "'Instrument Serif', serif" }}
