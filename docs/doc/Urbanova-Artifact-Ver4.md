@@ -381,6 +381,10 @@ Lane C · Owner 4
 
 The model computes; Gemini translates and explains. Every number on screen comes from Lane B's runs or Lane A's sources.
 
+**Owner decision, 2026-10-17 — live B → C handoff:** C must accept the simulator owner's native dictionaries. `backend/simulation/paired_runs.py` returns `{overall_results, individual_results}`; `individual_results` is an ordered array of unchanged `{inputs, streetcars, passengers, sim_log, summary}` run dictionaries. Named paired comparisons wrap those batches under `cases` with `improvements`, seed IDs and runtime. See [simulation-runs.md](../simulation-runs.md). C owns the Python bridge, validation, storage and presentation mapping. This decision supersedes the earlier Phase 1 `Comparison` / `ReplayStream` template requirements for live simulation output; the checked-in fixture retains its historical format and labels.
+
+The simulator's metric definitions are authoritative: onboard riders and riders awaiting their first car at cutoff remain **in progress**, excluded from unresolved counts; unresolved counts riders still waiting after a capacity denial. Denied share uses corridor riders who encountered a streetcar, counting each denied rider once. C must preserve these meanings in validation, criteria, storage, briefs and AI explanations. Remove any projection that replaces B's results with all-waiting-plus-onboard unresolved counts or an all-arrivals denied-share denominator. Replay comes from a selected run's `sim_log`, including passenger arrivals during the run and incoming vehicle loads.
+
 1. [ ] C1
 
    backend/server.js · backend/api/deps.js
@@ -400,17 +404,17 @@ The model computes; Gemini translates and explains. Every number on screen comes
 
    backend/worker/ · jobs table
 
-   A separate Node worker process spawns the Python simulator (`python -m sim.runner.paired_runs`) so web requests never block. A job table and polling are enough; add streaming only if the workload needs it.
+   A Node worker invokes B's `run_repeated_simulations` / `run_paired_comparisons` functions through the C-owned Python bridge (`backend.integration.b11`) so web requests never block. Pass prepared inputs and requested seeds; accept the native batch dictionaries. A job table and polling are enough; add streaming only if the workload needs it. Size timeouts from the measured full workload.
 5. [ ] C5
 
    backend/packages/evaluate.jsWaits on B11
 
-   Run every feasible package on the same demand cases and draws. Until B11 lands, a stub returns fixture results.
+   Prepare inputs for every feasible package per demand case and phase; invoke B11 with the same seed list for comparable packages. Consume `overall_results` and `individual_results` directly and retain paired improvement statistics. Fixed vehicle/link-matched draws remain B2 work; matching seed IDs alone must not be described as completing B2. C adapts its boundary to B's native shape and definitions. Explicit fixture mode remains labelled and separate.
 6. [ ] C6
 
    backend/packages/compare.js
 
-   Mark dominated options. Name the least-cost tested package that meets the user's criterion across the selected cases, or show the alternatives when none does. Wording: "best among the tested packages under these assumptions."
+   Mark dominated options using B's actual metrics and documented cohorts. Apply the user's criterion to individual runs alongside aggregate variation, using B's definitions of in-progress, unresolved and denied share. Name the least-cost tested package that meets the user's criterion across the selected cases, or show the alternatives when none does. Wording: "best among the tested packages under these assumptions."
 7. [ ] C7
 
    backend/packages/sensitivity.js
@@ -420,12 +424,12 @@ The model computes; Gemini translates and explains. Every number on screen comes
 
    backend/db/queries.sqlTiger Data story
 
-   The three queries to show judges: development access joined to affected stops, worst stops for a phase, and one package compared across runs and assumption versions. Store aggregates for all runs and replay events for selected runs only. Measure before claiming any speed-up.
+   The three queries to show judges: development access joined to affected stops, worst stops for a phase, and one package compared across runs and assumption versions. Store native batch aggregates and individual run metrics for all runs; retain `sim_log` for selected replay runs only. Preserve source, input, assumption, model and seed versions as C-owned metadata without changing B's metric meanings. Measure before claiming any speed-up.
 9. [ ] C9
 
    backend/api/routes/*.js
 
-   `corridor` · `scenarios` · `jobs` · `results` · `replay`, each returning only the frozen schemas, with source and scenario ids on every result.
+   `corridor` · `scenarios` · `jobs` · `results` · `replay`. For live simulation results, validate and return B's native batch shape in a versioned C-owned envelope carrying source and scenario IDs; preserve original run dictionaries and `sim_log`. Update C's schemas and affected frontend consumers together. The earlier Comparison/ReplayStream schemas remain the labelled fixture format; migrate live consumers instead of recalculating results to satisfy incompatible template semantics.
 10. [ ] C10
 
     backend/core/cache.js
@@ -445,7 +449,7 @@ The model computes; Gemini translates and explains. Every number on screen comes
 
     backend/ai/explainer.jsDo not fake
 
-    Explains a stored `Comparison` from its JSON alone to help residents understand commute and neighbourhood tradeoffs. After generation, check that every number in the text appears in the payload and every source id exists; otherwise fall back to a templated explanation. If the comparison asked about doesn't exist, offer to run it.
+    Explains stored native batch/paired-comparison results and C-owned metadata from JSON alone to help residents understand commute and neighbourhood tradeoffs. Use B's metric definitions, distinguish in-progress riders from unresolved riders and label run-to-run variation accurately. After generation, check that every number in the text appears in the payload and every source id exists; otherwise fall back to a templated explanation. If the comparison asked about doesn't exist, offer to run it.
 14. [ ] C14
 
     backend/services/brief.js

@@ -1,6 +1,6 @@
 # Lane C: Express API, storage and grounded AI
 
-The requested Express service is implemented in `server/`. It consumes the frozen Comparison 2.0.0 JSON Schema and the same frontend TypeScript interfaces. Stop/Development and the Python simulator remain owned by Lane B. The root Railway configuration now targets Express.
+The requested Express service is implemented in `server/`. Its current compatibility path consumes the earlier Comparison 2.0.0 JSON Schema and matching frontend TypeScript interfaces. **The owner's 2026-10-17 decision makes Lane B's native dictionaries and metric definitions authoritative for live results.** C owns migrating its boundary, persistence and consumers accordingly. Stop/Development and the Python simulator remain owned by Lane B. The root Railway configuration now targets Express.
 
 ## Run
 
@@ -57,7 +57,60 @@ The screen always lists existing, lane, extra service and both, retaining every 
 
 No reviewed cycle, lane effect or intervention cost quotes exist yet. Supply explicit assumptions through the package-preview/job endpoints or a configured policy file. With no policy supplied, upgrades are explicitly unavailable; the API does not invent prices. `server/config/package-policy.example.json` is an inactive synthetic example. Populate a reviewed/user-selected policy, retain its assumption label and source IDs, and set backend-only `PACKAGE_POLICY_PATH` to its path. Claimed source IDs must resolve to the reviewed manifest. Policy contents participate in the cache key. Costs and budgets use CAD at a common price year. Capital is one-time and operation annual; the decision ranks high-bound capital then annual operation lexicographically, stating that rule rather than adding unlike annual/one-time amounts.
 
-## B11 computation and explicit fixture mode
+## B11 native handoff: owner decision, 2026-10-17
+
+This decision supersedes earlier template requirements for live B → C results.
+B supplies `run_repeated_simulations(inputs, run_count=20, seeds=...)` and
+`run_paired_comparisons(cases, baseline_case=..., run_count=20, seeds=...)` in
+`backend/simulation/paired_runs.py`. See [simulation-runs.md](simulation-runs.md).
+C must accept the single-input batch shape directly:
+
+```text
+{
+  overall_results: {
+    run_count, seeds, metrics,
+    all_runs_conservation_valid, invalid_run_indices, runtime
+  },
+  individual_results: [
+    {inputs, streetcars, passengers, sim_log, summary},
+    ...one unchanged full dictionary per seed...
+  ]
+}
+```
+
+Named comparisons contain those batches under `cases`, with `baseline_case`,
+`seeds`, `total_run_count`, `improvements` and `runtime_s`. C owns scenario,
+package, source and version metadata outside B's dictionaries. C must validate
+the native result shape and migrate its API, storage, frontend consumers,
+criterion checks, briefs and AI explanations together.
+
+The simulator owner's definitions are authoritative:
+
+- Onboard riders and riders awaiting their first car at cutoff are **in progress**, excluded from unresolved counts.
+- Unresolved means riders still waiting after a capacity denial. `raw_waiting_at_cutoff_passengers` separately records the physical queue.
+- Denied share counts each denied corridor rider once and uses corridor riders who encountered a streetcar as its denominator.
+- Preserve the cohort named by each metric; the overview's boarding-wait metrics and completed-trip wait metrics are separate.
+- Aggregate means and sample standard deviations describe variation between runs. A mean of per-run p95s is not a pooled passenger percentile or a confidence interval.
+
+Remove the bridge projection that substitutes all-waiting-plus-onboard
+unresolved counts or an all-arrivals denied-share denominator. Package decisions
+must use B's meanings, rather than hiding them in a side endpoint while making
+decisions with the older formulas. Keep the original Comparison 2.0.0 fixture
+labelled and separate; B does not owe a template-shaped output adapter.
+
+Replay uses the selected run's `sim_log`, supporting passenger arrivals during
+the run, incoming vehicle loads, existing/new counts, passenger IDs, post-event
+vehicle/queue counts and vehicle snapshots. A C-owned transport envelope may
+carry these records and metadata without discarding events or requiring all
+riders to start in queues at time zero. Native actions and fields are documented
+in `backend/simulation/metrics.py`.
+
+The Python bridge below is already implemented. Accepting the new batch shape
+and removing the old metric projection remain C migration work; this section
+states the required handoff and does not claim that runtime migration is done.
+Matching seed IDs alone also does not complete B2's fixed vehicle/link draws.
+
+## Current B11 computation and explicit fixture mode
 
 B11 is the default evaluator. Express queues work in a Node worker thread, which starts an isolated Python process using `backend.integration.b11`. It uses Lane B's runner and summary metrics; it does not implement another simulator or change Lane B's files. Python must be installed locally (the root `.venv` is detected), or set `PYTHON_EXECUTABLE`. The Railway image includes a minimal Python environment.
 
@@ -65,7 +118,7 @@ For each phase, low/central/high demand case and requested seed, sample the corr
 
 Without a policy, existing service runs against the reviewed housing; upgrades remain unavailable. With an explicit policy and sufficient budgets/fleet, the adapter constructs existing, lane, extra-service and both. The combined package accounts for fleet savings from the lane. Capital and annual costs, effects, availability and reasons are preserved. The frozen extra-service contract requires at least one added vehicle; an otherwise feasible zero-added-vehicle service assumption returns 422 instead of invented fleet. Packages unavailable in every phase are screened out and their reasons retained.
 
-All runs use actual B11 output. The latest B11 metrics distinguish neutral cutoff riders (onboard or awaiting a first car) from denied riders still stranded, and use riders who encountered a car as the denied-share denominator. The frozen Comparison 2.0.0 requires all arrivals in its denominator and all waiting/onboard riders in unresolved counts. The adapter explicitly projects physical passenger state into those existing definitions, retaining completed-rider waits from B11. Its comparison/criterion decisions therefore retain the conservative frozen cutoff definition. The unmodified native B11 contract and overview are stored for every run in `c_b11_run_metrics` and exposed at `GET /api/results/:comparison_id/b11-metrics` with `format_version:"b11-metrics-v1"`. Clients needing the neutral-cutoff presentation should use those native counts, not relabel the frozen fields. Moving neutral-cutoff decisions into the frozen comparison needs an agreed contract version change. Stop p95 across multiple seeds is computed from pooled completed-passenger waits, never averaged stop percentiles. Remaining queues and unresolved passengers accompany completed-rider metrics. The one-year upgrade delay is a separate Comparison with independently materialized availability and stored aggregates; identical inputs may reuse actual computed results. Summary and brief link the delayed comparison and report whether the preferred tested package changes.
+All runs use actual simulator output. The current bridge still projects physical passenger state into the older Comparison 2.0.0 formulas while storing unmodified native metrics in `c_b11_run_metrics` and exposing `GET /api/results/:comparison_id/b11-metrics` with `format_version:"b11-metrics-v1"`. **That projection is now superseded by the owner decision above and must be removed from the live result/criterion path.** Native definitions must drive package decisions, not only a side endpoint. Existing storage and endpoints described here record the current implementation, not the target handoff. The bridge also computes stop p95 from pooled completed-passenger waits and materializes the one-year availability delay separately; those capabilities can be retained when migrating result transport.
 
 Submit `{scenario_id, version, random:{seed_ids:[42],draws_id:"demo"}, retain_replay:true}` to `POST /api/jobs`. Optional `policy` pins user-selected costs/effects. Optional `demand_factors` defaults to `{low:0.8,central:1,high:1.2}` and multiplies the all-mode trip rate; these are sensitivity assumptions, not measured confidence intervals. Every run carries model and data digests. The boundary checks the materialized scenario, feasible package coverage, phases/demand cases, paired seed IDs, stop/cohort counts, versions, conservation, references and numeric criterion flags.
 
