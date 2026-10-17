@@ -7,6 +7,9 @@ import {
   fetchReplayStream,
   runScenario,
   runAnalysis,
+  runSimulation,
+  getSimulations,
+  deleteSimulation,
   fetchNativeReplay,
   fetchNativeMetrics,
   API_BASE_URL,
@@ -114,5 +117,38 @@ describe('Live B11 transport', () => {
     expect(fetchMock.mock.calls.map(call => call[0])).toEqual(['/replay/stored-id', '/results/stored-id/b11-metrics'].map(path => API_BASE_URL + path))
     setUseFixture(false)
     await expect(fetchReplayStream('stored-id')).rejects.toThrow('B11 replay viewer')
+  })
+  it('calls /run/simulation, /sim/fetch, and /sim/delete with synchronized batch shape', async () => {
+    const sampleBatch = {
+      id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3',
+      overall_results: {
+        run_count: 2,
+        seeds: [42, 43],
+        metrics: {},
+        all_runs_conservation_valid: true,
+        invalid_run_indices: [],
+        runtime: { per_run_s: [0.5, 0.5], statistics_s: { valid_run_count: 2, missing_run_count: 0, mean: 0.5, median: 0.5, min: 0.5, max: 0.5, stddev: 0 }, total_s: 1.0 },
+      },
+      individual_results: [
+        { inputs: { seed: 42 }, streetcars: [], passengers: [], sim_log: [], summary: { overview: {} as never, contract: { diagnostics: {} as never } } },
+        { inputs: { seed: 43 }, streetcars: [], passengers: [], sim_log: [], summary: { overview: {} as never, contract: { diagnostics: {} as never } } },
+      ],
+    }
+    const replies = [sampleBatch, [sampleBatch], { id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', deleted: true }]
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(replies.shift()), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const created = await runSimulation({ run_count: 2, seed: 42, development_ids: [] })
+    expect(created).toEqual(sampleBatch)
+    const fetched = await getSimulations()
+    expect(fetched).toEqual([sampleBatch])
+    const deleted = await deleteSimulation('3f6a29bc-49e0-47b7-b088-7e5bebf92ea3')
+    expect(deleted).toEqual({ id: '3f6a29bc-49e0-47b7-b088-7e5bebf92ea3', deleted: true })
+
+    expect(fetchMock.mock.calls.map(call => String((call as unknown[])[0]))).toEqual([
+      `${API_BASE_URL}/run/simulation`,
+      `${API_BASE_URL}/sim/fetch`,
+      `${API_BASE_URL}/sim/delete`,
+    ])
   })
 })

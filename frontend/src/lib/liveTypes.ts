@@ -1,4 +1,4 @@
-import type { Scenario, Stop, Comparison, CaseResult, Run, StopResult, Diagnostics } from './types'
+import type { Scenario, Stop, Development, Comparison, CaseResult, Run, StopResult, Diagnostics } from './types'
 
 export interface RunStatistics {
   valid_run_count: number; missing_run_count: number
@@ -19,16 +19,42 @@ export interface NativeOverview {
   raw_waiting_at_cutoff_passengers: number; conservation_valid: boolean
 }
 export interface NativeBatch {
+  id: string
   overall_results: {
     run_count: number; seeds: number[]; metrics: Record<string, RunStatistics>
     all_runs_conservation_valid: boolean; invalid_run_indices: number[]
     runtime: { per_run_s: number[]; statistics_s: RunStatistics; total_s: number }
   }
   individual_results: {
-    inputs: Record<string, unknown> & { seed: number }; streetcars: NativeCar[]
+    inputs: Record<string, unknown> & { seed: number; stops?: Stop[]; developments?: Development[]; start_time_s?: number; end_time_s?: number; headway_s?: number; headway_randomness_s?: number }
+    streetcars: NativeCar[]
     passengers: Record<string, unknown>[]; sim_log: NativeEvent[]
     summary: Record<string, unknown> & { overview: NativeOverview; contract: { diagnostics: NativeDiagnostics } }
   }[]
+}
+export interface RunSimulationRequest {
+  run_count?: number
+  seed?: number
+  seeds?: number[]
+  development_ids?: string[]
+  developments?: Development[]
+  stops?: Stop[]
+  existing_residences?: Record<string, unknown>[]
+  link_travel_times_s?: number[]
+  streetcar_capacity?: number
+  headway_s?: number
+  rush_hour_duration_s?: number
+  trips_per_resident_in_window?: number
+  start_time_s?: number
+  end_time_s?: number
+  headway_randomness_s?: number
+  commuter_distribution?: number[]
+  link_travel_time_variation_share?: number
+  westward_share?: number
+  walk_limit_m?: number
+  parallel_route_bands?: [number, number]
+  incoming_load_range?: [number, number]
+  stop_dwell_range_s?: [number, number]
 }
 export interface NativeCaseResult extends CaseResult, NativeBatch {
   runs: NativeRun[]; stops: NativeStopResult[]

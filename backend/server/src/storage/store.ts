@@ -5,10 +5,12 @@ import { resolve } from 'node:path';
 import { ROOT, settings } from '../config.js';
 import { hash } from '../core/cache.js';
 import type { Comparison, Scenario } from '../shared/schemas.js';
-import { NativeReplaySchema,type NativeReplay } from '../shared/schemas.js';
+import { NativeBatchSchema, NativeReplaySchema,type NativeReplay } from '../shared/schemas.js';
+import type { NativeBatch } from '../shared/nativeResults.js';
 import { defaultScenario, reviewed, corridor, dataVersion,simulationModelVersion } from '../services/bundle.js';
 import { ApiError } from '../core/errors.js';
 import { checkedComparison } from '../services/comparisonIntegrity.js';
+import { checkNativeBatch } from '../services/nativeIntegrity.js';
 export type Job={job_id:string;scenario_id:string;scenario_version:number;status:'queued'|'running'|'completed'|'failed';comparison_id:string|null;error:string|null;stale:boolean;notice:string;package_screen:unknown;payload:any;lease_token:string};
 export type EvaluationResult={comparison:Comparison;delayedComparison?:Comparison;native_replay?:NativeReplay|null;native_metrics?:{run_id:string;summary:unknown}[];package_screen:unknown;notice:string};
 export type PastRun={comparison_id:string;scenario_id:string;scenario_version:number;created_at:string;contract_version:string;fixture:boolean};
@@ -23,6 +25,9 @@ export interface Store {
   nativeReplay(id:string):Promise<NativeReplay|null>;
   nativeMetrics(id:string):Promise<{run_id:string;summary:unknown}[]>;
   pastRuns(options?:{scenario_id?:string;limit?:number;offset?:number}):Promise<PastRun[]>;
+  saveSimulation(batch:NativeBatch):Promise<NativeBatch>;
+  fetchSimulations():Promise<NativeBatch[]>;
+  deleteSimulation(id:string):Promise<boolean>;
   renew(job:Job):Promise<boolean>;
   audit(entry:{call_id:string;purpose:string;model:string;prompt_hash:string;status:string;duration_ms:number}):Promise<void>;
 }
@@ -130,6 +135,19 @@ export class PgStore implements Store {
       AND ($1::text IS NULL OR requested_scenario_id=$1)
       ORDER BY created_at DESC, comparison_id DESC LIMIT $2 OFFSET $3`,[scenario_id??null,limit,offset]);
     return r.rows;
+  }
+  async saveSimulation(batch:NativeBatch){
+    const checked=checkNativeBatch(NativeBatchSchema.parse(batch));
+    await this.pool.query('INSERT INTO c_simulations(id,payload,model_version,data_version,created_at) VALUES($1,$2,$3,$4,now()) ON CONFLICT(id) DO UPDATE SET payload=EXCLUDED.payload,model_version=EXCLUDED.model_version,data_version=EXCLUDED.data_version',[checked.id,checked,simulationModelVersion,dataVersion]);
+    return checked;
+  }
+  async fetchSimulations(){
+    const r=await this.pool.query('SELECT payload FROM c_simulations ORDER BY created_at DESC, id DESC');
+    return r.rows.map(row=>checkNativeBatch(NativeBatchSchema.parse(row.payload)));
+  }
+  async deleteSimulation(id:string){
+    const r=await this.pool.query('DELETE FROM c_simulations WHERE id=$1 RETURNING id',[id]);
+    return Boolean(r.rowCount);
   }
   async audit(e:{call_id:string;purpose:string;model:string;prompt_hash:string;status:string;duration_ms:number}){await this.pool.query('INSERT INTO c_ai_calls(call_id,purpose,model,prompt_hash,status,duration_ms) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(call_id) DO UPDATE SET status=EXCLUDED.status,duration_ms=EXCLUDED.duration_ms',[e.call_id,e.purpose,e.model,e.prompt_hash,e.status,e.duration_ms]);}
 }

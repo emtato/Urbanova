@@ -58,4 +58,9 @@ CREATE TABLE IF NOT EXISTS c_ai_calls (
  call_id uuid PRIMARY KEY,created_at timestamptz NOT NULL DEFAULT now(),purpose text NOT NULL,
  model text NOT NULL,prompt_hash text NOT NULL,status text NOT NULL,duration_ms integer NOT NULL
 );
+CREATE TABLE IF NOT EXISTS c_simulations (
+ id uuid PRIMARY KEY,payload jsonb NOT NULL,model_version text NOT NULL,
+ data_version text NOT NULL,created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS c_simulations_history ON c_simulations(created_at DESC,id DESC);
 COMMIT;

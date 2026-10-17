@@ -14,14 +14,16 @@ import { scenariosRouter } from './routes/scenarios.js';
 import { jobsRouter } from './routes/jobs.js';
 import { resultsRouter } from './routes/results.js';
 import { replayRouter } from './routes/replay.js';
+import { simulationsRouter } from './routes/simulations.js';
 export function createApp(store:Store,generate:Generate=gemini(store)){
   const app=express();app.disable('x-powered-by');
-  app.use(cors({origin:settings.origins,methods:['GET','POST'],allowedHeaders:['Content-Type']}));
+  app.use(cors({origin:settings.origins,methods:['GET','POST','DELETE'],allowedHeaders:['Content-Type']}));
   app.use(express.json({limit:'256kb'}));
   app.get('/',(_q,s)=>s.json({service:'FutureProof',api:'/api',health:'/health',docs:'/docs'}));
   app.get('/docs',(_q,s)=>s.type('text/plain').send(readFileSync(resolve(ROOT,'docs/lane-c.md'),'utf8')));
   app.get(['/health','/api/health','/api/health/db'],async(_q,s)=>{try{await store.ping();s.json({status:'ok',database:'ok',model_version:settings.modelVersion,data_version:dataVersion});}catch{s.status(503).json({status:'unavailable',database:'unavailable'});}});
   app.get('/api/fixtures/sample-comparison',(_q,s)=>{s.set('X-FutureProof-Fixture','true');s.json(ComparisonSchema.parse(fixture));});
+  app.use('/api',simulationsRouter(store));
   app.use('/api/corridor',corridorRouter());app.use('/api/scenarios',scenariosRouter(store,generate));
   app.use('/api/jobs',jobsRouter(store));app.use('/api/results',resultsRouter(store,generate));app.use('/api/replay',replayRouter(store));
   app.use((_q,_s,next)=>next(new ApiError(404,'Endpoint not found.')));

@@ -1,5 +1,9 @@
-import { fixture } from '../services/bundle.js';
-import { ComparisonSchema, type Comparison, type Scenario } from '../shared/schemas.js';
+import { fixture, reviewed } from '../services/bundle.js';
+import { ComparisonSchema, NativeBatchSchema, RunSimulationRequestSchema, type Comparison, type Scenario } from '../shared/schemas.js';
+import type { NativeBatch } from '../shared/nativeResults.js';
+import { invariant } from '../core/errors.js';
+import { checkNativeBatch } from '../services/nativeIntegrity.js';
+import { parse } from '../services/validate.js';
 import { feasibility, type Policy } from './feasibility.js';
 import { evaluationPlan,checkedB11Comparison,type B11Adapter } from './plan.js';
 import { spawn } from 'node:child_process';
@@ -24,6 +28,34 @@ export async function evaluate(request:EvaluationRequest,adapter?:B11Adapter):Pr
   const comparison:Comparison=ComparisonSchema.parse(structuredClone(fixture));
   if(!request.retain_replay) comparison.replay=null;
   return {comparison,package_screen:feasibility(request.scenario,request.policy),notice:'EXPLICIT FIXTURE MODE: unchanged contract example, not an evaluation of the requested scenario, seeds or four package screens. Omit evaluator or choose b11 for computed results.'};
+}
+
+export async function runSimulationBatch(input:unknown):Promise<NativeBatch> {
+  const request=parse(RunSimulationRequestSchema,input??{});
+  const defaults=reviewed.inputs;
+  const knownDevIds=new Set<string>(defaults.developments.map((d:{id:string})=>d.id));
+  if(request.development_ids){
+    const unknown=request.development_ids.filter(id=>!knownDevIds.has(id));
+    invariant(unknown.length===0,`Unknown development_ids: ${unknown.join(', ')}. Allowed IDs: ${[...knownDevIds].join(', ')}.`);
+  }
+  if(request.seeds){
+    invariant(request.seeds.length===request.run_count,'Supply exactly run_count seeds.');
+  }
+  const startTime=request.start_time_s??defaults.start_time_s;
+  const endTime=request.end_time_s??defaults.end_time_s;
+  invariant(startTime<endTime,'start_time_s must be less than end_time_s.');
+  const headway=request.headway_s??defaults.headway_s;
+  const randomness=request.headway_randomness_s??defaults.headway_randomness_s;
+  invariant(randomness>=0&&randomness<headway,'headway_randomness_s must be nonnegative and less than headway_s.');
+  const capacity=request.streetcar_capacity??defaults.streetcar_capacity;
+  const incoming=request.incoming_load_range??defaults.incoming_load_range;
+  invariant(incoming[0]<=incoming[1]&&incoming[1]<=capacity,'incoming_load_range must be ordered and within streetcar_capacity.');
+  const dwell=request.stop_dwell_range_s??defaults.stop_dwell_range_s;
+  invariant(dwell[0]<=dwell[1],'stop_dwell_range_s must be ordered.');
+  const bands=request.parallel_route_bands??defaults.parallel_route_bands;
+  invariant(bands[0]<=bands[1],'parallel_route_bands must be ordered.');
+  const raw=await runPython(request);
+  return checkNativeBatch(NativeBatchSchema.parse(raw));
 }
 
 function runPython(plan:unknown):Promise<any>{

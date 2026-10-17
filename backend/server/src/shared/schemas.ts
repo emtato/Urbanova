@@ -51,3 +51,30 @@ export const ExplanationSchema = z.strictObject({text:z.string(),source_ids:z.ar
 export const SummarySchema=z.strictObject({comparison_id:z.string(),scenario_id:z.string(),source_ids:z.array(z.string()),fixture:z.boolean(),
   decision:z.strictObject({wording:z.string(),cost_order:z.string(),preferred_package_id:z.string().nullable(),alternatives:z.array(z.strictObject({package_id:z.string(),capital:finite.nonnegative(),operating:finite.nonnegative(),feasible:z.boolean(),meets:z.boolean(),wait:finite.nonnegative().nullable(),denied:finite.min(0).max(1).nullable(),unresolved:finite.nonnegative().nullable(),dominated:z.boolean()}))}),
   sensitivity:z.strictObject({fixture:z.boolean(),cases:z.array(z.strictObject({demand:z.enum(['low','central','high']),preferred_package_id:z.string().nullable()})),preferred_changes:z.boolean(),upgrade_delay:z.strictObject({status:z.enum(['tested','pending_b11']),comparison_id:z.string().nullable(),preferred_changes:z.boolean().nullable(),preferred_package_id:z.string().nullable()}),repeatedly_worst_stops:z.array(z.strictObject({stop_id:z.string(),cases:z.int().nonnegative()})),limitation:z.string()})});
+export const RunSimulationRequestSchema=z.strictObject({
+  run_count:z.int().min(1).max(25).default(1),
+  seed:z.int().min(0).max(2147483647).optional(),
+  seeds:z.array(z.int().min(0).max(2147483647)).min(1).max(25).refine(ids=>new Set(ids).size===ids.length,'Seeds must be unique').optional(),
+  development_ids:z.array(z.string().min(1)).optional(),
+  developments:z.array(definition('Development')).optional(),
+  stops:z.array(definition('Stop')).optional(),
+  existing_residences:z.array(z.record(z.string(),z.unknown())).optional(),
+  link_travel_times_s:z.array(finite.positive()).optional(),
+  streetcar_capacity:z.int().positive().optional(),
+  headway_s:finite.positive().optional(),
+  rush_hour_duration_s:finite.positive().optional(),
+  trips_per_resident_in_window:finite.nonnegative().optional(),
+  start_time_s:z.int().nonnegative().optional(),
+  end_time_s:z.int().positive().optional(),
+  headway_randomness_s:finite.nonnegative().optional(),
+  commuter_distribution:z.array(finite.nonnegative()).min(1).optional(),
+  link_travel_time_variation_share:finite.min(0).lt(1).optional(),
+  westward_share:finite.min(0).max(1).optional(),
+  walk_limit_m:finite.positive().optional(),
+  parallel_route_bands:z.tuple([finite.min(0).max(1),finite.min(0).max(1)]).optional(),
+  incoming_load_range:z.tuple([z.int().nonnegative(),z.int().nonnegative()]).optional(),
+  stop_dwell_range_s:z.tuple([z.int().nonnegative(),z.int().nonnegative()]).optional(),
+});
+export type RunSimulationRequest=z.infer<typeof RunSimulationRequestSchema>;
+export const SimulationListSchema=z.array(NativeBatchSchema);
+export const DeleteSimulationRequestSchema=z.strictObject({id:z.string().uuid()});

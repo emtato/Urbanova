@@ -1,6 +1,6 @@
 import { sampleComparison } from './sampleComparison'
 import type { Comparison, Corridor, ReplayEvent, Scenario } from './types'
-import type { NativeMetrics, NativeReplay, PackagePolicy, ScenarioPatch, AnalysisSummary } from './liveTypes'
+import type { NativeBatch, NativeMetrics, NativeReplay, PackagePolicy, RunSimulationRequest, ScenarioPatch, AnalysisSummary } from './liveTypes'
 
 let runtimeUseFixture = import.meta.env.VITE_USE_FIXTURE !== 'false'
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
@@ -10,16 +10,39 @@ export const setUseFixture = (value: boolean) => { runtimeUseFixture = value }
 const clone = <T,>(value: T): T => structuredClone(value)
 
 export async function apiRequest<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+  const timeoutMs = path === '/run/simulation' ? 120000 : 30000
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: body === undefined ? 'GET' : 'POST',
     headers: { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
-    body: body === undefined ? undefined : JSON.stringify(body), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000),
+    body: body === undefined ? undefined : JSON.stringify(body), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs),
   })
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
     throw new Error(`HTTP ${response.status}: ${error.error || error.message || error.detail || response.statusText}${error.details ? ` ${JSON.stringify(error.details)}` : ''}`)
   }
   return response.json() as Promise<T>
+}
+
+function nativeBatchResponse(batch: NativeBatch): NativeBatch {
+  if (!batch || typeof batch.id !== 'string' || !batch.id || !batch.overall_results || !Array.isArray(batch.individual_results) || batch.individual_results.length !== batch.overall_results.run_count) {
+    throw Error('Invalid native simulation batch')
+  }
+  return batch
+}
+
+export async function runSimulation(input: RunSimulationRequest = {}, signal?: AbortSignal): Promise<NativeBatch> {
+  return nativeBatchResponse(await apiRequest<NativeBatch>('/run/simulation', input, signal))
+}
+
+export async function getSimulations(signal?: AbortSignal): Promise<NativeBatch[]> {
+  const list = await apiRequest<NativeBatch[]>('/sim/fetch', undefined, signal)
+  if (!Array.isArray(list)) throw Error('Invalid simulations list response')
+  return list.map(nativeBatchResponse)
+}
+
+export async function deleteSimulation(id: string, signal?: AbortSignal): Promise<{ id: string; deleted: boolean }> {
+  if (!id || typeof id !== 'string') throw Error('Simulation ID is required')
+  return apiRequest<{ id: string; deleted: boolean }>('/sim/delete', { id }, signal)
 }
 
 function comparisonResponse(value: Comparison) {

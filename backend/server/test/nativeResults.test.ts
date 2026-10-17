@@ -25,7 +25,7 @@ function computed() {
 test('native batch survives schema validation with every original run section', async () => {
   const {comparison} = await computed();
   const result = comparison.cases[0];
-  const batch = {overall_results: result.overall_results, individual_results: result.individual_results};
+  const batch = {id: result.id, overall_results: result.overall_results, individual_results: result.individual_results};
   assert.deepEqual(NativeBatchSchema.parse(batch), batch);
   assert.deepEqual(Object.keys(batch.individual_results[0]).sort(), ['inputs','passengers','sim_log','streetcars','summary']);
   assert.ok(batch.individual_results[0].summary.overview.in_progress_at_cutoff_passengers > 0);

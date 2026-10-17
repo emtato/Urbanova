@@ -35,3 +35,36 @@ test('enqueue, worker thread, polling, frozen fixture, cache and stale edit',asy
     const explanation=await request(app).post(`/api/results/${job.comparison_id}/explain`).expect(200);assert.equal(explanation.body.fallback,true);
   }finally{await stop();}
 });
+
+test('runSimulation, getSimulations and deleteSimulation run single situation, persist batches and delete by id',async()=>{
+  const store=memoryStore(),app=createApp(store,async()=>null);
+  const first=await request(app).post('/api/run/simulation').send({
+    run_count:2,seed:11,development_ids:[defaultScenario.developments[0].id],headway_randomness_s:5,
+  }).expect(200);
+  assert.equal(typeof first.body.id,'string');
+  assert.equal(first.body.overall_results.run_count,2);
+  assert.deepEqual(first.body.overall_results.seeds,[11,12]);
+  assert.equal(first.body.individual_results.length,2);
+  assert.equal(first.body.individual_results[0].inputs.developments.length,1);
+  assert.equal(first.body.individual_results[0].inputs.developments[0].id,defaultScenario.developments[0].id);
+
+  const second=await request(app).post('/api/run/simulation').send({
+    run_count:1,seed:11,development_ids:[],
+  }).expect(200);
+  assert.notEqual(second.body.id,first.body.id);
+  assert.equal(second.body.individual_results[0].inputs.developments.length,0);
+
+  const fetched=await request(app).get('/api/sim/fetch').expect(200);
+  assert.equal(fetched.body.length,2);
+  assert.deepEqual(fetched.body.map((b:any)=>b.id),[second.body.id,first.body.id]);
+
+  const deleted=await request(app).post('/api/sim/delete').send({id:first.body.id}).expect(200);
+  assert.deepEqual(deleted.body,{id:first.body.id,deleted:true});
+  await request(app).post('/api/sim/delete').send({id:first.body.id}).expect(404);
+
+  const remaining=await request(app).get('/api/sim/fetch').expect(200);
+  assert.deepEqual(remaining.body.map((b:any)=>b.id),[second.body.id]);
+
+  await request(app).post('/api/sim/delete').send({id:'not-a-uuid'}).expect(422);
+  await request(app).post('/api/run/simulation').send({run_count:26}).expect(422);
+});
