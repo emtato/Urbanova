@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 command -v node >/dev/null || { echo "Install Node.js 22.12+ (24 LTS recommended)."; exit 1; }
 command -v npm >/dev/null || { echo "Install npm."; exit 1; }
 if command -v py >/dev/null 2>&1; then
@@ -17,9 +17,9 @@ if [[ -f .venv/Scripts/python.exe ]]; then
 else
   venv_python=.venv/bin/python
 fi
-[[ -f .env ]] || cp .env.example .env
-"$venv_python" -m pip install -r requirements.txt
+[[ -f .env ]] || cp backend/.env.example .env
+"$venv_python" -m pip install -r backend/requirements.txt
 (cd frontend && npm ci)
 mkdir -p data/cache data/raw
-"$venv_python" -m scripts.check_db --init
+"$venv_python" -m backend.scripts.check_db --init
 echo "Setup passed. See README.md for the three startup commands."

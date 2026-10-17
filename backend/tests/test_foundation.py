@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from backend.config import DATA_VERSION, MODEL_VERSION, Settings
-from backend.db import save_result
+from backend.db import initialize_database, save_result
 from backend.main import app
 
 
@@ -41,6 +41,15 @@ def test_health_and_database_failure_do_not_leak_secrets():
         response = client.get("/api/health/db")
         assert response.status_code == 503
         assert "secret-password" not in response.text
+
+
+def test_database_initialization_loads_schema_from_any_working_directory(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with patch("backend.db.connect") as connect:
+        initialize_database()
+    sql = connect.return_value.__enter__.return_value.execute.call_args.args[0]
+    assert "CREATE EXTENSION IF NOT EXISTS postgis" in sql
+    assert "CREATE TABLE IF NOT EXISTS saved_results" in sql
 
 
 def test_result_writer_always_records_versions():

@@ -19,7 +19,7 @@ def ping_database() -> str:
 
 def initialize_database() -> None:
     with connect() as connection:
-        connection.execute((ROOT_DIR / "db/init/001_foundation.sql").read_text())
+        connection.execute((ROOT_DIR / "backend/db/init/001_foundation.sql").read_text())
 
 
 def save_result(payload: dict[str, Any]) -> UUID:

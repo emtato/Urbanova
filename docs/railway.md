@@ -6,7 +6,7 @@ The committed railway.json config uses Railpack, starts FastAPI on Railway's POR
 ## Create the API service
 1. Sign in at https://railway.com and choose New Project > Deploy from GitHub repo.
 2. Select emtato/Urbanova and branch main. Keep Root Directory empty (the repository root).
-   The Python requirements, backend package, db schema and railway.json are all rooted here.
+   Root requirements.txt forwards to backend/requirements.txt; .python-version and railway.json stay at the root for discovery. The backend package and SQL schema live in backend/.
    Do not select backend/: it also contains the preserved Express starter.
 3. In the service Variables tab, add DATABASE_URL using the Tiger Data URL from your private .env.
    Add GEMINI_API_KEY and GEMINI_MODEL when the Gemini integration is needed.
@@ -29,7 +29,7 @@ Database credentials and Gemini keys stay in Railway Variables, never frontend V
 
 ## Database and worker
 The Tiger Data schema was initialized from the development machine. For a new database, run
-python -m scripts.check_db --init locally with that database's DATABASE_URL before deployment.
+python -m backend.scripts.check_db --init from the repository root locally with that database's DATABASE_URL before deployment.
 The API deployment does not automatically run schema changes.
 This configuration deploys only the API. The current worker is a dependency-check/idle scaffold;
 the eventual job-processing worker will require its own service and start command.
