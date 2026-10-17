@@ -42,7 +42,7 @@ def main() -> None:
     parser.add_argument("--write", action="store_true")
     args = parser.parse_args()
     check_contract(write=args.write)
-    print("Contract 1.0.0: fixture, references, replay accounting and generated artifacts passed.")
+    print("Contract 2.0.0: fixture, references, replay accounting and generated artifacts passed.")
 
 
 if __name__ == "__main__":

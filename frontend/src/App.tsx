@@ -9,7 +9,7 @@ function App() {
   const replay = comparison.replay
   const [time, setTime] = useState(0)
   const [demandCase, setDemandCase] = useState<DemandCase>(comparison.scenario.demand_case)
-  const stopNames = new Map(comparison.corridor.stops.map(stop => [stop.stop_id, stop.name]))
+  const stopNames = new Map(comparison.corridor.stops.map(stop => [stop.id, stop.name]))
   const events = replay?.events.filter(event => event.t_s <= time) ?? []
   const vehicles = Object.keys(replay?.vehicle_capacity ?? {}).map(id => ({
     id, last: events.findLast(event => event.vehicle_id === id),
@@ -26,7 +26,7 @@ function App() {
         <p className="eyebrow">FutureProof · scenario experiment</p>
         <h1>505 · Jarvis to Broadview</h1>
         <p>Eastbound on Dundas East · {comparison.corridor.stops.length} stops · {comparison.corridor.peak_window.service_date}, 07:00–09:00 Toronto time</p>
-        <p>Contract {comparison.contract_version} · proposed housing stays fixed across packages.</p>
+        <p>Contract {comparison.contract_version} · synthetic housing stays fixed across packages.</p>
       </header>
       <section aria-labelledby="cases-title">
         <h2 id="cases-title">Hand-worked comparison</h2>

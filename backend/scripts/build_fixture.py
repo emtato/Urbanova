@@ -11,8 +11,10 @@ All ten finish; mean wait = (30 + 3*180 + 2*210)/10 = 99 s, p95 = 210 s.
 The larger completed-rider mean illustrates censoring when unresolved riders
 are dropped, not a claim that more service increases passenger waits.
 Real stop coordinates/link medians are reused solely to exercise the contract.
+The historical eastbound geometry is pinned in sample_comparison_inputs.json;
+the current reviewed westbound data remains separate. Housing fields in this
+example are synthetic, not proposed units relabelled as net added homes.
 """
-import csv
 import json
 from math import ceil
 
@@ -28,9 +30,9 @@ def assumption(key, unit, meaning, low, central, high, allowed_low, allowed_high
 
 
 def build_fixture() -> dict:
-    reviewed = ROOT_DIR / "data/reviewed"
-    raw = json.loads((reviewed / "corridor.json").read_text(encoding="utf-8"))
-    ids = [stop["stop_id"] for stop in raw["stops"]]
+    inputs = json.loads((ROOT_DIR / "data/fixtures/sample_comparison_inputs.json").read_text(encoding="utf-8"))
+    corridor = inputs["corridor"]
+    ids = [stop["id"] for stop in corridor["stops"]]
     incoming = assumption("incoming_load", "passengers/vehicle", "Fixture cars enter empty; actual Jarvis occupancy is unknown.", 0, 0, 0, 0, 300)
     capacity = assumption("vehicle_capacity", "passengers/vehicle", "FOUR places for hand arithmetic only; not a TTC streetcar capacity.", 4, 4, 6, 1, 300)
     headway = assumption("baseline_headway", "s", "Synthetic two-car dispatch separation; not the observed or scheduled 505 headway.", 60, 60, 60, 1, 1800)
@@ -40,27 +42,18 @@ def build_fixture() -> dict:
     new_arrivals = assumption("new_arrivals", "passengers/window", "Synthetic new-rider counts for low/central/high demand; not derived from proposed units.", 3, 5, 7, 0, 20)
     existing_arrivals = assumption("existing_arrivals", "passengers/window", "Five existing riders at Jarvis, waiting from zero; no observed ridership claim.", 5, 5, 5, 0, 20)
     effect = assumption("extra_service_headway", "s", "Fixture dispatches 0/30/60 instead of 0/60; no fleet-cycle feasibility claim.", 30, 30, 60, 1, 1800)
-    corridor = dict(corridor_id=raw["corridor_id"], route_pattern="505:0:shp-505-09", mode="streetcar",
-                    direction="eastbound", crs="EPSG:4326", metric_crs="EPSG:26917",
-                    peak_window=dict(start_s=25200, end_s=32400, timezone="America/Toronto", service_date=raw["service_date"]),
-                    stops=raw["stops"],
-                    links=[dict(link_id=item["link_id"], from_stop=item["from_stop"], to_stop=item["to_stop"],
-                                length_m=item["length_m"], base_time_s=item["scheduled_time_s"], source_ids=item["source_ids"]) for item in raw["links"]],
-                    berths_per_stop={stop: 1 for stop in ids}, incoming_load=incoming, source_ids=["ttc-gtfs"])
-    with (reviewed / "developments.csv").open(encoding="utf-8", newline="") as handle:
-        developments = [dict(dev_id=row["dev_id"], pipeline_ref=row["application_number"], address=row["address"],
-                             units=int(row["proposed_units"]), stage=row["stage"], record_date=row["application_received"],
-                             kind="proposal", footprint=None, footprint_status="unavailable",
-                             access=[dict(stop_id=row["nearest_stop_id"], walk_m=float(row["walk_distance_m"]),
-                                          status="estimated", source_ids=row["source_ids"].split(";"))],
-                             source_ids=row["source_ids"].split(";")) for row in csv.DictReader(handle)]
+    net_units = assumption("net_added_units", "homes/development", "Each synthetic fixture development adds 100 homes; not a claim about any real proposal.", 100, 100, 100, 0, 2000)
+    residents = assumption("residents_per_occupied_unit", "residents/home", "Synthetic fixture household size; not measured occupancy.", 2, 2, 2, 0, 10)
+    transit = assumption("transit_share", "share", "Synthetic fraction of trips using transit; fixture rider counts are still hand-authored.", .5, .5, .5, 0, 1)
+    corridor["incoming_load"] = incoming
+    developments = inputs["developments"]
 
     def cost(unit, low, central, high, scope):
         return dict(low=low, central=central, high=high, currency="CAD", price_year=2026,
                     scope=scope, unit=unit, status="assumed", source_ids=[])
 
     scenario = dict(scenario_id="fixture-505", version=1, developments=developments,
-                    phases=[dict(phase_id="phase-1", year=2030, development_ids=[item["dev_id"] for item in developments], occupied_share=.5)],
+                    phases=[dict(phase_id="phase-1", year=2030, development_ids=[item["id"] for item in developments], occupied_share=.5)],
                     demand_case="central", interventions=[dict(id="fixture-extra-service", type="extra_service", link_ids=[], headway_s=30,
                     capital_cost=cost("CAD", 0, 0, 0, "Fixture assumes an existing spare vehicle; excludes vehicle purchase."),
                     operating_cost=cost("CAD/year", 80000, 100000, 120000, "Invented annual incremental operating cost for contract testing only."),
@@ -159,18 +152,15 @@ def build_fixture() -> dict:
                 event(t, stop, "deny", 5 if car == "fixture-car-1" else 2, "new")
             event(t, stop, "depart")
     events.sort(key=lambda item: item["t_s"])
-    source_fields = {"source_id", "title", "url", "publisher", "retrieved_at", "version", "licence"}
-    sources = [{key: value for key, value in item.items() if key in source_fields}
-               for item in json.loads((reviewed / "sources.json").read_text(encoding="utf-8"))]
-    return dict(contract_version="1.0.0", comparison_id="fixture-505-jarvis-broadview", fixture=True,
+    return dict(contract_version="2.0.0", comparison_id="fixture-505-jarvis-broadview", fixture=True,
                 product_label="scenario experiment", scenario=scenario, corridor=corridor, cases=cases, packages=packages,
                 sensitivity=[dict(assumption_key="vehicle_capacity", case_id="fixture-growth", tested_values=[4, 5, 6],
                                   metric="unresolved_passengers", outcomes=[2, 0, 0], status="fixture",
                                   interpretation="Hand arithmetic only, holding demand fixed. Not a fleet recommendation.")],
-                assumptions=[incoming, capacity, headway, dwell, berth, occupied, effect, new_arrivals, existing_arrivals], sources=sources,
+                assumptions=[incoming, capacity, headway, dwell, berth, occupied, effect, new_arrivals, existing_arrivals, net_units, residents, transit], sources=inputs["sources"],
                 warnings=["FIXTURE: synthetic passengers, costs, service, budgets and results; not a real 505 forecast.",
-                          "Real GTFS geometry and proposed units do not validate the fixture demand. Housing totals are identical across packages.",
-                          "Walking entrances/crossings need manual review; footprints unavailable, not invented.",
+                          "Historical eastbound GTFS geometry does not validate fixture demand. The current sourced study corridor is westbound.",
+                          "Housing IDs, net added units, occupancy, household size and transit share are synthetic. Locations coincide with fixture stops; accessible stops are illustrative, not reviewed walking access. Housing totals are identical across packages.",
                           "Wait statistics include completed riders only; unresolved riders are separately reported. P95 uses nearest rank.",
                           "Fixture time starts at zero, representing 07:00 local; two illustrative dispatches do not represent the full AM service.",
                           "Zero dwell, empty incoming vehicles, four-place capacity and fleet-cycle feasibility are fixture assumptions."],

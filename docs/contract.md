@@ -1,8 +1,10 @@
-# Phase 01 contract, version 1.0.0
+# Phase 01 contract, version 2.0.0
 
-Simulation variables and the simulator are owned by the simulation teammate. The sourced data now covers **505 westbound, Dundas East/Broadview to Jarvis**; see [data-handoff.md](data-handoff.md). The existing synthetic contract fixture below predates that direction change and remains an integration example, not simulation input. Its regeneration check currently fails against the updated source bundle; Phase 01 is not fully green until that handoff is reconciled.
+Simulation variables and the simulator are owned by the simulation teammate. The sourced data covers **505 westbound, Dundas East/Broadview to Jarvis**; see [data-handoff.md](data-handoff.md). The synthetic contract fixture below uses historical eastbound geometry and remains an integration example. Its inputs are pinned in data/fixtures/sample_comparison_inputs.json, so rebuilding it does not mix that example with the updated westbound source bundle.
 
-The active backend is FastAPI. Its authoritative runtime models are **Pydantic modules in backend/schemas/**, replacing the archived Express/Zod instructions in the version 3 planning document. The generated JSON Schema is data/contracts/comparison.schema.json. Matching, hand-maintained TypeScript interfaces are frontend/src/lib/types.ts. No second backend or validation library is needed.
+The active backend is FastAPI. **Stop and Development are defined once, as dataclasses in backend/simulation/objects/**. The Pydantic models in backend/schemas/ reuse those exact classes in Corridor and Scenario; there are no separate schema versions of either object. Boundary validators check coordinates, shares, counts and references without changing the simulator's field definitions. Other concepts, including sources, interventions, results and replay events, remain Pydantic models. The generated JSON Schema is data/contracts/comparison.schema.json. Matching, hand-maintained TypeScript interfaces are frontend/src/lib/types.ts.
+
+Version 2.0.0 replaces the old Stop and Development formats. Stop uses id, name, sequence, latitude, longitude, waiting_passenger_ids and serving_streetcar_id. Development uses id, name, latitude, longitude, net_added_units, occupied_share, residents_per_occupied_unit, transit_share and accessible_stop_ids. A stop queue serializes to a JSON array and is reconstructed as a deque; accessible stop IDs reconstruct as a tuple. Queue and serving-vehicle defaults remain those of the simulation dataclass. The API rejects legacy or unexpected fields. Passenger, Streetcar and ExistingResidences remain simulation objects without duplicate API models.
 
 ## Checklist and evidence
 
@@ -14,8 +16,8 @@ The active backend is FastAPI. Its authoritative runtime models are **Pydantic m
 | 1.4 | Simulator and hand-case validation | Owned by simulation teammate; duplicate root sim/ scaffolding removed |
 | 1.5 | SourceRef | backend/schemas/source.py |
 | 1.6 | Assumption | backend/schemas/assumption.py |
-| 1.7 | Stop, Link, Corridor | backend/schemas/corridor.py |
-| 1.8 | Development and walking access | backend/schemas/development.py |
+| 1.7 | Stop, Link, Corridor | backend/simulation/objects/stop.py; backend/schemas/corridor.py |
+| 1.8 | Development | backend/simulation/objects/development.py; sourced proposal/walking metadata remains in data/reviewed |
 | 1.9 | Intervention and cost ranges | backend/schemas/intervention.py |
 | 1.10 | Scenario, phase, budgets and criterion | backend/schemas/scenario.py |
 | 1.11 | Run and diagnostics | backend/schemas/run.py |
@@ -29,16 +31,17 @@ This records executed engineering checks. It does not assert that all four lapto
 
 ## IDs, units and ordering
 
-- Preserve GTFS IDs as strings. Canonical stop IDs are `ttc-stop-<gtfs_stop_id>`. Stop seq is contiguous, **zero-based**, in travel order. Links connect consecutive stops. Development IDs and pipeline_ref identify one proposal once.
-- WGS84 coordinates use **[longitude, latitude]**, EPSG:4326. Metric calculations use EPSG:26917; lengths and walking distances are metres. Footprints are GeoJSON Polygons with closed rings. Missing footprints are null with footprint_status=unavailable; address-point boxes are not building footprints.
+- Preserve GTFS IDs as strings. Canonical stop IDs are `ttc-stop-<gtfs_stop_id>`. Simulation Stop.id holds the canonical ID and sequence is contiguous, **zero-based**, in travel order. Links connect consecutive stops. Development.id identifies a simulation housing input; phase development_ids refer to it. Event and result stop_id fields refer to Stop.id.
+- Stop and Development use named latitude and longitude fields in WGS84. GeoJSON source coordinates use **[longitude, latitude]**, EPSG:4326. Metric calculations use EPSG:26917. Source proposal IDs, proposed units, walking distances, provenance and any geometry remain in data/reviewed; they are not additional fields on the simulation objects.
 - Time quantities have an explicit _s suffix and use seconds. peak_window start_s/end_s are local GTFS service-day seconds, allowing values beyond 86400. The timezone is America/Toronto; service_date anchors the schedule. Replay t_s starts at zero at the beginning of the modelled window.
 - Incoming load and capacity use passengers/vehicle. Shares are fractions from 0 to 1, never percentages. Count fields are nonnegative integers. Money uses CAD; operating budgets/costs are annual, capital costs are one-time. Costs and budgets must share a price year.
-- retrieved_at includes a timezone. Development record_date in this snapshot is the **application received date**, not an approval or completion date. Dataset revision/retrieval details remain in the source manifest.
+- retrieved_at includes a timezone. Application dates, dataset revisions and retrieval details remain in the reviewed source bundle and source manifest, separate from simulation Development.
+- net_added_units means added homes after subtracting replaced homes. It must not be populated by simply renaming a sourced proposed_units field. occupied_share and transit_share are fractions; residents_per_occupied_unit is nonnegative. accessible_stop_ids reference known Stop.id values. The fixture uses explicitly synthetic housing inputs and hand-authored passenger counts.
 - Every source_ids reference must resolve to one unique SourceRef. Assumptions carry meaning, units, ordered low/central/high, allowed_range and status. Sourced assumptions require provenance; no source ID converts a fixture choice into an observation.
 
 ## Scenario and comparison semantics
 
-A Scenario owns one housing list shared by every package; packages cannot replace the housing input. Each development is assigned to exactly one phase. That phase's occupied_share is a scenario input, not a claim that its proposed homes are built. Phase year supplies the availability date at this contract's annual resolution; intervention_availability and earliest_phase reference these phase IDs.
+A Scenario owns one housing list shared by every package; packages cannot replace the housing input. Each development is assigned to exactly one phase. Development.occupied_share is the simulation input for the selected phase; the phase-level occupied_share remains planning metadata and must not be multiplied into it again. Neither share establishes that housing has actually been built. Phase year supplies the availability date at this contract's annual resolution; intervention_availability and earliest_phase reference these phase IDs.
 
 A Comparison contains current, growth and supported_growth cases for **each phase and each low/central/high demand case**. scenario.demand_case selects the UI's initial view. Package evaluations cover every phase/demand pair and point to a matching CaseResult. Current has no new-development riders. Growth and supported growth compare the same passenger cohorts with paired seed IDs. Packages may have multiple interventions; their high-bound costs and extra vehicle counts are added.
 
@@ -68,7 +71,7 @@ The three central-demand cases are authored in backend/scripts/build_fixture.py,
 
 Low demand uses three new riders; high uses seven, keeping the five existing riders. All nine case results and both packages' three demand evaluations are populated. The high-demand supported package fails the illustrative denied-share criterion even though it clears its queues. A capacity sensitivity entry is labelled fixture and holds the central passenger inputs fixed.
 
-The central supported completed-rider mean is higher because it includes the two long-wait riders left unresolved by baseline growth. Read it alongside unresolved riders. None of these fixture demand counts is derived from the actual proposed unit counts. A real development-to-demand conversion belongs to Lane A and needs explicit occupancy/trip assumptions.
+The central supported completed-rider mean is higher because it includes the two long-wait riders left unresolved by baseline growth. Read it alongside unresolved riders. The fixture's three developments have synthetic IDs and 100 net added homes each, assumed occupancy of 0.5, two residents per occupied home and transit share of 0.5. Their locations coincide with example stops, and access IDs are illustrative rather than reviewed walking routes. None of these inputs or hand-authored passenger counts is a claim about a real proposal. A real development-to-demand conversion belongs to the simulation owner and needs explicit occupancy/trip assumptions.
 
 ## Validate and hand off
 
@@ -85,8 +88,8 @@ npm run lint
 
 No credentials, database access or paid Gemini call are needed for these contract checks. The previous live access check is recorded separately. The frontend's contract check compares Python/TypeScript field names, compiles an exact generated copy of the JSON using satisfies Comparison, and renders the React tree to check the warning banner and replay control. Python tests reject broken source links, units, ranges, budgets, run arrays, passenger accounting and replay loads.
 
-Run python -m backend.scripts.build_fixture only to intentionally re-author the hand-worked example. For other intentional contract/JSON edits, run python -m backend.scripts.check_contract --write, review the JSON Schema and TypeScript copy, then rerun both language checks. Without --write, any generated artifact drift fails. TypeScript does not replace runtime validation of future network responses.
+Run python -m backend.scripts.build_fixture only to intentionally re-author the hand-worked example from data/fixtures/sample_comparison_inputs.json. This file pins historical route geometry and source metadata together with synthetic simulation-shaped housing; it is independent of data/reviewed. For other intentional contract/JSON edits, run python -m backend.scripts.check_contract --write, review the JSON Schema and TypeScript copy, then rerun both language checks. Without --write, any generated artifact drift fails. TypeScript does not replace runtime validation of future network responses.
 
 The fixture endpoint is GET /api/fixtures/sample-comparison, validates its response with Comparison and returns X-FutureProof-Fixture: true. It does not save or simulate anything. The frontend currently loads the same checked-in fixture without a network dependency and displays a sticky FIXTURE banner, assumptions and a replay scrubber. The full production map, scenario runner, persistence and Gemini explanation are later lane work.
 
-Owners can now build against contract 1.0.0. Change units, field meanings or required fields only with a contract version change, corresponding Python/TypeScript updates and a reviewed replacement sample. Keep fixture labels on every fixture-derived presentation.
+Owners can build against contract 2.0.0. Change units, field meanings or required fields only with a contract version change, corresponding Python/TypeScript updates and a reviewed replacement sample. Keep fixture labels on every fixture-derived presentation.

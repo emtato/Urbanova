@@ -1,44 +1,5 @@
 {
   "$defs": {
-    "Access": {
-      "additionalProperties": false,
-      "properties": {
-        "stop_id": {
-          "minLength": 1,
-          "title": "Stop Id",
-          "type": "string"
-        },
-        "walk_m": {
-          "minimum": 0,
-          "title": "Walk M",
-          "type": "number"
-        },
-        "status": {
-          "enum": [
-            "estimated",
-            "reviewed"
-          ],
-          "title": "Status",
-          "type": "string"
-        },
-        "source_ids": {
-          "items": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "title": "Source Ids",
-          "type": "array"
-        }
-      },
-      "required": [
-        "stop_id",
-        "walk_m",
-        "status",
-        "source_ids"
-      ],
-      "title": "Access",
-      "type": "object"
-    },
     "AllowedRange": {
       "additionalProperties": false,
       "properties": {
@@ -426,99 +387,57 @@
       "type": "object"
     },
     "Development": {
-      "additionalProperties": false,
       "properties": {
-        "dev_id": {
-          "minLength": 1,
-          "title": "Dev Id",
+        "id": {
+          "title": "Id",
           "type": "string"
         },
-        "pipeline_ref": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "title": "Pipeline Ref"
-        },
-        "address": {
-          "minLength": 1,
-          "title": "Address",
+        "name": {
+          "title": "Name",
           "type": "string"
         },
-        "units": {
-          "minimum": 0,
-          "title": "Units",
+        "latitude": {
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "title": "Longitude",
+          "type": "number"
+        },
+        "net_added_units": {
+          "title": "Net Added Units",
           "type": "integer"
         },
-        "stage": {
-          "minLength": 1,
-          "title": "Stage",
-          "type": "string"
+        "occupied_share": {
+          "title": "Occupied Share",
+          "type": "number"
         },
-        "record_date": {
-          "format": "date",
-          "title": "Record Date",
-          "type": "string"
+        "residents_per_occupied_unit": {
+          "title": "Residents Per Occupied Unit",
+          "type": "number"
         },
-        "kind": {
-          "enum": [
-            "proposal",
-            "hypothetical"
-          ],
-          "title": "Kind",
-          "type": "string"
+        "transit_share": {
+          "title": "Transit Share",
+          "type": "number"
         },
-        "footprint": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Footprint"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "footprint_status": {
-          "enum": [
-            "sourced",
-            "unavailable"
-          ],
-          "title": "Footprint Status",
-          "type": "string"
-        },
-        "access": {
+        "accessible_stop_ids": {
+          "default": [],
           "items": {
-            "$ref": "#/$defs/Access"
-          },
-          "minItems": 1,
-          "title": "Access",
-          "type": "array"
-        },
-        "source_ids": {
-          "items": {
-            "minLength": 1,
             "type": "string"
           },
-          "title": "Source Ids",
+          "title": "Accessible Stop Ids",
           "type": "array"
         }
       },
       "required": [
-        "dev_id",
-        "pipeline_ref",
-        "address",
-        "units",
-        "stage",
-        "record_date",
-        "kind",
-        "footprint",
-        "footprint_status",
-        "access",
-        "source_ids"
+        "id",
+        "name",
+        "latitude",
+        "longitude",
+        "net_added_units",
+        "occupied_share",
+        "residents_per_occupied_unit",
+        "transit_share"
       ],
       "title": "Development",
       "type": "object"
@@ -607,42 +526,6 @@
         "runtime_s"
       ],
       "title": "Diagnostics",
-      "type": "object"
-    },
-    "Footprint": {
-      "additionalProperties": false,
-      "properties": {
-        "type": {
-          "const": "Polygon",
-          "title": "Type",
-          "type": "string"
-        },
-        "coordinates": {
-          "items": {
-            "items": {
-              "maxItems": 2,
-              "minItems": 2,
-              "prefixItems": [
-                {
-                  "type": "number"
-                },
-                {
-                  "type": "number"
-                }
-              ],
-              "type": "array"
-            },
-            "type": "array"
-          },
-          "title": "Coordinates",
-          "type": "array"
-        }
-      },
-      "required": [
-        "type",
-        "coordinates"
-      ],
-      "title": "Footprint",
       "type": "object"
     },
     "InitialQueue": {
@@ -1351,57 +1234,53 @@
       "type": "object"
     },
     "Stop": {
-      "additionalProperties": false,
       "properties": {
-        "stop_id": {
-          "minLength": 1,
-          "title": "Stop Id",
-          "type": "string"
-        },
-        "gtfs_stop_id": {
-          "minLength": 1,
-          "title": "Gtfs Stop Id",
+        "id": {
+          "title": "Id",
           "type": "string"
         },
         "name": {
-          "minLength": 1,
           "title": "Name",
           "type": "string"
         },
-        "seq": {
-          "minimum": 0,
-          "title": "Seq",
+        "sequence": {
+          "title": "Sequence",
           "type": "integer"
         },
-        "lon": {
-          "maximum": 180,
-          "minimum": -180,
-          "title": "Lon",
+        "latitude": {
+          "title": "Latitude",
           "type": "number"
         },
-        "lat": {
-          "maximum": 90,
-          "minimum": -90,
-          "title": "Lat",
+        "longitude": {
+          "title": "Longitude",
           "type": "number"
         },
-        "source_ids": {
+        "waiting_passenger_ids": {
           "items": {
-            "minLength": 1,
             "type": "string"
           },
-          "title": "Source Ids",
+          "title": "Waiting Passenger Ids",
           "type": "array"
+        },
+        "serving_streetcar_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Serving Streetcar Id"
         }
       },
       "required": [
-        "stop_id",
-        "gtfs_stop_id",
+        "id",
         "name",
-        "seq",
-        "lon",
-        "lat",
-        "source_ids"
+        "sequence",
+        "latitude",
+        "longitude"
       ],
       "title": "Stop",
       "type": "object"
@@ -1505,7 +1384,7 @@
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "1.0.0",
+      "const": "2.0.0",
       "title": "Contract Version",
       "type": "string"
     },

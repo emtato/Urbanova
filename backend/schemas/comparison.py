@@ -60,7 +60,7 @@ class ReplayStream(ContractModel):
 
 
 class Comparison(ContractModel):
-    contract_version: Literal["1.0.0"]
+    contract_version: Literal["2.0.0"]
     comparison_id: Identifier
     fixture: bool
     product_label: Literal["scenario experiment"]
@@ -77,7 +77,7 @@ class Comparison(ContractModel):
     @model_validator(mode="after")
     def integrity(self):
         source_ids = [source.source_id for source in self.sources]
-        stop_ids = [stop.stop_id for stop in self.corridor.stops]
+        stop_ids = [stop.id for stop in self.corridor.stops]
         link_ids = [link.link_id for link in self.corridor.links]
         phase_ids = [phase.phase_id for phase in self.scenario.phases]
         package_ids = [package.package_id for package in self.packages]
@@ -105,7 +105,7 @@ class Comparison(ContractModel):
 
         check_sources(self.model_dump(mode="json"))
         for dev in self.scenario.developments:
-            references([item.stop_id for item in dev.access], stop_ids, "development stop")
+            references(dev.accessible_stop_ids, stop_ids, "development stop")
         for item in self.scenario.interventions:
             references(item.link_ids, link_ids, "intervention link")
         for case in self.cases:

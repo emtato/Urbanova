@@ -1,20 +1,13 @@
 from datetime import date
+from math import isfinite
 from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
 
+from backend.simulation.objects import Stop
+
 from .assumption import Assumption
 from .base import ContractModel, Count, Identifier, Positive, unique
-
-
-class Stop(ContractModel):
-    stop_id: Identifier
-    gtfs_stop_id: Identifier
-    name: Identifier
-    seq: Count
-    lon: Annotated[float, Field(ge=-180, le=180)]
-    lat: Annotated[float, Field(ge=-90, le=90)]
-    source_ids: list[Identifier]
 
 
 class Link(ContractModel):
@@ -55,11 +48,17 @@ class Corridor(ContractModel):
 
     @model_validator(mode="after")
     def continuous_pattern(self):
-        ids = [stop.stop_id for stop in self.stops]
-        unique(ids, "stop_id")
+        ids = [stop.id for stop in self.stops]
+        unique(ids, "stop id")
+        for stop in self.stops:
+            if not stop.id or not stop.name:
+                raise ValueError("Stops require a nonempty id and name")
+            if not (isfinite(stop.longitude) and -180 <= stop.longitude <= 180
+                    and isfinite(stop.latitude) and -90 <= stop.latitude <= 90):
+                raise ValueError("Stop coordinates must use finite WGS84 longitude/latitude")
         unique([link.link_id for link in self.links], "link_id")
-        if [stop.seq for stop in self.stops] != list(range(len(ids))):
-            raise ValueError("Stop seq must be contiguous, zero-based and ordered")
+        if [stop.sequence for stop in self.stops] != list(range(len(ids))):
+            raise ValueError("Stop sequence must be contiguous, zero-based and ordered")
         if [(link.from_stop, link.to_stop) for link in self.links] != list(zip(ids, ids[1:])):
             raise ValueError("Links must connect each consecutive stop exactly once")
         if set(self.berths_per_stop) != set(ids):

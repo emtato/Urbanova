@@ -1,5 +1,6 @@
 import copy
 import json
+from collections import deque
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,6 +10,7 @@ from backend.main import app
 from backend.schemas import Comparison
 from backend.scripts.build_fixture import build_fixture
 from backend.scripts.check_contract import FIXTURE_PATH, check_contract
+from backend.simulation.objects import Development, Stop
 
 
 @pytest.fixture
@@ -20,6 +22,8 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
     assert build_fixture() == sample
     check_contract()
     comparison = Comparison.model_validate(sample)
+    assert type(comparison.corridor.stops[0]) is Stop
+    assert type(comparison.scenario.developments[0]) is Development
     assert comparison.corridor.mode == "streetcar"
     assert len(comparison.corridor.stops) == 7
     assert [case.per_run_mean_wait_s[0] for case in comparison.cases[:3]] == [12, 86.25, 99]
@@ -30,8 +34,10 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
 
 
 @pytest.mark.parametrize("path,value", [
-    (("corridor", "stops", 0, "lon"), 200),
-    (("corridor", "stops", 1, "seq"), 9),
+    (("corridor", "stops", 0, "longitude"), 200),
+    (("corridor", "stops", 0, "latitude"), float("nan")),
+    (("corridor", "stops", 0, "id"), ""),
+    (("corridor", "stops", 1, "sequence"), 9),
     (("corridor", "links", 0, "to_stop"), "unknown"),
     (("corridor", "links", 0, "length_m"), -1),
     (("corridor", "links", 0, "base_time_s"), float("nan")),
@@ -39,8 +45,17 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
     (("assumptions", 1, "central"), 999),
     (("scenario", "phases", 0, "occupied_share"), 1.5),
     (("scenario", "phases", 0, "development_ids"), []),
-    (("scenario", "developments", 0, "access", 0, "stop_id"), "unknown"),
-    (("scenario", "developments", 0, "footprint_status"), "sourced"),
+    (("scenario", "developments", 0, "accessible_stop_ids"), ["unknown"]),
+    (("scenario", "developments", 0, "accessible_stop_ids"), ["ttc-stop-2130", "ttc-stop-2130"]),
+    (("scenario", "developments", 0, "id"), ""),
+    (("scenario", "developments", 0, "longitude"), 200),
+    (("scenario", "developments", 0, "net_added_units"), -1),
+    (("scenario", "developments", 0, "net_added_units"), 1.5),
+    (("scenario", "developments", 0, "occupied_share"), 1.5),
+    (("scenario", "developments", 0, "transit_share"), -0.1),
+    (("scenario", "developments", 0, "residents_per_occupied_unit"), float("inf")),
+    (("scenario", "developments", 0, "units"), 630),
+    (("corridor", "stops", 0, "stop_id"), "legacy-stop"),
     (("scenario", "interventions", 0, "headway_s"), None),
     (("scenario", "interventions", 0, "operating_cost", "price_year"), 2025),
     (("scenario", "fleet_allowance"), 0),
@@ -63,7 +78,7 @@ def test_hand_fixture_rebuilds_and_generated_contract_has_no_drift(sample):
     (("replay", "initial_queues", 0, "count"), 100),
     (("replay", "horizon_s"), 1),
     (("warnings",), []),
-    (("contract_version",), "2.0.0"),
+    (("contract_version",), "1.0.0"),
     (("unexpected",), True),
 ])
 def test_contract_rejects_broken_boundaries(sample, path, value):
@@ -81,7 +96,7 @@ def test_replay_covers_two_cars_every_stop_and_preserves_denied_riders(sample):
     arrivals = [event for event in replay.events if event.kind == "arrive"]
     assert len(arrivals) == 14
     for car in replay.vehicle_capacity:
-        assert [event.stop_id for event in arrivals if event.vehicle_id == car] == [stop["stop_id"] for stop in sample["corridor"]["stops"]]
+        assert [event.stop_id for event in arrivals if event.vehicle_id == car] == [stop["id"] for stop in sample["corridor"]["stops"]]
     new_boards = [event for event in replay.events if event.kind == "board" and event.rider_group == "new"]
     assert [(event.t_s, event.count) for event in new_boards] == [(210, 3)]
     assert sum(event.count for event in replay.events if event.kind == "alight") == 8
@@ -94,3 +109,31 @@ def test_fixture_endpoint_validates_and_cannot_appear_as_a_live_result():
     assert response.headers["X-FutureProof-Fixture"] == "true"
     assert Comparison.model_validate(response.json()).fixture is True
     assert "Comparison" in client.get("/openapi.json").json()["components"]["schemas"]
+
+
+def test_shared_objects_round_trip_json_without_losing_simulation_fields(sample):
+    comparison = Comparison.model_validate(sample)
+    stop = comparison.corridor.stops[0]
+    stop.waiting_passenger_ids.append("passenger-1")
+    stop.serving_streetcar_id = "streetcar-1"
+    restored = Comparison.model_validate_json(comparison.model_dump_json())
+    assert type(restored.corridor.stops[0]) is Stop
+    assert restored.corridor.stops[0].waiting_passenger_ids == deque(["passenger-1"])
+    assert restored.corridor.stops[0].serving_streetcar_id == "streetcar-1"
+    assert restored.scenario.developments[0].accessible_stop_ids == ("ttc-stop-2130",)
+    assert restored.scenario.developments[0].net_added_units == 100
+
+
+def test_api_serializes_shared_objects_using_simulation_field_names():
+    response = TestClient(app).get("/api/fixtures/sample-comparison")
+    assert response.status_code == 200
+    payload = response.json()
+    stop = payload["corridor"]["stops"][0]
+    development = payload["scenario"]["developments"][0]
+    assert stop["id"] == "ttc-stop-2118"
+    assert stop["sequence"] == 0
+    assert stop["waiting_passenger_ids"] == []
+    assert "stop_id" not in stop
+    assert development["id"] == "fixture-development-1"
+    assert development["net_added_units"] == 100
+    assert "units" not in development

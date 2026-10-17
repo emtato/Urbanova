@@ -109,3 +109,6 @@ class SimulationInput:
     # Arrival weights over equal time bins; e.g. (1, 4, 6, 4, 1) for a bell-shaped peak.
     commuter_distribution: tuple[float, ...] = (1.0,)
     seed: int = 0  # Reproduce random choices when comparing scenarios.
+
+    start_time_s: float = 0.0 # usser provided
+    end_time_s: float = 0.0
