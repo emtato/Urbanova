@@ -64,7 +64,8 @@ describe('D4: DevelopmentPanel Component Tests', () => {
     expect(html).toContain('1,197') // Check comma formatting
     expect(html).toContain('Phase 2 Proposal')
     expect(html).toContain('Under Review')
-    expect(html).toContain('2030') // Phase 2 target year
+    expect(html).toContain('Completion date not confirmed')
+    expect(html).not.toContain('OCCUPANCY TARGET')
   })
 
   it('renders walking access stops with distance and time estimate', () => {
@@ -80,24 +81,26 @@ describe('D4: DevelopmentPanel Component Tests', () => {
     )
     const html = cleanHtml(raw)
 
-    expect(html).toContain('WALKING ACCESS TO STOPS')
+    expect(html).toContain('Walking access to stops')
     expect(html).toContain('Dundas St East at Parliament St')
     expect(html).toContain('229m')
     expect(html).toContain('min')
   })
 
-  it('renders external links for Street View and City of Toronto AIC record', () => {
+  it('offers an in-map 3D action and keeps the official planning link', () => {
     const dev239 = developments.find((d) => d.address === '239 DUNDAS ST E')!
     const raw = renderToString(
       <DevelopmentPanel
         development={dev239}
         stops={stops}
         onClose={() => {}}
+        onViewBuilding={() => {}}
       />
     )
 
-    // Street View link (satisfies D4/4.4)
-    expect(raw).toContain('https://www.google.com/maps/@?api=1&amp;map_action=pano&amp;viewpoint=')
+    expect(raw).toContain('View building in 3D')
+    expect(raw).not.toContain('google.com/maps')
+    expect(raw).toContain('map-glass-panel')
     expect(raw).toContain('target="_blank"')
     expect(raw).toContain('rel="noopener noreferrer"')
 
@@ -116,7 +119,7 @@ describe('D4: DevelopmentPanel Component Tests', () => {
     )
     const html = cleanHtml(raw)
 
-    expect(html).toContain('Audit Review Note')
+    expect(html).toContain('Application details &amp; sources')
     expect(html).toContain('West end; numeric units agree with the current description.')
   })
 

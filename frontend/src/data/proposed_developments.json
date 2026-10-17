@@ -1,0 +1,43 @@
+[
+  {
+    "id": "toronto-app-22-124214-ste-13-oz",
+    "name": "239 DUNDAS ST E",
+    "latitude": 43.657776590088,
+    "longitude": -79.3727167030444,
+    "net_added_units": 624,
+    "occupied_share": 1.0,
+    "residents_per_occupied_unit": 1.6,
+    "transit_share": 0.29808941720005777,
+    "accessible_stop_ids": [
+      "ttc-stop-2131",
+      "ttc-stop-2119"
+    ]
+  },
+  {
+    "id": "toronto-app-26-122451-ste-13-oz",
+    "name": "500 DUNDAS ST E",
+    "latitude": 43.6600907352172,
+    "longitude": -79.3642039444762,
+    "net_added_units": 413,
+    "occupied_share": 1.0,
+    "residents_per_occupied_unit": 2.1,
+    "transit_share": 0.29808941720005777,
+    "accessible_stop_ids": [
+      "ttc-stop-2125",
+      "ttc-stop-15873"
+    ]
+  },
+  {
+    "id": "toronto-app-25-236949-ste-13-oz",
+    "name": "761 DUNDAS ST E",
+    "latitude": 43.6612907741496,
+    "longitude": -79.356394637334,
+    "net_added_units": 1197,
+    "occupied_share": 1.0,
+    "residents_per_occupied_unit": 2.1,
+    "transit_share": 0.29808941720005777,
+    "accessible_stop_ids": [
+      "ttc-stop-2127"
+    ]
+  }
+]

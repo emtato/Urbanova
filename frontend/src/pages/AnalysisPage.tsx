@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, runSimulation, setUseFixture } from '../lib/api'
 import type { Scenario } from '../lib/types'
 import type { NativeBatch, NativeReplay } from '../lib/liveTypes'
+import { setActiveSimulation } from '../lib/simulationHistory'
 import { NativeReplayPanel } from '../panels/NativeReplayPanel'
 import '../App.css'
 
@@ -54,7 +55,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     })
     void apiRequest<Scenario>('/scenarios/default', undefined, abort.signal).then(value => {
       setDefaults(value)
-      setIncludedDevs(Object.fromEntries(value.developments.map(d => [d.id, true])))
+      setIncludedDevs(Object.fromEntries(value.developments.map(d => [d.id, false])))
     }).catch(reason => { if (!abort.signal.aborted) setError(message(reason)) })
     void getSimulations(abort.signal).then(list => {
       if (!abort.signal.aborted) {
@@ -115,7 +116,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   }
 
   return <main className="contract-review analysis-workspace">
-    <nav><button onClick={() => onNavigate('/')}>Policy briefing</button>{' '}<button onClick={() => { setUseFixture(false); onNavigate('/map') }}>View map</button></nav>
+    <nav><button onClick={() => onNavigate('/')}>Policy briefing</button>{' '}<button onClick={() => { setActiveSimulation(currentBatch?.id ?? null); setUseFixture(false); onNavigate('/map') }}>View map</button></nav>
     <header><p className="eyebrow">FutureProof · live scenario experiment</p><h1>Run westbound 505 simulation</h1><p>Broadview at Dundas → TMU / Yonge. Check which proposed buildings to include and run one or more seeded trials.</p><p role="status">{health}</p></header>
     {error && <p role="alert" className="analysis-error">{error}</p>}
     <form onSubmit={submit}>

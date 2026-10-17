@@ -98,6 +98,18 @@
   transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Shared finish for the transit inspector and sunlight controls. */
+.liquid-glass-panel.map-glass-panel {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.055), transparent 42%), rgba(35, 51, 67, 0.94);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border: 1px solid rgba(215, 230, 245, 0.26);
+  border-radius: 20px;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.23),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.045);
+}
+
 /* =========================================================================
    3b. Sunlight Theme - Light Liquid Glass Mode with Crisp Black Text
    ========================================================================= */

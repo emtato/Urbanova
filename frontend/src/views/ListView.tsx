@@ -421,7 +421,7 @@ export const ListView: FC<ListViewProps> = ({
               currentCase={currentCase}
               growthCase={growthCase}
               supportedCase={supportedCase}
-              berths={comparison.corridor?.berths_per_stop?.[selectedStop.stop_id] ?? 1}
+              comparison={comparison}
               onClose={() => setSelectedStop(null)}
               onSelectDevelopment={(dev) => {
                 setSelectedDev(dev)

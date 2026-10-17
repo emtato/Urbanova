@@ -1,3 +1,4 @@
+import { rememberSimulation, forgetSimulation, setActiveSimulation } from './simulationHistory'
 import { sampleComparison } from './sampleComparison'
 import type { Comparison, Corridor, ReplayEvent, Scenario } from './types'
 import type { NativeBatch, NativeMetrics, NativeReplay, PackagePolicy, RunSimulationRequest, ScenarioPatch, AnalysisSummary } from './liveTypes'
@@ -31,18 +32,25 @@ function nativeBatchResponse(batch: NativeBatch): NativeBatch {
 }
 
 export async function runSimulation(input: RunSimulationRequest = {}, signal?: AbortSignal): Promise<NativeBatch> {
-  return nativeBatchResponse(await apiRequest<NativeBatch>('/run/simulation', input, signal))
+  const batch = nativeBatchResponse(await apiRequest<NativeBatch>('/run/simulation', input, signal))
+  await rememberSimulation(batch)
+  setActiveSimulation(batch.id)
+  return batch
 }
 
 export async function getSimulations(signal?: AbortSignal): Promise<NativeBatch[]> {
   const list = await apiRequest<NativeBatch[]>('/sim/fetch', undefined, signal)
   if (!Array.isArray(list)) throw Error('Invalid simulations list response')
-  return list.map(nativeBatchResponse)
+  const batches = list.map(nativeBatchResponse)
+  await Promise.all(batches.map(batch => rememberSimulation(batch, null)))
+  return batches
 }
 
 export async function deleteSimulation(id: string, signal?: AbortSignal): Promise<{ id: string; deleted: boolean }> {
   if (!id || typeof id !== 'string') throw Error('Simulation ID is required')
-  return apiRequest<{ id: string; deleted: boolean }>('/sim/delete', { id }, signal)
+  const result = await apiRequest<{ id: string; deleted: boolean }>('/sim/delete', { id }, signal)
+  if (result.deleted) await forgetSimulation(id)
+  return result
 }
 
 function comparisonResponse(value: Comparison) {

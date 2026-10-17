@@ -1,0 +1,95 @@
+.transit-inspector { width: min(410px, calc(100vw - 3rem)); max-width: 100%; max-height: calc(100vh - 12rem); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
+.transit-inspector-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; background: rgba(255,255,255,.025); border-bottom: 1px solid rgba(148,163,184,.2); }
+.transit-scope-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(15,23,42,.25); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+.transit-scope-tabs button { padding: 8px 20px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.transit-scope-tabs button[aria-selected='true'] { background: #285461; color: #d5fbff; box-shadow: inset 0 0 0 1px #22d3ee66; }
+.transit-window-controls { display: flex; gap: 4px; }
+.transit-window-controls button { width: 30px; height: 32px; border-radius: 8px; opacity: .75; cursor: pointer; }
+.transit-window-controls button:hover { background: rgba(148,163,184,.16); }
+.transit-inspector-content { overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 22px; }
+.transit-identity h2 { font-family: 'Instrument Serif', serif; font-size: 26px; line-height: 1.15; margin: 7px 0 10px; }
+.transit-identity p, .transit-eyebrow { font-size: 11px; opacity: .75; line-height: 1.65; }
+.transit-eyebrow { letter-spacing: .07em; font-weight: 600; }
+.transit-data-note { display: inline-block; font-size: 10px; margin-top: 9px; padding: 4px 8px; border-radius: 6px; background: rgba(148,163,184,.12); }
+.transit-data-note.is-fixture { color: #fcd34d; background: rgba(146,64,14,.3); }
+.transit-stop-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.transit-stop-summary-text { min-width: 0; }
+.transit-platform-button { display: flex; align-items: center; min-height: 44px; padding: 10px 12px; margin-top: 0; flex-shrink: 0; white-space: nowrap; border: 1px solid rgba(148,163,184,.4); border-radius: 12px; background: rgba(15,23,42,.25); font-size: 11px; font-weight: 600; cursor: pointer; }
+.transit-section { display: flex; flex-direction: column; gap: 10px; }
+.transit-section + .transit-section { padding-top: 18px; border-top: 1px solid rgba(148,163,184,.18); }
+.transit-section h3 { font-size: 14px; line-height: 1.4; font-weight: 650; }
+.transit-section p { font-size: 11px; line-height: 1.6; opacity: .75; }
+.transit-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.transit-section-heading h3 { flex-shrink: 0; }
+.transit-section-heading select { min-width: 0; width: 46%; }
+.transit-section select { max-width: 100%; border: 1px solid rgba(148,163,184,.3); border-radius: 8px; background: #243440; color: #f1f5f9; font-size: 11px; padding: 7px 10px; }
+.transit-metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.transit-metric { min-width: 0; display: flex; flex-direction: column; gap: 7px; padding: 12px; border-radius: 12px; background: rgba(15,23,42,.25); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+.transit-metric > span { font-size: 11px; line-height: 1.4; opacity: .8; }
+.transit-metric strong { font-family: ui-monospace, monospace; font-size: 21px; line-height: 1.2; font-weight: 600; }
+.transit-metric small { font-size: 10px; opacity: .65; line-height: 1.4; }
+.transit-housing-summary { display: flex; justify-content: space-between; gap: 14px; font-size: 11px; padding: 8px 0; }
+.transit-housing-summary strong { font-family: ui-monospace, monospace; white-space: nowrap; }
+.transit-development-list { display: flex; flex-direction: column; }
+.transit-development-list button { display: flex; justify-content: space-between; text-align: left; gap: 10px; padding: 10px 0; border-top: 1px solid rgba(148,163,184,.15); font-size: 11px; cursor: pointer; }
+.transit-development-list button:disabled { cursor: default; }
+.transit-development-list small { display: block; font-size: 10px; opacity: .6; margin-top: 4px; }
+.transit-development-list button > span:last-child { text-align: right; flex-shrink: 0; }
+.transit-method { font-size: 11px; }
+.transit-method summary { cursor: pointer; opacity: .8; }
+.transit-method p { margin-top: 7px; }
+.transit-comparison-table { width: 100%; table-layout: fixed; font-size: 11px; border-collapse: collapse; }
+.transit-comparison-table th, .transit-comparison-table td { padding: 10px 3px; text-align: right; border-bottom: 1px solid rgba(148,163,184,.15); vertical-align: middle; }
+.transit-comparison-table th:first-child { width: 34%; text-align: left; padding-left: 0; }
+.transit-comparison-table thead th { font-size: 10px; opacity: .7; font-weight: 500; }
+.transit-comparison-table tbody th { font-weight: 500; line-height: 1.5; }
+.transit-comparison-table td { font-family: ui-monospace, monospace; }
+.transit-footnotes { display: flex; flex-direction: column; gap: 7px; }
+.transit-footnotes p { font-size: 10px; }
+.transit-stop-ranking { display: flex; flex-direction: column; gap: 12px; }
+.transit-stop-ranking li { display: flex; justify-content: space-between; gap: 15px; font-size: 11px; }
+.transit-stop-ranking strong { font-family: ui-monospace, monospace; }
+.transit-inspector-minimized { display: flex; align-items: center; gap: 12px; border-radius: 20px; padding: 8px 12px; font-size: 12px; }
+@media (max-width: 440px) { .transit-inspector-content { padding: 15px; } .transit-metric strong { font-size: 18px; } .transit-scope-tabs button { padding: 8px 15px; } }
+.transit-selected-runs { display: flex; flex-direction: column; gap: 8px; }
+.transit-selected-run { padding: 10px 12px; border-radius: 10px; border-left: 3px solid currentColor; background: rgba(15,23,42,.2); }
+.transit-selected-run > div { display: flex; justify-content: space-between; gap: 12px; }
+.transit-selected-run strong { display: block; font-size: 12px; overflow-wrap: anywhere; }
+.transit-selected-run small { display: block; font-size: 10px; opacity: .7; margin-top: 5px; line-height: 1.5; }
+.transit-selected-run button { font-size: 11px; padding: 0 4px; cursor: pointer; }
+.transit-run-0 { color: #cbd5e1; }
+.transit-run-1 { color: #67e8f9; }
+.transit-run-2 { color: #c4b5fd; }
+.transit-metrics-scroll { overflow-x: auto; }
+.transit-run-table th:first-child { width: 40%; }
+.transit-run-table thead th { overflow-wrap: anywhere; }
+.transit-run-table td { font-size: 10px; overflow-wrap: anywhere; }
+.transit-run-table th { line-height: 1.4; }
+
+/* Shared, restrained glass cards for station, line, and building inspectors. */
+.transit-comparison-columns { display: grid; align-items: start; gap: 9px; }
+.transit-comparison-column { min-width: 0; }
+.transit-comparison-column h4 { font-size: 11px; font-weight: 600; line-height: 1.4; margin-bottom: 9px; overflow-wrap: anywhere; }
+.transit-run-metrics { display: grid; gap: 9px; }
+.inspector-stat-card { min-height: 100px; border-radius: 16px; padding: 13px 11px; background: linear-gradient(155deg, rgba(255,255,255,.025), transparent 50%), rgba(15,23,42,.32); border: 1px solid rgba(180,200,220,.14); box-shadow: inset 0 1px 1px rgba(255,255,255,.08), 0 5px 12px rgba(0,0,0,.06); color: #f1f5f9; }
+.inspector-stat-card > span { min-height: 31px; font-size: 10px; line-height: 1.5; }
+.inspector-stat-card strong { font-size: 19px; font-weight: 600; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.transit-comparison-columns[data-count='1'] .transit-run-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.transit-comparison-columns[data-count='3'] .inspector-stat-card { padding: 11px 8px; }
+.transit-comparison-columns[data-count='3'] .inspector-stat-card strong { font-size: 16px; }
+.building-status { padding: 6px 10px; border-radius: 8px; background: rgba(103,232,249,.1); color: #a5f3fc; font-size: 10px; }
+.building-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.building-stop-button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left; cursor: pointer; }
+.building-stop-button:disabled { cursor: default; }
+.building-stop-button span { font-size: 12px; line-height: 1.5; }
+.building-stop-button small { display: block; font-size: 10px; opacity: .65; margin-top: 5px; }
+.building-stop-button strong { flex-shrink: 0; text-align: right; font-size: 15px; }
+.building-record-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 12px; border: 1px solid rgba(180,200,220,.2); border-radius: 12px; font-size: 12px; background: rgba(15,23,42,.2); }
+.building-record-list { display: grid; gap: 10px; margin-top: 12px; }
+.building-record-list dt { font-size: 10px; opacity: .65; }
+.building-record-list dd { font-size: 11px; margin-top: 4px; overflow-wrap: anywhere; }
+
+.transit-development-list .building-stop-button { padding: 13px 11px; border: 1px solid rgba(180,200,220,.14); margin-bottom: 9px; border-radius: 16px; }
+
+.transit-comparison-column h4 { min-height: 32px; height: 32px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.transit-run-metrics .inspector-stat-card { height: 116px; justify-content: space-between; }
