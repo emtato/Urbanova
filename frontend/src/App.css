@@ -12,3 +12,14 @@
 .contract-review a { color: var(--accent); }
 .contract-review summary { cursor: pointer; padding: 8px 0; }
 @media (max-width: 600px) { .contract-review { padding: 12px; } }
+.analysis-workspace { width: 100%; max-width: 1280px; min-height: 0; height: 100%; overflow-y: auto; margin: 0 auto; }
+.analysis-workspace button { padding: 9px 16px; border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--background)); cursor: pointer; }
+.analysis-workspace button:hover { border-color: #22d3ee; }
+.analysis-workspace fieldset { min-width: 0; padding: 20px; border: 1px solid hsl(var(--border)); border-radius: 12px; }
+.analysis-workspace fieldset:disabled { opacity: .65; }
+.analysis-workspace label { display: block; margin: 10px 0; font-size: 14px; }
+.analysis-workspace input:not([type='checkbox']):not([type='range']) { display: block; width: 100%; min-width: 90px; border: 1px solid hsl(var(--border)); border-radius: 6px; padding: 9px; margin-top: 5px; background: hsl(var(--background)); color: inherit; }
+.analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 20px; }
+.analysis-id { font-family: monospace; overflow-wrap: anywhere; font-size: 12px; }
+.analysis-workspace h2 { font-size: 22px; font-weight: 600; margin-bottom: 12px; }
+.analysis-error { border: 1px solid #f87171; padding: 16px; border-radius: 8px; }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   isUsingFixture,
   setUseFixture,
@@ -6,6 +6,10 @@ import {
   fetchCorridor,
   fetchReplayStream,
   runScenario,
+  runAnalysis,
+  fetchNativeReplay,
+  fetchNativeMetrics,
+  API_BASE_URL,
 } from './api'
 
 describe('D1: API Client & Fixture Service (Contract 1.0.0)', () => {
@@ -64,5 +68,51 @@ describe('D1: API Client & Fixture Service (Contract 1.0.0)', () => {
   it('runs scenario overlay in fixture mode', async () => {
     const updated = await runScenario({ capital_budget_cad: 500000 })
     expect(updated.scenario.capital_budget_cad).toBe(500000)
+  })
+})
+
+describe('Live B11 transport', () => {
+  afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); setUseFixture(true) })
+  it('accepts native 3.0.0 batches without changing any endpoint paths', async () => {
+    const { sampleComparison } = await import('./sampleComparison')
+    const result = { ...structuredClone(sampleComparison), contract_version: '3.0.0', comparison_id: 'native-id', fixture: false,
+      cases: sampleComparison.cases.map(item => ({ ...item, overall_results: {run_count: 1}, individual_results: [{inputs: {seed: 7}, streetcars: [], passengers: [], sim_log: [], summary: {}}] })) }
+    const fetchMock = vi.fn(async (_url: string) => new Response(JSON.stringify(result)))
+    vi.stubGlobal('fetch', fetchMock); setUseFixture(false)
+    expect(await fetchComparison('native-id')).toEqual(result)
+    expect(fetchMock.mock.calls[0][0]).toBe(API_BASE_URL + '/results/native-id')
+  })
+  it('creates, patches, enqueues, polls and fetches the stored comparison without changing fixture flags', async () => {
+    const { sampleComparison } = await import('./sampleComparison')
+    const result = { ...structuredClone(sampleComparison), comparison_id: 'stored-id', fixture: false }
+    const replies = [sampleComparison.scenario, { ...sampleComparison.scenario, version: 2 }, { job_id: 'job-id', status: 'queued' }, { job_id: 'job-id', status: 'completed', comparison_id: 'stored-id', stale: false }, result]
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(replies.shift()), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock); vi.useFakeTimers()
+    const run = runAnalysis({ capital_budget_cad: 500000 }, { seed_ids: [7], draws_id: 'paired-browser-test' })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(await run).toEqual(result)
+    expect(fetchMock.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/scenarios', `/scenarios/${sampleComparison.scenario.scenario_id}/patch`, '/jobs', '/jobs/job-id', '/results/stored-id'].map(path => API_BASE_URL + path))
+    const options = (fetchMock.mock.calls[2] as unknown[])[1] as RequestInit
+    expect(JSON.parse(String(options.body))).toMatchObject({ version: 2, evaluator: 'b11', retain_replay: true, random: { seed_ids: [7], draws_id: 'paired-browser-test' } })
+  })
+  it('surfaces backend failure instead of silently substituting fixture results', async () => {
+    setUseFixture(false)
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: 'Database unavailable' }), { status: 503 })))
+    await expect(fetchComparison('stored-id')).rejects.toThrow('Database unavailable')
+  })
+  it('rejects a fixture returned for a live job', async () => {
+    const { sampleComparison } = await import('./sampleComparison')
+    const replies = [sampleComparison.scenario, { status: 'completed', comparison_id: 'stored-id' }, sampleComparison]
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(replies.shift()))))
+    await expect(runAnalysis({})).rejects.toThrow('returned a fixture')
+  })
+  it('uses versioned replay and metric endpoints with the comparison id', async () => {
+    const fetchMock = vi.fn(async (url: string) => new Response(JSON.stringify(url.includes('/replay/') ? { format_version: 'b11-events-v1', comparison_id: 'stored-id', events: [], stops: [] } : { format_version: 'b11-metrics-v1', comparison_id: 'stored-id', runs: [] })))
+    vi.stubGlobal('fetch', fetchMock)
+    expect((await fetchNativeReplay('stored-id')).format_version).toBe('b11-events-v1')
+    expect((await fetchNativeMetrics('stored-id')).format_version).toBe('b11-metrics-v1')
+    expect(fetchMock.mock.calls.map(call => call[0])).toEqual(['/replay/stored-id', '/results/stored-id/b11-metrics'].map(path => API_BASE_URL + path))
+    setUseFixture(false)
+    await expect(fetchReplayStream('stored-id')).rejects.toThrow('B11 replay viewer')
   })
 })

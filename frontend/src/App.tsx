@@ -4,13 +4,13 @@ import { sampleComparison } from './lib/sampleComparison'
 
 const CorridorMapPage = lazy(() => import('./pages/CorridorMapPage'))
 const ListView = lazy(() => import('./views/ListView'))
+const AnalysisPage = lazy(() => import('./pages/AnalysisPage').then(module => ({ default: module.AnalysisPage })))
+const route = (path: string) => path.startsWith('/analysis') ? '/analysis' : path.startsWith('/map') ? '/map' : path.startsWith('/list') ? '/list' : '/'
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      if (window.location.pathname.startsWith('/map')) return '/map'
-      if (window.location.pathname.startsWith('/list')) return '/list'
-      return '/'
+      return route(window.location.pathname)
     }
     return '/'
   })
@@ -18,10 +18,7 @@ export function App() {
   useEffect(() => {
     const handlePopState = () => {
       if (typeof window !== 'undefined') {
-        const path = window.location.pathname
-        setCurrentPath(
-          path.startsWith('/map') ? '/map' : path.startsWith('/list') ? '/list' : '/'
-        )
+        setCurrentPath(route(window.location.pathname))
       }
     }
     window.addEventListener('popstate', handlePopState)
@@ -31,11 +28,11 @@ export function App() {
   const navigate = (toPath: string) => {
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', toPath)
-      setCurrentPath(
-        toPath.startsWith('/map') ? '/map' : toPath.startsWith('/list') ? '/list' : '/'
-      )
+      setCurrentPath(route(toPath))
     }
   }
+
+  if (currentPath === '/analysis') return <Suspense fallback={<p role="status">Loading scenario workspace…</p>}><AnalysisPage onNavigate={navigate} /></Suspense>
 
   if (currentPath === '/map') {
     return (

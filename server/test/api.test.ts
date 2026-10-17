@@ -19,12 +19,12 @@ test('health, CORS, JSON errors, reviewed corridor and validation',async()=>{
 test('enqueue, worker thread, polling, frozen fixture, cache and stale edit',async()=>{
   const store=memoryStore(),app=createApp(store,async()=>null),stop=startScheduler(store);
   try{
-    const payload={scenario_id:defaultScenario.scenario_id,version:1,random:{seed_ids:[42],draws_id:'paired-test'},retain_replay:true};
+    const payload={scenario_id:defaultScenario.scenario_id,version:1,random:{seed_ids:[42],draws_id:'paired-test'},retain_replay:true,evaluator:'fixture'};
     const first=await request(app).post('/api/jobs').send(payload).expect(202);
     const cached=await request(app).post('/api/jobs').send(payload).expect(202);assert.equal(cached.body.job_id,first.body.job_id);
     let job;
     for(let n=0;n<60;n++){job=(await request(app).get(`/api/jobs/${first.body.job_id}`).expect(200)).body;if(job.status==='completed'||job.status==='failed')break;await new Promise(r=>setTimeout(r,100));}
-    assert.equal(job.status,'completed');assert.match(job.notice,/FIXTURE STUB/);
+    assert.equal(job.status,'completed');assert.match(job.notice,/EXPLICIT FIXTURE MODE/);
     const c=await request(app).get(`/api/results/${job.comparison_id}`).expect(200);assert.ok(ComparisonSchema.safeParse(c.body).success);assert.equal(c.body.fixture,true);assert.notEqual(c.body.scenario.scenario_id,payload.scenario_id);
     await request(app).get(`/api/results/${job.comparison_id}/summary`).expect(200);
     await request(app).get(`/api/replay/${job.comparison_id}`).expect(200);

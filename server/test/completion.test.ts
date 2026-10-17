@@ -21,7 +21,7 @@ test('cost screen accepts labelled assumptions and checks budgets, phase IDs, so
   await request(app).post(path).send({version:1,policy:{...policy,availability:{lane:'missing',extra_service:'phase-1'}}}).expect(422);
   await request(app).post(path).send({version:1,policy:{...policy,cost_per_hour:{low:500,central:10,high:1}}}).expect(422);
   const job=await request(app).post('/api/jobs').send({scenario_id:defaultScenario.scenario_id,version:1,random:{seed_ids:[1],draws_id:'policy-test'},policy}).expect(202);
-  assert.equal(job.body.fixture,true);
+  assert.equal(job.body.fixture,false);
 });
 
 test('frozen output guard rejects cross-references, wrong flags and broken accounting',()=>{

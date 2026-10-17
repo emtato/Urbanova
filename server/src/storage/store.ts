@@ -5,11 +5,13 @@ import { resolve } from 'node:path';
 import { ROOT, settings } from '../config.js';
 import { hash } from '../core/cache.js';
 import type { Comparison, Scenario } from '../shared/schemas.js';
-import { defaultScenario, reviewed, corridor, dataVersion } from '../services/bundle.js';
+import { NativeReplaySchema,type NativeReplay } from '../shared/schemas.js';
+import { defaultScenario, reviewed, corridor, dataVersion,simulationModelVersion } from '../services/bundle.js';
 import { ApiError } from '../core/errors.js';
 import { checkedComparison } from '../services/comparisonIntegrity.js';
 export type Job={job_id:string;scenario_id:string;scenario_version:number;status:'queued'|'running'|'completed'|'failed';comparison_id:string|null;error:string|null;stale:boolean;notice:string;package_screen:unknown;payload:any;lease_token:string};
-export type EvaluationResult={comparison:Comparison;delayedComparison?:Comparison;package_screen:unknown;notice:string};
+export type EvaluationResult={comparison:Comparison;delayedComparison?:Comparison;native_replay?:NativeReplay|null;native_metrics?:{run_id:string;summary:unknown}[];package_screen:unknown;notice:string};
+export type PastRun={comparison_id:string;scenario_id:string;scenario_version:number;created_at:string;contract_version:string;fixture:boolean};
 export interface Store {
   ping():Promise<void>;init():Promise<void>;close():Promise<void>;
   scenario(id:string,version?:number):Promise<Scenario|null>;saveScenario(s:Scenario):Promise<void>;
@@ -18,6 +20,10 @@ export interface Store {
   fail(job:Job):Promise<void>;comparison(id:string):Promise<Comparison|null>;
   staleComparison(id:string):Promise<boolean>;
   delayedComparison(id:string):Promise<Comparison|null>;
+  nativeReplay(id:string):Promise<NativeReplay|null>;
+  nativeMetrics(id:string):Promise<{run_id:string;summary:unknown}[]>;
+  pastRuns(options?:{scenario_id?:string;limit?:number;offset?:number}):Promise<PastRun[]>;
+  renew(job:Job):Promise<boolean>;
   audit(entry:{call_id:string;purpose:string;model:string;prompt_hash:string;status:string;duration_ms:number}):Promise<void>;
 }
 export class PgStore implements Store {
@@ -67,6 +73,7 @@ export class PgStore implements Store {
       WHERE job_id=(SELECT job_id FROM c_jobs WHERE status='queued' OR (status='running' AND lease_until<now())
       ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`,[randomUUID()]);return r.rows[0]??null;
   }
+  async renew(job:Job){const r=await this.pool.query("UPDATE c_jobs SET lease_until=now()+interval '150 seconds' WHERE job_id=$1 AND lease_token=$2 AND status='running' RETURNING job_id",[job.job_id,job.lease_token]);return Boolean(r.rowCount);}
   async fail(job:Job){await this.pool.query("UPDATE c_jobs SET status='failed',error='Evaluation unavailable; retry with a new job after checking worker logs.',lease_until=NULL WHERE job_id=$1 AND lease_token=$2 AND status='running'",[job.job_id,job.lease_token]);}
   async finish(job:Job,result:EvaluationResult){
     checkedComparison(result.comparison);
@@ -78,15 +85,24 @@ export class PgStore implements Store {
       const persist=async(input:Comparison,comparisonId:string,retainReplay:boolean)=>{
         const c=structuredClone(input),replay=retainReplay?c.replay:null;
         c.replay=null;c.comparison_id=comparisonId;
-        await client.query('INSERT INTO c_comparisons VALUES($1,$2,$3,$4,$5,$6,now())',[comparisonId,c,job.payload.execution_versions?.model_version??settings.modelVersion,job.payload.execution_versions?.data_version??dataVersion,job.scenario_id,job.scenario_version]);
+        await client.query('INSERT INTO c_comparisons VALUES($1,$2,$3,$4,$5,$6,now())',[comparisonId,c,job.payload.evaluator==='b11'?job.payload.execution_versions.simulation_model:job.payload.execution_versions?.model_version??settings.modelVersion,job.payload.execution_versions?.data_version??dataVersion,job.scenario_id,job.scenario_version]);
         for(const caseResult of c.cases){
         for(const [i,run] of caseResult.runs.entries()) await client.query(`INSERT INTO c_run_aggregates VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-          [comparisonId,run.run_id,c.scenario.scenario_id,caseResult.phase_id,caseResult.package_id,caseResult.demand_case,run.model_version,run.data_version,hash(c.assumptions),JSON.stringify(run.seed_ids),JSON.stringify(c.sources.map(s=>s.source_id)),{...run.diagnostics,p95_wait_s:caseResult.per_run_p95_wait_s[i],denied_share:caseResult.per_run_denied_share[i]},c.fixture]);
+          [comparisonId,run.run_id,c.scenario.scenario_id,caseResult.phase_id,caseResult.package_id,caseResult.demand_case,run.model_version,run.data_version,hash(c.assumptions),JSON.stringify(run.seed_ids),JSON.stringify(c.sources.map(s=>s.source_id)),{...run.diagnostics,...('individual_results' in caseResult?caseResult.individual_results[i].summary.overview:{}),p95_wait_s:caseResult.per_run_p95_wait_s[i],denied_share:caseResult.per_run_denied_share[i]},c.fixture]);
+        for(const [i,run] of caseResult.runs.entries()){
+          const summary='individual_results' in caseResult?caseResult.individual_results[i].summary:result.native_metrics?.find(m=>m.run_id===run.run_id)?.summary;
+          if(summary)await client.query('INSERT INTO c_b11_run_metrics VALUES($1,$2,$3)',[comparisonId,run.run_id,summary]);
+        }
         for(const stop of caseResult.stops) await client.query('INSERT INTO c_stop_aggregates VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[comparisonId,caseResult.case_id,caseResult.phase_id,caseResult.package_id,caseResult.demand_case,stop.stop_id,stop.rider_group,stop]);
         }
         if(replay) await client.query('INSERT INTO c_replays VALUES($1,$2,$3)',[comparisonId,replay.run_id,replay]);
       };
       await persist(result.comparison,id,Boolean(job.payload.retain_replay));
+      if(result.native_replay&&job.payload.retain_replay){
+        const replay=NativeReplaySchema.parse({...result.native_replay,comparison_id:id});
+        if(!result.comparison.cases.some(c=>c.runs.some(r=>r.run_id===replay.run_id)))throw new ApiError(422,'Replay references an unknown B11 run.');
+        await client.query('INSERT INTO c_b11_replays VALUES($1,$2,$3)',[id,replay.run_id,replay]);
+      }
       if(result.delayedComparison){
         const delayedId=randomUUID();
         await persist(result.delayedComparison,delayedId,false);
@@ -101,7 +117,19 @@ export class PgStore implements Store {
     const replay=await this.pool.query('SELECT payload FROM c_replays WHERE comparison_id=$1',[id]);
     return {...r.rows[0].payload,replay:replay.rows[0]?.payload??null};
   }
-  async staleComparison(id:string){const r=await this.pool.query('SELECT j.stale,c.data_version,c.model_version FROM c_comparisons c LEFT JOIN c_jobs j USING(comparison_id) WHERE c.comparison_id=$1',[id]);const row=r.rows[0];return Boolean(row&&(row.stale||row.data_version!==dataVersion||row.model_version!==settings.modelVersion));}
+  async staleComparison(id:string){const r=await this.pool.query('SELECT j.stale,c.data_version,c.model_version,c.payload FROM c_comparisons c LEFT JOIN c_delayed_comparisons d ON d.delayed_comparison_id=c.comparison_id LEFT JOIN c_jobs j ON j.comparison_id=coalesce(d.comparison_id,c.comparison_id) WHERE c.comparison_id=$1',[id]);const row=r.rows[0];return Boolean(row&&(row.stale||row.data_version!==dataVersion||row.model_version!==(row.payload.fixture?settings.modelVersion:simulationModelVersion)));}
   async delayedComparison(id:string){const r=await this.pool.query('SELECT c.payload FROM c_delayed_comparisons d JOIN c_comparisons c ON c.comparison_id=d.delayed_comparison_id WHERE d.comparison_id=$1',[id]);return r.rows[0]?.payload??null;}
+  async nativeReplay(id:string){const r=await this.pool.query('SELECT payload FROM c_b11_replays WHERE comparison_id=$1',[id]);return r.rows[0]?.payload??null;}
+  async nativeMetrics(id:string){const r=await this.pool.query('SELECT run_id,payload AS summary FROM c_b11_run_metrics WHERE comparison_id=$1 ORDER BY run_id',[id]);return r.rows;}
+  async pastRuns({scenario_id,limit=20,offset=0}:{scenario_id?:string;limit?:number;offset?:number}={}){
+    if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0)throw new ApiError(422,'History limit must be 1–100 and offset a nonnegative integer.');
+    const r=await this.pool.query(`SELECT comparison_id, requested_scenario_id AS scenario_id,
+      requested_scenario_version AS scenario_version, created_at::text,
+      payload->>'contract_version' AS contract_version, (payload->>'fixture')::boolean AS fixture
+      FROM c_comparisons WHERE NOT EXISTS (SELECT 1 FROM c_delayed_comparisons d WHERE d.delayed_comparison_id=c_comparisons.comparison_id)
+      AND ($1::text IS NULL OR requested_scenario_id=$1)
+      ORDER BY created_at DESC, comparison_id DESC LIMIT $2 OFFSET $3`,[scenario_id??null,limit,offset]);
+    return r.rows;
+  }
   async audit(e:{call_id:string;purpose:string;model:string;prompt_hash:string;status:string;duration_ms:number}){await this.pool.query('INSERT INTO c_ai_calls(call_id,purpose,model,prompt_hash,status,duration_ms) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(call_id) DO UPDATE SET status=EXCLUDED.status,duration_ms=EXCLUDED.duration_ms',[e.call_id,e.purpose,e.model,e.prompt_hash,e.status,e.duration_ms]);}
 }

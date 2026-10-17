@@ -1,6 +1,20 @@
-# Phase 01 contract, version 2.0.0
+# B → C handoff and legacy Phase 01 fixture contract
 
-Lane C now also has an [Express service](lane-c.md) consuming this frozen JSON Schema and the same TypeScript interfaces. Its worker currently returns the labelled fixture until Lane B supplies B11. The root Railway configuration now deploys Express; the Python simulator remains under backend/. This addition does not change Comparison 2.0.0.
+## Active owner decision: native simulation results, 2026-10-17
+
+The simulator owner's result shape and metric definitions govern **live** B → C integration. Lane C must accept `{overall_results, individual_results}` from `backend/simulation/paired_runs.py`. `individual_results` is an ordered array of unchanged single-run dictionaries with `inputs`, `streetcars`, `passengers`, `sim_log` and `summary`. Named comparisons wrap these batches under `cases` and record paired improvements, seed IDs and runtime. See [simulation-runs.md](simulation-runs.md) and [Lane C's migration requirements](lane-c.md#b11-native-handoff-owner-decision-2026-10-17).
+
+For live results, in-progress riders (onboard at cutoff or awaiting their first car) are excluded from unresolved counts. Unresolved means riders still waiting after a capacity denial. Denied share uses corridor riders who encountered a streetcar, counting each denied rider once. Physical queues and in-progress counts remain separately available. C's validation, criteria and explanations must preserve these definitions and the cohort associated with each summary field.
+
+Replay comes from the selected individual run's native `sim_log`, including passenger arrivals throughout the run and incoming vehicle loads. C owns transport metadata, validation, storage and API/frontend migration. C must remove projections that recalculate unresolved as all waiting plus onboard or denied share over all arrivals. B is not required to manufacture the earlier Comparison or ReplayStream templates.
+
+**Runtime migration status:** Live results now use C's **3.0.0** metadata envelope. Each case retains B's original `overall_results` and `individual_results` next to package/phase/demand/run metadata. The Python bridge calls `run_repeated_simulations`; C's checked views, criteria, storage and briefs preserve native overview metrics and keep in-progress riders separate. The exact result dictionaries, including every summary section and `sim_log`, are archived in the comparison payload. `PgStore.pastRuns()` provides paginated history lookup for future route wiring. No API route paths or handlers were changed for this migration. The schema, semantics, validation commands and calculations below describe the **legacy 2.0.0 fixture format**. They do not override the live handoff decision.
+
+The live schema is `server/src/shared/nativeResults.ts`; `ComparisonSchema` accepts live 3.0.0 and legacy 2.0.0 for historical retrieval. Native per-run decision waits use `summary.overview` (riders who boarded); stop summaries retain completed-trip waits. Denied-share stop aggregation weights encountered riders. Full histories are retained, while only the selected replay is separately indexed for its endpoint. Python sends gzip-compressed JSON, decoded with configurable `B11_MAX_OUTPUT_BYTES` (default 512 MiB). Larger matrices require deliberate memory/runtime sizing. Hosted-database persistence remains unverified locally; transaction and round-trip tests use a recording PostgreSQL query adapter.
+
+## Legacy Phase 01 fixture contract, version 2.0.0
+
+Lane C has an [Express service](lane-c.md) currently consuming this legacy JSON Schema and matching TypeScript interfaces. Its worker can now call the simulator, with an explicit labelled fixture mode. The root Railway configuration now deploys Express; the Python simulator remains under backend/. The historical Comparison 2.0.0 fixture remains unchanged by the live handoff decision above.
 
 Simulation variables and the simulator are owned by the simulation teammate. The sourced data covers **505 westbound, Dundas East/Broadview to TMU Station**; see [data-handoff.md](data-handoff.md). The synthetic fixture and frontend use that same westbound segment with the simulation-owned Stop and Development formats. Fixture inputs are pinned in data/fixtures/sample_comparison_inputs.json so source refreshes do not silently change the hand-worked example.
 
@@ -95,3 +109,5 @@ Run python -m backend.scripts.build_fixture only to intentionally re-author the 
 The fixture endpoint is GET /api/fixtures/sample-comparison, validates its response with Comparison and returns X-FutureProof-Fixture: true. It does not save or simulate anything. The frontend currently loads the same checked-in fixture without a network dependency and displays a sticky FIXTURE banner, assumptions and a replay scrubber. The full production map, scenario runner, persistence and Gemini explanation are later lane work.
 
 Owners can build against contract 2.0.0. Change units, field meanings or required fields only with a contract version change, corresponding Python/TypeScript updates and a reviewed replacement sample. Keep fixture labels on every fixture-derived presentation.
+
+The Lane C API now computes real B11 Comparisons; see [the integration and replay transport](lane-c.md). Comparison 2.0.0 remains frozen. Real B11 replay is a separate `b11-events-v1` transport because it includes timed passenger arrivals and incoming riders that the fixture ReplayStream cannot represent. Frontend integration must explicitly handle this version.

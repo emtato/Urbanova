@@ -25,6 +25,7 @@ export function ContractLandingPage({ onNavigate }: ContractLandingPageProps) {
 
   return (
     <main className="contract-review">
+      <button type="button" onClick={() => onNavigate ? onNavigate('/analysis') : (window.location.pathname = '/analysis')}>Run live B11 comparison</button>
       {comparison.fixture && <div className="fixture-banner" role="status">FIXTURE — synthetic demand, costs and results. Not a 505 forecast.</div>}
       
       {/* 3D Map Exploration Callout Banner */}

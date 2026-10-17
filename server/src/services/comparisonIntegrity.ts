@@ -1,5 +1,7 @@
 import { ComparisonSchema,type Comparison } from '../shared/schemas.js';
 import { invariant } from '../core/errors.js';
+import { checkNativeCase } from './nativeIntegrity.js';
+import type { NativeCaseResult } from '../shared/nativeResults.js';
 
 /** Semantic checks omitted by JSON Schema, shared by storage and B11. */
 export function checkedComparison(input:unknown):Comparison {
@@ -21,6 +23,7 @@ export function checkedComparison(input:unknown):Comparison {
     invariant(['current','growth','supported_growth'].every(kind=>kinds.has(kind as any)),'Every phase/demand needs current, growth and supported_growth cases.');
   }
   for(const result of c.cases){
+    if(c.contract_version==='3.0.0')checkNativeCase(result as NativeCaseResult);
     invariant(phases.has(result.phase_id)&&packages.has(result.package_id),'Case phase/package must exist.');
     unique(result.stops.map(s=>s.stop_id+':'+s.rider_group),'Stop/cohort results');
     invariant(result.stops.length===stops.size*2&&result.stops.every(s=>stops.has(s.stop_id)),'Cases must cover both cohorts at every known stop.');

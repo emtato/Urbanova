@@ -3,16 +3,28 @@ import { resolve } from 'node:path';
 import * as z from 'zod';
 import { ROOT } from '../config.js';
 import { PolicySchema } from './policy.js';
-import type { Comparison, Scenario, Corridor, ReplayStream } from '../../../frontend/src/lib/types.js';
-export type { Comparison, Scenario, Corridor, ReplayStream };
+import type { Comparison as PresentationComparison, Scenario, Corridor, ReplayStream } from '../../../frontend/src/lib/types.js';
+import { nativeBatchSchema, nativeComparisonSchema, type NativeComparison } from './nativeResults.js';
+export type { Scenario, Corridor, ReplayStream };
+export type FixtureComparison = Omit<PresentationComparison,'contract_version'> & {contract_version:'2.0.0'};
+export type Comparison = FixtureComparison | NativeComparison;
 
 // Consume the frozen generated schema rather than inventing parallel contract fields.
 const contract = JSON.parse(readFileSync(resolve(ROOT, 'data/contracts/comparison.schema.json'), 'utf8'));
-export const ComparisonSchema = z.fromJSONSchema(contract) as z.ZodType<Comparison>;
+export const FixtureComparisonSchema = z.fromJSONSchema(contract) as z.ZodType<FixtureComparison>;
 const definition = (name: string) => z.fromJSONSchema({ $defs:contract.$defs, $ref: `#/$defs/${name}` });
 export const ScenarioSchema = definition('Scenario') as z.ZodType<Scenario>;
 export const CorridorSchema = definition('Corridor') as z.ZodType<Corridor>;
 export const ReplaySchema = definition('ReplayStream') as z.ZodType<ReplayStream>;
+const StreetcarSchema=z.strictObject({id:z.string(),capacity:z.int().positive(),onboard_passenger_ids:z.array(z.string()),status:z.enum(['at_stop','in_transit','finished']),current_stop_id:z.string().nullable(),previous_stop_id:z.string().nullable(),next_stop_id:z.string().nullable(),departure_time_s:z.number().nullable(),expected_arrival_time_s:z.number().nullable()});
+const NativeEventSchema=z.strictObject({time_s:z.number().nonnegative(),action:z.enum(['passenger_arrive','generate','arrive','alight','board','deny','beyond_segment','depart','terminate']),streetcar:StreetcarSchema.nullable(),stop_id:z.string().nullable(),count:z.int().nonnegative(),existing_count:z.int().nonnegative(),new_count:z.int().nonnegative(),passenger_ids:z.array(z.string()),onboard_count_after:z.int().nonnegative().nullable(),waiting_count_after:z.int().nonnegative().nullable(),stop_queues:z.record(z.string(),z.int().nonnegative())});
+const NativePassengerSchema=z.strictObject({id:z.string(),origin_stop_id:z.string(),destination_stop_id:z.string().nullable(),get_to_stop_time:z.number(),rider_group:z.enum(['existing','new']),development_id:z.string().nullable(),status:z.enum(['scheduled','waiting','onboard','arrived','beyond_segment']),streetcar_id:z.string().nullable(),boarding_time_s:z.number().nullable(),exit_time_s:z.number().nullable(),denied_boarding_once:z.boolean()});
+export const NativeBatchSchema = nativeBatchSchema(NativeEventSchema, NativePassengerSchema, StreetcarSchema);
+export const NativeComparisonSchema = nativeComparisonSchema(definition, NativeBatchSchema);
+export const ComparisonSchema: z.ZodType<Comparison> = z.union([FixtureComparisonSchema, NativeComparisonSchema]);
+export const NativeReplaySchema=z.strictObject({format_version:z.literal('b11-events-v1'),comparison_id:z.string(),run_id:z.string(),scenario_id:z.string(),model_version:z.string(),data_version:z.string(),source_ids:z.array(z.string()),horizon_s:z.number().positive(),stops:z.array(definition('Stop')),events:z.array(NativeEventSchema),passengers:z.array(NativePassengerSchema)});
+export type NativeReplay=z.infer<typeof NativeReplaySchema>;
+export const NativeMetricsSchema=z.strictObject({format_version:z.literal('b11-metrics-v1'),comparison_id:z.string(),scenario_id:z.string(),source_ids:z.array(z.string()),model_version:z.string(),data_version:z.string(),runs:z.array(z.strictObject({run_id:z.string(),summary:z.record(z.string(),z.unknown())}))});
 const finite = z.number().finite();
 export const PatchSchema = z.strictObject({
   demand_case: z.enum(['low','central','high']).optional(),
@@ -28,7 +40,8 @@ export type ScenarioPatch = z.infer<typeof PatchSchema>;
 // form boundary, while natural-language parsing stays within this smaller set.
 export const ParseAnswerSchema = z.strictObject({kind:z.enum(['patch','unsupported','missing_observation']),patch:PatchSchema.omit({planning_criterion:true}),answer:z.string().max(2000)});
 export const RandomSchema = z.strictObject({seed_ids:z.array(z.int().min(0).max(2147483647)).min(1).max(100).refine(ids=>new Set(ids).size===ids.length,'Seed IDs must be unique'), draws_id:z.string().min(1).max(100)});
-export const JobRequestSchema = z.strictObject({scenario_id:z.string().min(1),version:z.int().positive(),random:RandomSchema,retain_replay:z.boolean().default(false),policy:PolicySchema.optional()});
+export const DemandFactorsSchema=z.strictObject({low:z.number().finite().min(0).max(1),central:z.literal(1),high:z.number().finite().min(1).max(3)});
+export const JobRequestSchema = z.strictObject({scenario_id:z.string().min(1),version:z.int().positive(),random:RandomSchema,retain_replay:z.boolean().default(false),policy:PolicySchema.optional(),evaluator:z.enum(['b11','fixture']).default('b11'),demand_factors:DemandFactorsSchema.default({low:.8,central:1,high:1.2})});
 export const QuestionSchema = z.strictObject({question:z.string().min(1).max(4000)});
 const MoneyRange=z.strictObject({low:finite.nonnegative(),central:finite.nonnegative(),high:finite.nonnegative()});
 export const PackageScreenSchema=z.array(z.strictObject({package_id:z.string(),phase_id:z.string(),feasible:z.boolean(),reasons:z.array(z.string()),vehicles:z.int().nonnegative().nullable(),extra_vehicles:z.int().nonnegative().nullable(),capital:MoneyRange.nullable(),operating:MoneyRange.nullable()}));

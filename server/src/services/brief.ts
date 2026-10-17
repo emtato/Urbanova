@@ -1,6 +1,7 @@
 import type { Comparison } from '../shared/schemas.js';
 import { compare } from '../packages/compare.js';
 import { sensitivity } from '../packages/sensitivity.js';
+import { runMetrics } from '../packages/runMetrics.js';
 export function brief(c:Comparison,delayed:Comparison|null=null){
   const decision=compare(c);
   return [
@@ -10,7 +11,8 @@ export function brief(c:Comparison,delayed:Comparison|null=null){
     `Cost ordering: ${decision.cost_order}.`,
     ...decision.alternatives.map(p=>`Package ${p.package_id}: capital high CAD ${p.capital}; annual operating high CAD ${p.operating}; feasible ${p.feasible}; criterion ${p.meets}; dominated ${p.dominated}.`),
     ...c.packages.flatMap(p=>p.evaluations.map(e=>`${p.package_id}, ${e.phase_id}, ${e.demand_case}: ${[...e.feasibility_reasons,...e.criterion_reasons].join(' ')}`)),
-    ...c.cases.map(x=>`${x.case_id}: phase ${x.phase_id}, demand ${x.demand_case}; per-run p95 seconds ${JSON.stringify(x.per_run_p95_wait_s)}; denied shares ${JSON.stringify(x.per_run_denied_share)}; unresolved ${JSON.stringify(x.per_run_unresolved_passengers)}.`),
+    ...c.cases.map(x=>{const metrics=runMetrics(x);return `${x.case_id}: phase ${x.phase_id}, demand ${x.demand_case}; per-run ${c.contract_version==='3.0.0'?'boarded-rider':'completed-rider'} p95 seconds ${JSON.stringify(metrics.map(m=>m.p95_wait_s))}; denied shares ${JSON.stringify(metrics.map(m=>m.denied_share))}; unresolved ${JSON.stringify(metrics.map(m=>m.unresolved_passengers))}; in progress ${JSON.stringify(metrics.map(m=>m.in_progress_passengers))}.`;}),
+    ...(c.contract_version==='3.0.0'?c.cases.map(x=>`${x.case_id}: run count ${x.overall_results.run_count}; mean-wait statistics across runs ${JSON.stringify(x.overall_results.metrics.mean_wait_s)}; batch runtime seconds ${x.overall_results.runtime.total_s}.`):[]),
     `Sensitivity: ${JSON.stringify(sensitivity(c,delayed))}`,
     ...c.cases.flatMap(x=>x.runs.map(r=>`Run ${r.run_id}: model ${r.model_version}; data ${r.data_version}; seeds ${r.seed_ids.join(', ')}.`)),
     ...(delayed?delayed.cases.flatMap(x=>x.runs.map(r=>`Upgrade-delay run ${r.run_id}: comparison ${delayed.comparison_id}; model ${r.model_version}; data ${r.data_version}; seeds ${r.seed_ids.join(', ')}.`)):[]),

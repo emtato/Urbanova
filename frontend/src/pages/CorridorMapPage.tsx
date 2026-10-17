@@ -35,6 +35,7 @@ type ActiveTool =
 export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [comparison, setComparison] = useState<Comparison | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [selectedStop, setSelectedStop] = useState<CorridorStop | null>(null)
   const [selectedDev, setSelectedDev] = useState<CorridorDevelopment | null>(null)
   const [usingFixture, setUsingFixtureState] = useState(isUsingFixture())
@@ -71,20 +72,24 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     loadData()
   }, [])
 
-  const loadData = async () => {
+  async function loadData() {
     try {
       setLoading(true)
+      setLoadError('')
       const data = await fetchComparison()
       setComparison(data)
+      setUsingFixtureState(data.fixture)
       if (data.corridor.stops.length > 0) {
         setSelectedStop(normalizeStop(data.corridor.stops[4])) // Default to Sumach / Regent Park
       }
     } catch (err) {
-      console.error('Failed to load comparison data:', err)
+      setLoadError(err instanceof Error ? err.message : 'Failed to load comparison')
     } finally {
       setLoading(false)
     }
   }
+
+  if (loadError) return <main className="contract-review"><h1>Live API unavailable</h1><p role="alert">{loadError}</p><button onClick={() => void loadData()}>Retry</button>{' '}<button onClick={() => { setUseFixture(true); setUsingFixtureState(true); void loadData() }}>Show labelled fixture</button>{' '}<button onClick={() => onNavigate?.('/analysis')}>Scenario workspace</button></main>
 
   const toggleFixtureMode = () => {
     const nextState = !usingFixture
@@ -231,12 +236,13 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               505 Dundas Streetcar Corridor
             </h1>
             <p className="text-[11px] text-muted-foreground hidden md:block">
-              Housing Growth &amp; Transit Readiness · Broadview Station to Yonge-Dundas
+              Housing Growth &amp; Transit Readiness · Broadview at Dundas to Yonge-Dundas
             </p>
           </div>
 
           {/* Right: Toggle Button for 3D Towers & Stats */}
           <div className="flex items-center justify-end min-w-[140px]">
+            <button type="button" onClick={() => onNavigate?.('/analysis')} className="liquid-glass rounded-full px-3 py-1.5 text-xs mr-2">Run comparison</button>
             <button
               type="button"
               onClick={() => setShowDrawer((prev) => !prev)}

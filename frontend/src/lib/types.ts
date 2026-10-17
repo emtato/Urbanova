@@ -1,4 +1,5 @@
-// Contract 2.0.0; Stop/Development mirror backend/simulation/objects; other models mirror backend/schemas.
+// Shared presentation fields for fixture 2.0.0 and native 3.0.0.
+// Native batches are typed in liveTypes.ts; fixture field names still mirror backend/schemas.
 // Units and semantics: docs/contract.md.
 export type Status = 'sourced' | 'assumed' | 'user_selected'
 export type RiderGroup = 'existing' | 'new'
@@ -95,7 +96,7 @@ export interface ReplayStream {
   initial_queues: InitialQueue[]; events: ReplayEvent[]
 }
 export interface Comparison {
-  contract_version: '2.0.0'; comparison_id: string; fixture: boolean; product_label: 'scenario experiment'
+  contract_version: '2.0.0' | '3.0.0'; comparison_id: string; fixture: boolean; product_label: 'scenario experiment'
   scenario: Scenario; corridor: Corridor; cases: CaseResult[]; packages: Package[]
   sensitivity: SensitivityResult[]; assumptions: Assumption[]; sources: SourceRef[]
   warnings: string[]; replay: ReplayStream | null

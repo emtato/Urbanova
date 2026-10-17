@@ -14,7 +14,7 @@ try{
   const base=`http://127.0.0.1:${address.port}/api`;
   async function call(path:string,body?:unknown){const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});if(!response.ok)throw Error(`HTTP ${response.status} for ${path}`);return response.json();}
   const scenario=ScenarioSchema.parse(await call('/scenarios',{scenario_id:'lane-c-smoke-'+randomUUID()}));
-  const created=await call('/jobs',{scenario_id:scenario.scenario_id,version:1,random:{seed_ids:[42],draws_id:'smoke-paired'},retain_replay:true});
+  const created=await call('/jobs',{scenario_id:scenario.scenario_id,version:1,random:{seed_ids:[42],draws_id:'smoke-paired'},retain_replay:true,evaluator:'fixture'});
   let job=created;
   for(let n=0;n<80&&job.status!=='completed'&&job.status!=='failed';n++){await new Promise(r=>setTimeout(r,250));job=await call('/jobs/'+created.job_id);}
   if(job.status!=='completed')throw Error('Job did not complete');

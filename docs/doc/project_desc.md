@@ -1,4 +1,4 @@
-# FutureProof: Project Vision & Big Picture
+# Urbanova: Project Vision & Big Picture
 
 > **See what new housing could change in your neighbourhood.**
 
@@ -97,7 +97,7 @@ This document describes the product vision. The current frontend displays a hand
 
 3D proposal visualisation, public planning tools and shadow analysis already exist, including in [VU.CITY](https://www.vu.city/planners) and [ArcGIS Urban](https://learn.arcgis.com/en/projects/explore-an-urban-model/). We should describe our contribution through the working resident experience rather than claim these individual capabilities are new.
 
-**FutureProof's intended distinction is a resident-centred transit simulation connected to real Toronto housing proposals, familiar places and seasonal sunlight changes, with adjustable scenarios that help people understand their commute and explore improvements.**
+**Urbanova's intended distinction is a resident-centred transit simulation connected to real Toronto housing proposals, familiar places and seasonal sunlight changes, with adjustable scenarios that help people understand their commute and explore improvements.**
 
 The School of Cities challenge is the clearest fit: help people understand a concrete Toronto urban issue using meaningful local data. Originality matters alongside usefulness, execution, accessibility and responsible interpretation. AI for Social Impact fits when the research and explanations help residents understand evidence and challenge assumptions. Climate and sustainability claims should be limited to what the prototype actually evaluates.
 
@@ -105,7 +105,7 @@ The School of Cities challenge is the clearest fit: help people understand a con
 
 ## 7. Evidence and Responsible Interpretation
 
-FutureProof is an exploratory scenario tool. Its visuals and simulations must make their assumptions visible:
+Urbanova is an exploratory scenario tool. Its visuals and simulations must make their assumptions visible:
 
 - Distinguish proposed designs, simplified masses and hypothetical changes.
 - Compare new shadows with the existing surroundings at the same date and time.

@@ -495,5 +495,82 @@
     "sha256": "d2822e86d8c4f492f3dfccfccc24a2fd74917b564e4322c928bf9f02dec4b17b",
     "bytes": 1954,
     "review_note": "Main project description and Total Units table both give 363. Completed and registered in 2021. Manually reviewed numeric fact; raw page download unavailable from local resolver."
+  },
+  {
+    "source_id": "ttc-2025-operating-budget",
+    "title": "2025 Budget Notes: Toronto Transit Commission",
+    "url": "https://www.toronto.ca/wp-content/uploads/2025/04/9547-2025-Public-Book-TTC-V1.pdf",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T18:13:05.103557+00:00",
+    "sha256": "c9d8a3c1402603a7c265295e3b80ff02caf14788604d4aae1b6151a7276590d2",
+    "bytes": 1441195
+  },
+  {
+    "source_id": "munro-2017-queen-cost",
+    "title": "The Cost of Running the Queen Car (Steve Munro, Transit & Politics, 14 June 2017), citing TTC Service Planning 2015 cost factors",
+    "url": "https://stevemunro.ca/2017/06/14/the-cost-of-running-the-queen-car/",
+    "publisher": "stevemunro.ca (secondary source quoting the TTC)",
+    "version": "retrieved snapshot",
+    "licence": "see source",
+    "retrieved_at": "2026-10-17T18:13:05.601790+00:00",
+    "sha256": "16c67217b21e5fe521ee8fa415a17bb523f807720b3ffbb8e3f8dc568ad5c01e",
+    "bytes": 154008
+  },
+  {
+    "source_id": "statcan-cpi-annual",
+    "title": "Consumer Price Index, annual average, not seasonally adjusted (Table 18-10-0005-01), Canada, all-items",
+    "url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000501",
+    "publisher": "Statistics Canada",
+    "version": "retrieved snapshot",
+    "licence": "see source",
+    "retrieved_at": "2026-10-17T18:13:05.773684+00:00",
+    "sha256": "e32fc65309fb5d16b863768733d0a9a4b441778c8dbcca5efe19aaa140ba3671",
+    "bytes": 80364
+  },
+  {
+    "source_id": "toronto-king-pilot-2017",
+    "title": "Proposed King Street Transit Pilot: Bathurst Street to Jarvis Street (staff report, 9 June 2017)",
+    "url": "https://www.toronto.ca/legdocs/mmis/2017/ex/bgrd/backgroundfile-104940.pdf",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T18:13:05.979986+00:00",
+    "sha256": "00dbfa3a54bdc0b1d8d6c87329846f984fd53a38f36040d0f75bd8d7ceb74093",
+    "bytes": 793155
+  },
+  {
+    "source_id": "toronto-king-extension-2018",
+    "title": "Extending the King Street Transit Pilot (report, 6 December 2018)",
+    "url": "https://www.toronto.ca/legdocs/mmis/2019/cc/bgrd/backgroundfile-122367.pdf",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T18:13:06.180422+00:00",
+    "sha256": "ada1bd25cd58da0f8815b12762b6954da178af3c66cb4cb830bc6d9f7e9b36a0",
+    "bytes": 43522
+  },
+  {
+    "source_id": "toronto-king-results-2019",
+    "title": "The Future of King Street: Results of the Transit Pilot (report, 2 April 2019)",
+    "url": "https://www.toronto.ca/legdocs/mmis/2019/ex/bgrd/backgroundfile-131188.pdf",
+    "publisher": "City of Toronto and TTC",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T18:13:06.358235+00:00",
+    "sha256": "9ee8a1cdaef6482624aa67b735c1354a1c3f50e03091f91b2fdf6c1277d029a9",
+    "bytes": 604744
+  },
+  {
+    "source_id": "toronto-king-update-2024",
+    "title": "King Street Transit Priority Corridor Update (report, 18 April 2024)",
+    "url": "https://www.toronto.ca/legdocs/mmis/2024/ie/bgrd/backgroundfile-245114.pdf",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T18:13:06.503022+00:00",
+    "sha256": "e847ae11d75e46e46e31555a4e155f59dcdb7d3b376d9c7a176cecb4da7f7178",
+    "bytes": 147821
   }
 ]
