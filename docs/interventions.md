@@ -28,7 +28,7 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 | `cycle_s` | Time for one car to run Broadview Station → Dundas West → Broadview Station, including terminal layover | Westbound + eastbound scheduled run (GTFS, about 3,900 s + 3,780 s) plus median terminal layover from consecutive trips of the same `block_id` | derived |
 | `baseline_headway_s` | Today's AM-peak entry gap | Same value the simulator uses (`headway_s` ≈ 420 s, the mean of scheduled gaps) so the two stay consistent | derived |
 | `service_headway_s` | Gap with extra service | 360 / 300 / 240 s, one per policy file | user_selected |
-| `lane_cycle_s` | `cycle_s` with streetcar priority | `cycle_s` minus the time saved on the modelled segment's 8 links, westbound and eastbound | derived from a transferred effect |
+| `lane_cycle_s` | `cycle_s` with streetcar priority | `cycle_s` minus the time saved on the modelled segment's 8 links, westbound and eastbound (12% selected; see below) | derived from an assumed effect |
 | `peak_hours` | Hours/day the extra cars run | 2.5 (AM peak plus carhouse travel) | assumed |
 | `service_days` | Days/year | Weekday count for one year minus holidays | derived |
 | `cost_per_hour` | Operating cost of one streetcar for one hour (driver, energy, maintenance) | TTC published operating statistics or budget: cost per vehicle-hour, streetcar mode if available, else system-wide and labelled | sourced or transferred |
@@ -39,13 +39,50 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 | `availability` | Optional per-option phase | Omitted unless the team sets different dates for lane and extra service | user_selected |
 | `source_ids`, `assumption_label` | Provenance and one-sentence caveat | Collected from the rows above | — |
 
-### Streetcar-priority effect (the hardest input)
-No 505 priority exists, so there is no measured effect on Dundas. The plan is to transfer the King Street pilot's published travel-time changes for the 504 into a **share of link time saved**, as a low/central/high range, labelled `transferred`. `interventions.json` will list the covered links (all 8 links of the modelled segment) and the saving per link, so the simulator can shorten `link_travel_times_s` on those links.
+## How the values were chosen
+All figures below are quoted, with page numbers, in `data/sources/intervention_evidence.json`. Costs are in 2025 CAD, converted with Statistics Canada's annual CPI (2015 = 126.6, 2017 = 130.4, 2019 = 136.0, 2024 = 160.9, 2025 = 164.2). King Street's priority section (Bathurst → Jarvis) is about 2.5 km (2,473–2,578 m by direction in the GTFS), almost the same as our 2,513 m segment, so no length scaling is applied (ratio 0.995).
 
-`lane_cycle_s` only reduces the full-route cycle by the saving on the modelled segment (in both directions). Priority elsewhere on the 505 is not assumed.
+### Service parameters (step 1, from the TTC GTFS feed, Friday 2026-10-16, trips starting 07:00–09:00)
+| Value | Result | How |
+| --- | --- | --- |
+| Westbound / eastbound full-route run | 3,660 s / 3,600 s | Median of 18 trips each way |
+| Terminal layover | 120 s at Broadview Station, 480 s at Dundas West Station | Median gap between a block's consecutive trips at the same terminal |
+| `cycle_s` | **7,920 s** | Median time between a block's consecutive Broadview Station departures (18 samples). Adding the parts above gives 7,860 s, within 1%. |
+| `baseline_headway_s` | **420 s** (419.8) | Same value the simulator uses |
+| `service_days` | **251** | 261 weekdays in 2026 minus 10 Ontario holidays falling on weekdays |
 
-### Extra vehicles, for checking
-Required vehicles = `ceil(cycle_s / headway_s)`; Lane C computes this, A10 only supplies the inputs. With an illustrative cycle of about 8,000 s, today's 420 s needs about 20 cars; 360 s, 300 s and 240 s need about 23, 27 and 34. The real numbers will come from the computed cycle.
+Only westbound is simulated. Eastbound is used because a car must return eastbound before its next westbound trip, so vehicle counts need the full round trip.
+
+### Streetcar-priority effect: **12% of link time saved (selected)**
+No 505 priority exists, so there is no measured effect on Dundas. The reasoning, in order:
+
+1. **King Street's morning peak barely changed.** The City's 2019 evaluation says AM peak travel times "stayed about the same (+/- a minute)". The 504 takes about 16 minutes across the priority section in the AM (929–963 s), so ±1 minute is about ±6%. The big gains were in the PM peak (slowest trips 4–5 minutes faster) and mid-day (2–2.5 minutes faster). The City attributes the small AM change to the downtown being less congested in the morning.
+2. **Our segment has fewer jobs than King Street.** 2021 Census place-of-work counts within 400 m of each stop: about 5,000 workers near the seven stops from Broadview to Jarvis, and about 36,000 near Church and Yonge–Dundas (87% of the segment's total). King's priority section has about 51,000 along its whole length. The eastern part of our segment is mainly residential, so its AM congestion is unlikely to be worse than King's.
+3. **Ridership on the 505 is back to 2018 levels, not above them.** 32,400 (2018), 23,356 (fall 2022), 28,400 (Nov 2024), 32,100 (Nov 2025). Measures differ slightly by year.
+4. **Road congestion has grown since 2019.** The City's 2024 update reports King streetcar trips of "45 to 65 minutes" in late 2023, against a 16-minute average in 2018, falling to 17–21 minutes once traffic agents enforced the corridor (time of day not stated). So an enforced priority lane plausibly saves more now than in 2018–19.
+5. **No 2019 schedule was available** to measure how much the 505's AM run time has grown (the archived feeds tried were not accessible).
+
+| Case | Value | Basis |
+| --- | --- | --- |
+| Low | 0% | No AM improvement (King AM evidence) |
+| Evidence-based central | 0% | King AM "about the same"; Dundas east is less job-dense than King |
+| **Selected (high)** | **12%** | King Street's 2018 mid-day saving, about 2.25 min out of about 18.25 min (the 2018 16-minute average plus the saving), used as a stand-in for AM congestion having grown since 2019 |
+
+**The team selected 12%** so that priority has a visible effect in the AM simulation and reflects congestion growth since the King evaluation. It is an **assumption**, not a measurement, and is labelled `assumed` with this reasoning. The evidence on its own points to little AM benefit; the comparison should say so wherever priority's result is shown.
+
+`interventions.json` lists the covered links (all 8 links of the modelled segment) with the 12% saving per link, so the simulator can shorten `link_travel_times_s` on those links. `lane_cycle_s` reduces the full-route cycle only by the saving on the modelled segment in both directions (12% of about 904 s each way, about 217 s). Priority elsewhere on the 505 is not assumed.
+
+### Costs: central values selected
+| Value | Low | **Selected (central)** | High | Basis |
+| --- | --- | --- | --- | --- |
+| `cost_per_hour` (2025 CAD per streetcar-hour) | 167 | **276** | 435 | Central: TTC 2025 budget, total operating cost per service hour, system-wide and fully allocated (budget notes p. 4). Low and high: TTC 2015 streetcar cost factors quoted by Steve Munro ($95.40/vehicle-hour, $3.42/vehicle-km, $515/vehicle-day), with 9.86 km per vehicle-hour from the cycle; low uses the hour and km factors only, high adds the daily vehicle cost spread over the 2.5 h a peak-only car runs. |
+| `lane_capital` (2025 CAD, one-time) | 1.89 M | **3.70 M** | 6.86 M | Low: the 2017 pilot estimate ($1.5 M). Central: pilot plus the 2019 permanent improvements ($1.5 M). High: also the 2024 improvements ($3.1 M). |
+| `lane_operating` (2025 CAD per year) | 0.43 M | **0.90 M** | 1.36 M | Low: $210,000 for January–July 2019, annualised. High: $750,000 for "the remainder of 2019", assumed May–December (8 months), annualised. Central: midpoint. Traffic-agent costs in the 2024 update are not stated, so high may understate today's cost. |
+
+Lane C's policy carries all three bounds for each cost; the selected (central) value is the default used in comparisons.
+
+### Extra vehicles
+Required vehicles = `ceil(cycle_s / headway_s)`; Lane C computes this, A10 only supplies the inputs. With `cycle_s` = 7,920 s: today's 420 s needs 19 cars; 360 s, 300 s and 240 s need 22, 27 and 33, so **3, 8 and 14 extra cars**. With priority (`lane_cycle_s` about 7,703 s) the same headways need 19, 22, 26 and 33.
 
 ## Steps
 1. Compute `cycle_s`, layover, `baseline_headway_s` and `service_days` from cached GTFS (about 30 min).

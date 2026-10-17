@@ -8,7 +8,13 @@
     "url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000501",
     "publisher": "Statistics Canada",
     "retrieved_via": "WDS API vector v41693271",
-    "index_2002_100": {"2015": 126.6, "2017": 130.4, "2019": 136.0, "2024": 160.9, "2025": 164.2}
+    "index_2002_100": {
+      "2015": 126.6,
+      "2017": 130.4,
+      "2019": 136.0,
+      "2024": 160.9,
+      "2025": 164.2
+    }
   },
   "documents": [
     {
@@ -66,58 +72,177 @@
       "url": "https://www.toronto.ca/legdocs/mmis/2024/ie/bgrd/backgroundfile-245114.pdf",
       "cache_file": "data/cache/a10/king-2024-update.pdf",
       "sha256": "e847ae11d75e46e4"
+    },
+    {
+      "source_id": "ttc-operating-stats-2018",
+      "title": "TTC 2018 Operating Statistics: Key Facts (busiest routes)",
+      "publisher": "Toronto Transit Commission",
+      "url": "https://www.ttc.ca/transparency-and-accountability/Operating-Statistics/Operating-Statistics---2018/Key-Facts",
+      "cache_file": null,
+      "sha256": null
+    },
+    {
+      "source_id": "ttc-boardings-2022",
+      "title": "2022 Fall Service Hours & Boardings by Route",
+      "publisher": "Toronto Transit Commission",
+      "url": "https://pw.ttc.ca/-/media/Project/TTC/DevProto/Documents/Home/Transparency-and-accountability/2022-Fall-Service-Hours--Boardings-by-Route.pdf",
+      "cache_file": null,
+      "sha256": null
+    },
+    {
+      "source_id": "ttc-boardings-2024",
+      "title": "TTC 2024 Operating Statistics: Boardings",
+      "publisher": "Toronto Transit Commission",
+      "url": "https://www.ttc.ca/transparency-and-accountability/Operating-Statistics/Operating-Statistics---2024/2024-Boardings",
+      "cache_file": null,
+      "sha256": null
+    },
+    {
+      "source_id": "ttc-505-observed-boardings",
+      "title": "TTC 2025 Operating Statistics: Boardings",
+      "publisher": "Toronto Transit Commission",
+      "url": "https://www.ttc.ca/transparency-and-accountability/Operating-Statistics/Operating-Statistics---2025/2025-Boardings",
+      "cache_file": null,
+      "sha256": null,
+      "note": "Same source ID as the simulation bundle's observed 505 boardings."
     }
   ],
   "figures": {
     "ttc_cost_per_service_hour": {
-      "source_id": "ttc-2025-operating-budget", "page": 4,
+      "source_id": "ttc-2025-operating-budget",
+      "page": 4,
       "quote": "Total Operating Cost / Service Hour (Adj for CPI, index=2025) ... $276 / Hr (2025 budget), $277 / Hr (2026 outlook)",
-      "value": 276, "unit": "CAD 2025 per service hour", "year": 2025,
+      "value": 276,
+      "unit": "CAD 2025 per service hour",
+      "year": 2025,
       "note": "System-wide, fully allocated average across all conventional modes, including subway and overheads; not a streetcar-only or marginal cost."
     },
     "ttc_streetcar_cost_factors_2015": {
-      "source_id": "munro-2017-queen-cost", "page": null,
+      "source_id": "munro-2017-queen-cost",
+      "page": null,
       "quote": "Streetcars $95.40 per vehicle hour, $3.42 per km, $515 per vehicle per day (2015 TTC Service Planning factors)",
-      "per_vehicle_hour": 95.40, "per_vehicle_km": 3.42, "per_vehicle_day": 515, "unit": "CAD 2015", "year": 2015,
+      "per_vehicle_hour": 95.4,
+      "per_vehicle_km": 3.42,
+      "per_vehicle_day": 515,
+      "unit": "CAD 2015",
+      "year": 2015,
       "note": "Cost-allocation factors (hours: operators, management, overhead; km: running and maintenance; vehicles: dispatch, inspection, cleaning). Secondary source; predate most Flexity operation."
     },
     "king_pilot_capital_2017": {
-      "source_id": "toronto-king-pilot-2017", "page": 3,
+      "source_id": "toronto-king-pilot-2017",
+      "page": 3,
       "quote": "The preliminary estimated cost of the King Street Transit Pilot proposed in this report is approximately $1,500,000 (subject to detailed design).",
-      "value": 1500000, "unit": "CAD 2017", "year": 2017
+      "value": 1500000,
+      "unit": "CAD 2017",
+      "year": 2017
     },
     "king_permanent_capital_2019": {
-      "source_id": "toronto-king-results-2019", "page": 4,
+      "source_id": "toronto-king-results-2019",
+      "page": 4,
       "quote": "The capital funding required to make permanent and incorporate improvements to the King Street Transit Priority Corridor is expected to be approximately $1.5 million (excluding HST recoveries).",
-      "value": 1500000, "unit": "CAD 2019", "year": 2019
+      "value": 1500000,
+      "unit": "CAD 2019",
+      "year": 2019
     },
     "king_improvements_capital_2024": {
-      "source_id": "toronto-king-update-2024", "page": 2,
+      "source_id": "toronto-king-update-2024",
+      "page": 2,
       "quote": "The estimated cost to implement the improvements outlined in this report is $3,100,000.",
-      "value": 3100000, "unit": "CAD 2024", "year": 2024
+      "value": 3100000,
+      "unit": "CAD 2024",
+      "year": 2024
     },
     "king_operating_2019_jan_jul": {
-      "source_id": "toronto-king-extension-2018", "page": 2,
+      "source_id": "toronto-king-extension-2018",
+      "page": 2,
       "quote": "Total funding required to operate and maintain the King Street Transit Pilot until July 31, 2019 is expected to be approximately $210,000 (excluding HST).",
-      "value": 210000, "unit": "CAD 2019", "year": 2019, "months_covered": 7,
+      "value": 210000,
+      "unit": "CAD 2019",
+      "year": 2019,
+      "months_covered": 7,
       "note": "Assumed to cover January to July 2019 (the extension period)."
     },
     "king_operating_2019_remainder": {
-      "source_id": "toronto-king-results-2019", "page": 4,
+      "source_id": "toronto-king-results-2019",
+      "page": 4,
       "quote": "The funding required to operate and maintain the project for the remainder of 2019 is expected to be approximately $750,000 (excluding HST recoveries).",
-      "value": 750000, "unit": "CAD 2019", "year": 2019, "months_covered": 8,
+      "value": 750000,
+      "unit": "CAD 2019",
+      "year": 2019,
+      "months_covered": 8,
       "note": "Assumed to cover May to December 2019 (report dated April 2019)."
     },
     "king_am_peak_effect": {
-      "source_id": "toronto-king-results-2019", "page": 11,
+      "source_id": "toronto-king-results-2019",
+      "page": 11,
       "quote": "In the morning peak, travel times have stayed about the same (+/- a minute) even as morning peak period ridership has dramatically increased by 20%",
-      "value_s": 60, "unit": "seconds, absolute change either way",
+      "value_s": 60,
+      "unit": "seconds, absolute change either way",
       "context": "Afternoon peak slowest trips improved about 4-5 minutes; mid-day averages about 2-2.5 minutes (same page). The City attributes the small AM change to the AM downtown being less congested."
     },
     "king_corridor_gtfs": {
-      "source_id": "ttc-gtfs", "page": null,
+      "source_id": "ttc-gtfs",
+      "page": null,
       "method": "504 King weekday trips, 07:00-09:00, King St West at Bathurst St to King St West at Jarvis St, median of scheduled times and shape distances (merged TTC GTFS feed S1000542)",
-      "am_scheduled_time_s": {"eastbound": 963, "westbound": 929}, "length_m": {"eastbound": 2578, "westbound": 2473}
+      "am_scheduled_time_s": {
+        "eastbound": 963,
+        "westbound": 929
+      },
+      "length_m": {
+        "eastbound": 2578,
+        "westbound": 2473
+      }
+    },
+    "king_midday_effect": {
+      "source_id": "toronto-king-results-2019",
+      "page": 11,
+      "quote": "Average streetcar travel times mid-day (10 a.m. - 4 p.m.) have improved by about 2.5 minutes eastbound and 2 minutes westbound in both November and December.",
+      "value_s": {
+        "eastbound": 150,
+        "westbound": 120
+      }
+    },
+    "king_2018_average_time": {
+      "source_id": "toronto-king-update-2024",
+      "page": 3,
+      "quote": "... in comparison to the average 16 minute travel times experienced prior to the pandemic, in 2018.",
+      "value_s": 960,
+      "note": "All-day average with the pilot in place; not split by time of day."
+    },
+    "king_2023_congestion": {
+      "source_id": "toronto-king-update-2024",
+      "page": 3,
+      "quote": "... resulted in streetcar travel times increasing anywhere from 45 to 65 minutes per trip, in comparison to the average 16 minute travel times experienced prior to the pandemic, in 2018. ... When Traffic Agents were deployed, streetcar travel times dropped to 17 to 21 minutes across the Transit Priority Corridor.",
+      "note": "Late-2023 conditions with violations and higher traffic; time of day not stated."
+    },
+    "ridership_505_weekday": {
+      "unit": "riders on an average weekday (definitions differ slightly by year)",
+      "values": [
+        {
+          "year": 2018,
+          "value": 32400,
+          "source_id": "ttc-operating-stats-2018",
+          "measure": "estimated daily usage on average business day"
+        },
+        {
+          "year": 2022,
+          "value": 23356,
+          "source_id": "ttc-boardings-2022",
+          "measure": "customers per day, fall 2022"
+        },
+        {
+          "year": 2024,
+          "value": 28400,
+          "source_id": "ttc-boardings-2024",
+          "measure": "average weekday boardings, November"
+        },
+        {
+          "year": 2025,
+          "value": 32100,
+          "source_id": "ttc-505-observed-boardings",
+          "measure": "average weekday boardings, November"
+        }
+      ]
     }
   }
 }
