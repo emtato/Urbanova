@@ -1,11 +1,19 @@
 """Foundation endpoints only; product routes follow the four-laptop gate."""
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
-from backend.config import DATA_VERSION, MODEL_VERSION
+from backend.config import DATA_VERSION, MODEL_VERSION, settings
 from backend.db import ping_database
 
 app = FastAPI(title="FutureProof", version=MODEL_VERSION)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
+)
 
 
 @app.get("/")

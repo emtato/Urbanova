@@ -52,3 +52,32 @@ def test_result_writer_always_records_versions():
         assert save_result({"test": True}) == result_id
     args = connection.execute.call_args.args
     assert args[1][1:] == (MODEL_VERSION, DATA_VERSION)
+
+
+@pytest.mark.parametrize("origin", ["http://localhost:5173", "http://127.0.0.1:5173"])
+def test_frontend_origin_can_call_hosted_api(origin):
+    client = TestClient(app)
+    response = client.options(
+        "/api/health",
+        headers={
+            "Origin": origin,
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "Content-Type",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == origin
+    assert "access-control-allow-credentials" not in response.headers
+
+
+def test_unlisted_frontend_origin_is_rejected():
+    client = TestClient(app)
+    response = client.options(
+        "/api/health",
+        headers={
+            "Origin": "https://unlisted.example",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert response.status_code == 400
+    assert "access-control-allow-origin" not in response.headers

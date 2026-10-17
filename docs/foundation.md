@@ -8,7 +8,7 @@ Use one Tiger Data Shared (free) PostgreSQL database with PostGIS for the team. 
 1. Install Python 3.11 and Node 24 LTS.
 2. Pull the latest commit. Copy .env.example to .env and set DATABASE_URL to the Tiger Data PostgreSQL connection URL with sslmode=require. Never commit or paste credentials into chat.
 3. Run bash scripts/setup.sh, or powershell -ExecutionPolicy Bypass -File scripts/setup.ps1 on Windows. Setup preserves an existing .env and initializes Tiger Data PostgreSQL.
-4. Activate the venv as shown in README; run python -m uvicorn backend.main:app --reload --port 8010.
+4. Activate the venv as shown in README; run python -m uvicorn backend.main:app --reload --reload-dir backend --port 8010.
 5. Open http://localhost:8010/api/health and http://localhost:8010/api/health/db; both must report status ok.
 6. In a separate terminal run cd frontend then npm run dev; open http://localhost:5173. Vite proxies /api to port 8010.
 7. Run python -m scripts.check_db --init and python -m backend.worker --once. The database check executes SELECT postgis_version();.
@@ -35,7 +35,7 @@ Restart the backend and worker after editing .env. Database access requires a ne
 - Phase 01 still needs the corridor/direction/peak window, source data and model/schema decisions; those are outside Foundation.
 
 FutureProof uses port 8010 to avoid other local apps. Restart Vite after a proxy configuration change.
-In Command Prompt, run .venv\Scripts\python.exe -m uvicorn backend.main:app --reload --port 8010 from the repository root; no activation is needed.
+In Command Prompt, run .venv\Scripts\python.exe -m uvicorn backend.main:app --reload --reload-dir backend --port 8010 from the repository root; no activation is needed.
 
 
 

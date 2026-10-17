@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     database_url: PostgresDsn | None = Field(default=None, repr=False)
     data_cache_dir: Path = ROOT_DIR / "data/cache"
     sim_runs: int = Field(default=100, ge=1)
+    cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173"]
+    )
 
     @field_validator("database_url", mode="before")
     @classmethod
