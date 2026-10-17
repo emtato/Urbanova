@@ -25,10 +25,12 @@ describe('inspector metric semantics', () => {
       individual_results: [1, 2].map(multiplier => ({ summary: { by_stop: [{
         stop_id: 's1', mean_wait_s: 20 * multiplier, raw_waiting_at_cutoff: 6 * multiplier,
         remaining_queue: 2, denied_at_least_once_share: .5, headway_cv: .4,
-        by_rider_group: { existing: { passengers: 12 * multiplier, mean_wait_s: 15 }, new: { passengers: 3 } },
+        by_rider_group: { existing: { passengers: 12 * multiplier, boarded_passengers: 12 * multiplier, mean_wait_s: 15 }, new: { passengers: 3, boarded_passengers: 3, mean_wait_s: 35 } },
       }] } })),
     } as unknown as NativeCaseResult
-    expect(transitMetrics(result, 's1')).toMatchObject({ existing: 18, added: 3, waiting: 9, denied: .5, wait: 30 })
+    // The reported stop mean is 20/40, but the cohort values are authoritative:
+    // the two run-level weighted means are 19 and 17.22, which average to 18.11.
+    expect(transitMetrics(result, 's1')).toMatchObject({ existing: 18, added: 3, waiting: 9, denied: .5, wait: 18.11111111111111 })
     expect(transitMetrics(result).waiting).toBe(9)
     expect(transitMetrics(result).wait).toBe(44)
     expect(transitMetrics(result, 'absent').existing).toBeNull()

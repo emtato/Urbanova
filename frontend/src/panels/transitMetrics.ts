@@ -19,6 +19,7 @@ export function spacingScore(cv: number | null) {
 export interface TransitMetrics {
   existing: number | null
   added: number | null
+  total: number | null
   existingWait: number | null
   existingP95: number | null
   wait: number | null
@@ -53,15 +54,27 @@ export function transitMetrics(result?: CaseResult, stopId?: string): TransitMet
     const mean = (key: string) => average(rows.map(row => number(row[key])))
     const groupMean = (group: string, key: string) => average(rows.map(row =>
       number(object(object(row.by_rider_group)[group])[key])))
+    const combinedGroupMean = (key: string, weight: string, fallback: string) => average(rows.map(row => {
+      const groups = object(row.by_rider_group)
+      const values = ['existing', 'new'].map(group => {
+        const cohort = object(groups[group])
+        return { value: number(cohort[key]), weight: number(cohort[weight]) }
+      }).filter((value): value is { value: number; weight: number } => value.value != null && value.weight != null && value.weight > 0)
+      const totalWeight = values.reduce((sum, value) => sum + value.weight, 0)
+      return totalWeight ? values.reduce((sum, value) => sum + value.value * value.weight, 0) / totalWeight : number(row[fallback])
+    }))
     // Native summary.by_stop contains all arrivals and physical queues; the older
     // case.stops projection counts stranded riders differently. Never substitute it.
     const metric = (key: string) => stopId ? mean(key) : number(native.overall_results.metrics[key]?.mean)
+    const existing = stopId ? groupMean('existing', 'passengers') : metric('existing_corridor_passengers')
+    const added = stopId ? groupMean('new', 'passengers') : metric('new_development_passengers')
     return {
-      existing: stopId ? groupMean('existing', 'passengers') : metric('existing_corridor_passengers'),
-      added: stopId ? groupMean('new', 'passengers') : metric('new_development_passengers'),
+      existing, added, total: existing == null || added == null ? null : existing + added,
       existingWait: stopId ? groupMean('existing', 'mean_wait_s') : null,
       existingP95: stopId ? groupMean('existing', 'p95_wait_s') : null,
-      wait: metric('mean_wait_s'), p95: metric('p95_wait_s'),
+      // Recombine the cohorts at a station. This guards against stale fixtures
+      // whose aggregate wait/count fields omit the new-rider cohort.
+      wait: stopId ? combinedGroupMean('mean_wait_s', 'boarded_passengers', 'mean_wait_s') : metric('mean_wait_s'), p95: metric('p95_wait_s'),
       denied: metric(stopId ? 'denied_at_least_once_share' : 'denied_boarding_share'),
       waiting: metric(stopId ? 'raw_waiting_at_cutoff' : 'raw_waiting_at_cutoff_passengers'),
       cv: stopId ? mean('headway_cv') : null,
@@ -85,6 +98,7 @@ export function transitMetrics(result?: CaseResult, stopId?: string): TransitMet
   }
   return {
     existing: sum('passengers', 'existing'), added: sum('passengers', 'new'),
+    total: sum('passengers'),
     existingWait: weighted('mean_wait_s', 'completed_passengers', 'existing'),
     existingP95: stopId ? rows.find(row => row.rider_group === 'existing')?.p95_wait_s ?? null : null,
     wait: stopId ? weighted('mean_wait_s', 'completed_passengers') : average(result?.per_run_mean_wait_s ?? []),
