@@ -93,6 +93,7 @@ def test_westward_split_and_reproducibility():
 
 def test_real_data_returns_valid_corridor_trips():
     m = load_commute_model()
+    assert len(m._workplaces) == 585  # Default scope="city" (Toronto-only tracts).
     corridor_ids = [s.corridor_stop_id for s in m.route if s.corridor_stop_id]
     rng = Random(0)
     trips = [sample_streetcar_trip(43.6600907, -79.3642039, rng) for _ in range(2_000)]  # 500 Dundas E.
@@ -102,3 +103,83 @@ def test_real_data_returns_valid_corridor_trips():
         assert trip.board_stop_id in corridor_ids
         if trip.alight_stop_id is not None:
             assert corridor_ids.index(trip.alight_stop_id) > corridor_ids.index(trip.board_stop_id)
+
+
+def test_terminus_boarding_handles_overcrowding_and_wait_detection():
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Passenger, Stop
+    from backend.simulation.runner import run_simulation
+
+    stops = (
+        Stop(id="s0", name="Start", sequence=0, latitude=LAT, longitude=lon_at(0)),
+        Stop(id="s1", name="TMU", sequence=1, latitude=LAT, longitude=lon_at(400)),
+    )
+    inputs = SimulationInput(
+        stops=stops,
+        existing_residences=(),
+        developments=(),
+        link_travel_times_s=(10.0,),
+        streetcar_capacity=1,
+        headway_s=20.0,
+        rush_hour_duration_s=30.0,
+        trips_per_resident_in_window=0.3,
+        start_time_s=0,
+        end_time_s=40,
+    )
+    # p1 boards at s0 and rides past s1 (occupies the 1-person streetcar through s1).
+    # p2 waits at s1 (TMU terminus) at t=5s to ride beyond_segment: denied on car 1 at t=10s, boards car 2 at t=30s.
+    passengers = {
+        "p1": Passenger(id="p1", origin_stop_id="s0", destination_stop_id=None, get_to_stop_time=0, rider_group="existing"),
+        "p2": Passenger(id="p2", origin_stop_id="s1", destination_stop_id=None, get_to_stop_time=5, rider_group="existing"),
+    }
+    run_simulation(inputs, passengers)
+
+    assert passengers["p1"].status == "beyond_segment"
+    assert passengers["p1"].boarding_time_s == 0
+    assert passengers["p1"].exit_time_s == 10
+
+    assert passengers["p2"].denied_boarding_once is True
+    assert passengers["p2"].boarding_time_s == 30
+    assert passengers["p2"].boarding_time_s - passengers["p2"].get_to_stop_time == 25
+    assert passengers["p2"].status == "beyond_segment"
+    assert len(stops[1].waiting_passenger_ids) == 0
+
+
+def test_run_simulation_generates_passengers_via_commute_helper():
+    from backend.simulation.inputs import SimulationInput
+    from backend.simulation.objects import Development, Stop
+    from backend.simulation.runner import run_simulation
+
+    m = load_commute_model()
+    corridor_stops = tuple(
+        Stop(id=s.corridor_stop_id, name=s.name, sequence=i, latitude=s.latitude, longitude=s.longitude)
+        for i, s in enumerate(s for s in m.route if s.corridor_stop_id)
+    )
+    dev = Development(
+        id="dev-500-dundas",
+        name="500 Dundas St E",
+        latitude=43.6600907,
+        longitude=-79.3642039,
+        net_added_units=413,
+        occupied_share=1.0,
+        residents_per_occupied_unit=1.8,
+        transit_share=0.3,
+        accessible_stop_ids=("ttc-stop-2125",),
+    )
+    inputs = SimulationInput(
+        stops=corridor_stops,
+        existing_residences=(),
+        developments=(dev,),
+        link_travel_times_s=(60.0,) * (len(corridor_stops) - 1),
+        streetcar_capacity=130,
+        headway_s=360.0,
+        rush_hour_duration_s=1800.0,
+        trips_per_resident_in_window=0.3,
+        start_time_s=0,
+        end_time_s=2400,
+    )
+    result = run_simulation(inputs)
+    assert len(result["passengers"]) > 0
+    assert all(p["origin_stop_id"] == "ttc-stop-2125" for p in result["passengers"])
+    assert all(p["rider_group"] == "new" and p["development_id"] == "dev-500-dundas" for p in result["passengers"])
+    assert any(p["status"] in ("arrived", "beyond_segment") for p in result["passengers"])

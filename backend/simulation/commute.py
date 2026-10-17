@@ -285,8 +285,8 @@ def _load_line1_stations() -> list[Place]:
 
 
 @lru_cache(maxsize=None)
-def load_commute_model(scope: Literal["cma", "city"] = "cma", **params) -> CommuteModel:
-    """Build (once) the model from data/reviewed. scope="city" keeps Toronto-only tracts."""
+def load_commute_model(scope: Literal["cma", "city"] = "city", **params) -> CommuteModel:
+    """Build (once) the model from data/reviewed. Defaults to Toronto-only ('city') tracts."""
     corridor = _load_corridor_stops()
     return CommuteModel(
         _load_workplaces(scope), corridor, _load_beyond_stops({p.id for p in corridor}),

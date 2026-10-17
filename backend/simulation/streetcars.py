@@ -10,7 +10,7 @@ from math import isfinite
 from random import Random
 
 from .inputs import SimulationInput
-from .objects import Streetcar
+from .objects import Passenger, Streetcar
 
 #3 following helpers supply entry times, generate (and return) streetcar or terminate it
 def streetcar_entry_times(inputs: SimulationInput) -> Iterator[float]:
@@ -90,6 +90,62 @@ def arrive_streetcar(streetcar: Streetcar, time_s: float) -> None:
     streetcar.status = "at_stop"
     streetcar.departure_time_s = None
     streetcar.expected_arrival_time_s = None
+
+
+def handle_stop_passengers(
+    inputs: SimulationInput,
+    streetcar: Streetcar,
+    passengers: dict[str, Passenger],
+    time_s: float,
+) -> None:
+    """Alight arriving riders, board waiting riders up to capacity, and mark overcrowding.
+
+    Also handles the terminus (inputs.stops[-1]): riders boarding at or riding
+    past TMU with destination_stop_id=None still board and record wait/denied-boarding
+    state before crossing the corridor boundary as status='beyond_segment'.
+    """
+    if streetcar.status != "at_stop" or streetcar.current_stop_id is None:
+        raise ValueError("A streetcar must be at a stop to serve passengers")
+    stop = next(s for s in inputs.stops if s.id == streetcar.current_stop_id)
+
+    # 1. Alight passengers whose destination is this stop.
+    remaining_onboard: list[str] = []
+    for pid in streetcar.onboard_passenger_ids:
+        passenger = passengers[pid]
+        if passenger.destination_stop_id == stop.id:
+            passenger.status = "arrived"
+            passenger.exit_time_s = time_s
+            passenger.streetcar_id = None
+        else:
+            remaining_onboard.append(pid)
+    streetcar.onboard_passenger_ids = remaining_onboard
+
+    # 2. Board waiting passengers FIFO up to vehicle capacity.
+    while stop.waiting_passenger_ids and len(streetcar.onboard_passenger_ids) < streetcar.capacity:
+        pid = stop.waiting_passenger_ids.popleft()
+        passenger = passengers[pid]
+        passenger.status = "onboard"
+        passenger.streetcar_id = streetcar.id
+        passenger.boarding_time_s = time_s
+        streetcar.onboard_passenger_ids.append(pid)
+
+    # 3. Overcrowding: anyone still waiting in the queue could not board this car.
+    if len(streetcar.onboard_passenger_ids) >= streetcar.capacity:
+        for pid in stop.waiting_passenger_ids:
+            passengers[pid].denied_boarding_once = True
+
+    # 4. At the terminus, riders heading beyond the modelled segment cross the boundary.
+    if stop.id == inputs.stops[-1].id:
+        still_onboard: list[str] = []
+        for pid in streetcar.onboard_passenger_ids:
+            passenger = passengers[pid]
+            if passenger.destination_stop_id is None:
+                passenger.status = "beyond_segment"
+                passenger.exit_time_s = time_s
+                passenger.streetcar_id = None
+            else:
+                still_onboard.append(pid)
+        streetcar.onboard_passenger_ids = still_onboard
 
 
 def terminate_streetcar(inputs: SimulationInput, streetcar: Streetcar) -> None:
