@@ -46,9 +46,9 @@ All hands
 
 1. [ ] 0.1
 
-   requirements.txt
+   requirements.txt · backend/package.json
 
-   Pin versions: `fastapi`, `uvicorn`, `pydantic`, `numpy`, `pandas`, `geopandas`, `shapely`, `pyproj`, `osmnx`, `psycopg[binary]`, `google-genai`, `python-dotenv`, `pytest`. Pinning now prevents the "works on mine" hour.
+   The backend is **Express (Node)**; Python is kept only for the data pipelines (Lane A) and the simulator (Lane B). Pin Python versions: `numpy`, `pandas`, `geopandas`, `shapely`, `pyproj`, `osmnx`, `psycopg[binary]`, `pyyaml`, `python-dotenv`, `pytest`. Pin backend npm versions: `express`, `cors`, `pg`, `zod`, `@google/genai`, `dotenv`. Pinning now prevents the "works on mine" hour.
 2. [ ] 0.2
 
    .gitignore
@@ -61,9 +61,9 @@ All hands
    `GEMINI_API_KEY`, `GEMINI_MODEL`, `DATABASE_URL` (Tiger Data), `DATABASE_URL_LOCAL` (fallback), `DATA_CACHE_DIR`, `SIM_RUNS`, `OFFLINE`. Keys stay on the backend.
 4. [ ] 0.4
 
-   backend/config.py
+   backend/config.js
 
-   One pydantic `Settings` object loading `.env`, plus `MODEL_VERSION` and `DATA_VERSION` strings that every saved result records.
+   One zod-validated `config` object loading `.env`, plus `MODEL_VERSION` and `DATA_VERSION` strings that every saved result records.
 5. [ ] 0.5
 
    docker-compose.yml
@@ -78,7 +78,7 @@ All hands
 
    scripts/setup.sh
 
-   venv → `pip install -r requirements.txt` → `npm install` → database ping. One command per teammate.
+   venv → `pip install -r requirements.txt` → `npm install` in `backend/` and `frontend/` → database ping. One command per teammate.
 8. [ ] 0.8
 
    README.md
@@ -87,7 +87,7 @@ All hands
 
 Gate — do not proceed until
 
-All four people have `uvicorn backend.main:app --reload`, `npm run dev` and `SELECT postgis_version();` working locally, and a first commit is pushed.
+All four people have the Express backend (`npm run dev` in `backend/`), the frontend (`npm run dev` in `frontend/`) and `SELECT postgis_version();` working locally, and a first commit is pushed.
 
 01
 
@@ -127,7 +127,7 @@ In pairs · time-boxed to 75 minutes
    Confirm three developments exist in the Development Pipeline with unit counts and stages, and that the GTFS feed has the chosen pattern on a weekday service date. List which demand observations are missing. If stop-level demand stays unavailable, the product is labelled a *scenario experiment* from here on.
 3. [ ] 1.3
 
-   scripts/check_access.py
+   scripts/check_access.js
 
    Tiger Data service reachable with PostGIS enabled; one Gemini call returns a valid structured response. If either fails, decide the fallback now, not at hour 20.
 4. [ ] 1.4
@@ -140,63 +140,63 @@ All hands · strict order
 
 ### Schemas, innermost to outermost
 
-Each object below is composed by the next. Build them in this order and the last one assembles itself.
+Each object below is composed by the next. Build them in this order and the last one assembles itself. Schemas are **zod** modules in the Express backend (`backend/schemas/*.js`); the Python pipelines and simulator read and write the same field names.
 
 1. [ ] 1.5
 
-   backend/schemas/source.py
+   backend/schemas/source.js
 
    `SourceRef`: source_id, title, url, publisher, retrieved_at, version, licence. Every other object points at these ids.
 2. [ ] 1.6
 
-   backend/schemas/assumption.pyCritical
+   backend/schemas/assumption.jsCritical
 
    `Assumption`: key, unit, meaning, low / central / high, allowed range, status (`sourced` | `assumed` | `user_selected`), source_ids. The UI shows unit, meaning, status and range on every control, and this is where they come from.
 3. [ ] 1.7
 
-   backend/schemas/corridor.py
+   backend/schemas/corridor.js
 
    `Stop` (stop_id, gtfs_stop_id, name, seq, lon, lat), `Link` (link_id, from_stop, to_stop, length_m, base_time_s), `Corridor` (route pattern, direction, peak window, stops\[\], links\[\], berths per stop, incoming load at the first stop).
 4. [ ] 1.8
 
-   backend/schemas/development.py
+   backend/schemas/development.js
 
    `Development`: dev_id, pipeline_ref, address, units, stage, record_date, kind (`proposal` | `hypothetical`), footprint, access\[\] (stop_id, walk_m), source_ids. Units are proposed; residents exist only after an occupancy assumption.
 5. [ ] 1.9
 
-   backend/schemas/intervention.py
+   backend/schemas/intervention.js
 
    `Intervention`: id, type (`priority_lane` | `extra_service`), link_ids or headway, capital_cost and operating_cost ranges with price year and scope, extra vehicles, earliest_phase, effect with status.
 6. [ ] 1.10
 
-   backend/schemas/scenario.py
+   backend/schemas/scenario.js
 
    `Scenario`: scenario_id, version, developments per phase, occupied share, demand case, intervention availability dates, capital and operating budgets, fleet allowance, planning criterion. Housing totals are fixed across package comparisons.
 7. [ ] 1.11
 
-   backend/schemas/run.py
+   backend/schemas/run.js
 
    `Run`: run_id, scenario_version, package, model_version, data_version, seed ids, status, diagnostics (conservation, unresolved passengers, runtime).
 8. [ ] 1.12
 
-   backend/schemas/replay_event.py
+   backend/schemas/replay_event.js
 
    `ReplayEvent`: run_id, t_s, kind (`dispatch` | `arrive` | `alight` | `board` | `deny` | `depart`), vehicle_id, stop_id, count, load_after, rider_group. This one type drives the moving buses, the queues and the replay stored in Tiger Data.
 9. [ ] 1.13
 
-   backend/schemas/results.py
+   backend/schemas/results.js
 
    `StopResult` by rider group (existing, new): mean and p95 wait, share denied at least once, remaining queue, headway variability. `CaseResult` adds per-run arrays, run count and unresolved passengers.
 10. [ ] 1.14
 
-    backend/schemas/comparison.pyConvergence
+    backend/schemas/comparison.jsConvergence
 
     `Comparison`: scenario, corridor, cases (current, growth, supported growth), packages\[\] with feasibility reasons and criterion results per phase and demand case, sensitivity, assumptions\[\], sources\[\], warnings\[\]. If a lane's output does not fit in here, that lane is building the wrong thing.
 11. [ ] 1.15
 
     frontend/src/lib/types.ts
 
-    Hand-mirror 1.5 through 1.14 in TypeScript, with field names identical to the Python.
+    Hand-mirror 1.5 through 1.14 in TypeScript, with field names identical to the zod schemas.
 12. [ ] 1.16
 
     data/fixtures/sample_comparison.jsonDo not skip
@@ -205,7 +205,7 @@ Each object below is composed by the next. Build them in this order and the last
 
 Gate — do not proceed until
 
-The corridor is chosen from real files, the tiny case matches the hand calculation, `sample_comparison.json` validates against the pydantic models and the TypeScript types compile against it. Then split up.
+The corridor is chosen from real files, the tiny case matches the hand calculation, `sample_comparison.json` validates against the zod schemas and the TypeScript types compile against it. Then split up.
 
 02
 
@@ -378,37 +378,37 @@ The model computes; Gemini translates and explains. Every number on screen comes
 
 1. [ ] C1
 
-   backend/main.py · api/deps.py
+   backend/server.js · backend/api/deps.js
 
-   FastAPI app, CORS for the Vite port (5173), `/health` that also pings the database.
+   Express app, `cors` for the Vite port (5173), `/health` that also pings the database.
 2. [ ] C2
 
-   backend/services/validate.py
+   backend/services/validate.js
 
    Every site, option, value and constraint checked against the reviewed bundle before analysis. Errors say what is wrong and the allowed range.
 3. [ ] C3
 
-   packages/feasibility.py
+   backend/packages/feasibility.js
 
    Four packages: existing, lane, extra service, both. Vehicles = ceil(cycle ÷ headway). Operating cost = extra vehicle-hours × service days × cost per hour. Reject anything over capital, operating or fleet limits, or unavailable in the phase, and keep the reason.
 4. [ ] C4
 
    backend/worker/ · jobs table
 
-   A separate worker process runs simulations so web requests never block. A job table and polling are enough; add streaming only if the workload needs it.
+   A separate Node worker process spawns the Python simulator (`python -m sim.runner.paired_runs`) so web requests never block. A job table and polling are enough; add streaming only if the workload needs it.
 5. [ ] C5
 
-   packages/evaluate.pyWaits on B11
+   backend/packages/evaluate.jsWaits on B11
 
    Run every feasible package on the same demand cases and draws. Until B11 lands, a stub returns fixture results.
 6. [ ] C6
 
-   packages/compare.py
+   backend/packages/compare.js
 
    Mark dominated options. Name the least-cost tested package that meets the user's criterion across the selected cases, or show the alternatives when none does. Wording: "best among the tested packages under these assumptions."
 7. [ ] C7
 
-   packages/sensitivity.py
+   backend/packages/sensitivity.js
 
    Low, central and high demand plus one upgrade-delay case. Report whether the preferred package changes and which stops are repeatedly worst.
 8. [ ] C8
@@ -418,37 +418,37 @@ The model computes; Gemini translates and explains. Every number on screen comes
    The three queries to show judges: development access joined to affected stops, worst stops for a phase, and one package compared across runs and assumption versions. Store aggregates for all runs and replay events for selected runs only. Measure before claiming any speed-up.
 9. [ ] C9
 
-   backend/api/routes/
+   backend/api/routes/*.js
 
    `corridor` · `scenarios` · `jobs` · `results` · `replay`, each returning only the frozen schemas, with source and scenario ids on every result.
 10. [ ] C10
 
-    backend/core/cache.py
+    backend/core/cache.js
 
     Key on the full validated input, data version, model version and random configuration. Editing an input marks earlier results stale.
 11. [ ] C11
 
-    backend/ai/gemini_client.py
+    backend/ai/gemini_client.js
 
-    One model, structured output, key on the server, timeout, every call logged. If Gemini fails, the forms still work.
+    One model (`@google/genai`), structured output, key on the server, timeout, every call logged. If Gemini fails, the forms still work.
 12. [ ] C12
 
-    backend/ai/scenario_parser.py
+    backend/ai/scenario_parser.js
 
     "Keep the same homes, bring the first phase forward, compare the affordable options" becomes a scenario patch using existing ids only, then goes through C2. Unsupported questions and missing observations get a plain answer saying so.
 13. [ ] C13
 
-    backend/ai/explainer.pyDo not fake
+    backend/ai/explainer.jsDo not fake
 
     Explains a stored `Comparison` from its JSON alone. After generation, check that every number in the text appears in the payload and every source id exists; otherwise fall back to a templated explanation. If the comparison asked about doesn't exist, offer to run it.
 14. [ ] C14
 
-    backend/services/brief.py
+    backend/services/brief.js
 
     Text planning brief: compared options, costs, service outcomes, uncertainty, limitations, source versions, model version and seed ids.
 15. [ ] C15
 
-    tests/ai/test_parser_cases.py
+    backend/tests/ai/parser_cases.test.js
 
     Ten fixed questions re-run after every prompt change: valid parse, correct ids, agreement with numeric results.
 
@@ -549,9 +549,9 @@ Sequenced · not parallel
 
 1. [ ] 3.1
 
-   backend/services/pipeline.py
+   backend/services/pipeline.js
 
-   The whole chain as one function. Run `python -m backend.services.pipeline --scenario demo` headlessly before any HTTP is involved.
+   The whole chain as one function. Run `node backend/services/pipeline.js --scenario demo` headlessly before any HTTP is involved.
 2. [ ] 3.2
 
    routes in order
@@ -559,7 +559,7 @@ Sequenced · not parallel
    corridor → scenarios → jobs → results → replay. Each returns real data before the next is written.
 3. [ ] 3.3
 
-   backend/core/cache.pyDemo insurance
+   backend/core/cache.jsDemo insurance
 
    Precompute what the judge can reach: 2 phases × 3 demand cases × on-time or delayed upgrade, all four packages each. The live challenge then returns a real stored result, shown as a cache hit.
 4. [ ] 3.4
@@ -569,7 +569,7 @@ Sequenced · not parallel
    Turn `VITE_USE_FIXTURE` off. If Phase 1 held, nothing else in the frontend changes.
 5. [ ] 3.5
 
-   tests/test_pipeline.py
+   backend/tests/pipeline.test.js
 
    Demo scenario end to end: invariants pass in every case, the fixture flag is off, every assumption in the response has a status, an over-budget package is rejected. Run before every commit from here.
 6. [ ] 3.6
@@ -689,7 +689,7 @@ Then pick from the top · stop when time runs out
    Same-total housing alternatives on a few reviewed hypothetical sites. Moving a building on screen does not make the site developable; say so in the UI.
 5. [ ] 4.15
 
-   backend/research/investigator.pyPapiers · optional
+   backend/research/investigator.jsPapiers · optional
 
    Bottleneck investigator: hypothesis → controlled experiment on matched seeds → evaluation → next hypothesis, with Papiers read and write. Minimum: one full investigation with an agent-chosen next step. Findings describe the model, not the TTC.
 
