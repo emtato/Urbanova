@@ -10,7 +10,7 @@ from backend.db import save_result
 from backend.main import app
 
 
-def test_vultr_connection_url_is_used():
+def test_hosted_connection_url_is_used():
     config = Settings(_env_file=None, database_url="postgresql://hosted:secret@remote/futureproof?sslmode=require")
     assert config.active_database_url == "postgresql://hosted:secret@remote/futureproof?sslmode=require"
 

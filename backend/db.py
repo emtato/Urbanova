@@ -1,4 +1,4 @@
-"""Vultr Managed PostgreSQL schema bootstrap and versioned result writer."""
+"""hosted PostgreSQL schema bootstrap and versioned result writer."""
 from typing import Any
 from uuid import UUID
 
