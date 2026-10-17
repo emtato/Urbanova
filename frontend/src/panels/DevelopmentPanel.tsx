@@ -4,6 +4,7 @@ import {
   type CorridorStop,
   normalizeDevelopment,
   normalizeStop,
+  toShortAddress,
 } from '../map/types'
 import { getDevelopmentPhase } from '../map/MassingLayer'
 
@@ -59,6 +60,33 @@ export const REVIEWED_METADATA: Record<string, SourcedDevelopmentMeta> = {
     applicationReceived: '2025-10-08',
     datasetUpdatedAt: '2026-10-08',
   },
+  'fixture-development-1': {
+    applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=pIdDarxWXh5kap0IoXhw0Q%3D%3D',
+    lon: -79.3727167030444,
+    lat: 43.657776590088,
+    reviewNote: 'West end; numeric units agree with the current description.',
+    pipelineRowId: 927,
+    applicationReceived: '2022-03-18',
+    datasetUpdatedAt: '2026-10-08',
+  },
+  'fixture-development-2': {
+    applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=9OeVhFuD5G0FTMkwBab0Ig%3D%3D',
+    lon: -79.3642039444762,
+    lat: 43.6600907352172,
+    reviewNote: 'Middle of corridor; recent under-review residential proposal.',
+    pipelineRowId: 2375,
+    applicationReceived: '2026-02-27',
+    datasetUpdatedAt: '2026-10-08',
+  },
+  'fixture-development-3': {
+    applicationUrl: 'http://app.toronto.ca/AIC/index.do?folderRsn=pQXQdd9xsAyXtIdMbT%2BI5Q%3D%3D',
+    lon: -79.356394637334,
+    lat: 43.6612907741496,
+    reviewNote: 'East end; numeric units agree with the current description.',
+    pipelineRowId: 1844,
+    applicationReceived: '2025-10-08',
+    datasetUpdatedAt: '2026-10-08',
+  },
 }
 
 export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
@@ -97,7 +125,7 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
         />
         <div className="flex items-baseline gap-1.5 min-w-0">
           <span className="text-xs font-semibold text-foreground truncate">
-            {development.address}
+            {development.name || toShortAddress(development.address)}
           </span>
           <span className="text-[10px] text-muted-foreground font-mono shrink-0">
             ({development.units.toLocaleString()}u)
@@ -192,9 +220,10 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
           className="text-2xl font-normal tracking-tight text-foreground"
           style={{ fontFamily: "'Instrument Serif', serif" }}
         >
-          {development.address}
+          {development.name || toShortAddress(development.address)}
         </h2>
         <div className="text-xs text-muted-foreground mt-0.5 flex flex-col gap-0.5 font-mono">
+          <span className="text-foreground/90 font-medium">{development.address}</span>
           <span>Ref: {development.pipeline_ref || 'City Application'}</span>
           <span>Record Date: {development.record_date}</span>
         </div>

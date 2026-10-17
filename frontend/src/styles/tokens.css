@@ -129,6 +129,20 @@
   color: #0f172a !important;
 }
 
+/* Selected map pills stay legible over both bright streets and night scenes. */
+.liquid-glass.map-toggle[aria-pressed='true'] {
+  background: #5d482a !important;
+  color: #fff1c2 !important;
+  border: 1px solid #fbbf24 !important;
+  background-blend-mode: normal;
+}
+
+.liquid-glass.map-toggle[aria-pressed='true'][data-tone='cyan'] {
+  background: #285461 !important;
+  color: #d5fbff !important;
+  border-color: #22d3ee !important;
+}
+
 /* Text & border adaptations when sunlight theme is active */
 .theme-sunlight {
   --foreground: 222 47% 11%;

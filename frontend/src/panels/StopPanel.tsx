@@ -423,11 +423,11 @@ export const StopPanel: FC<StopPanelProps> = ({
                           P{phase}
                         </span>
                         <span className="font-medium text-foreground truncate group-hover:text-cyan-300 transition-colors">
-                          {dev.address}
+                          {dev.name || dev.address}
                         </span>
                       </div>
                       <span className="text-[10px] text-muted-foreground font-mono">
-                        {dev.units.toLocaleString()} units
+                        {dev.address} · {dev.units.toLocaleString()} units
                       </span>
                     </div>
 

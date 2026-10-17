@@ -118,20 +118,29 @@ export const DEV_COORDINATES: Record<string, [number, number]> = {
   'toronto-app-22-124214-ste-13-oz': [-79.3727167, 43.6577766], // 239 Dundas St E (630 units)
   'toronto-app-26-122451-ste-13-oz': [-79.3642039, 43.6600907], // 500 Dundas St E (413 units)
   'toronto-app-25-236949-ste-13-oz': [-79.3563946, 43.6612908], // 761 Dundas St E (1197 units)
+  'fixture-development-1': [-79.3727167, 43.6577766], // 239 Dundas St E
+  'fixture-development-2': [-79.3642039, 43.6600907], // 500 Dundas St E
+  'fixture-development-3': [-79.3563946, 43.6612908], // 761 Dundas St E
 }
 
 export const DEV_PHASES: Record<string, number> = {
   'toronto-app-22-124214-ste-13-oz': 1,
   'toronto-app-26-122451-ste-13-oz': 2,
   'toronto-app-25-236949-ste-13-oz': 2,
+  'fixture-development-1': 1,
+  'fixture-development-2': 2,
+  'fixture-development-3': 2,
 }
 
 export function getDevelopmentCoordinates(dev: any): [number, number] {
   const d = normalizeDevelopment(dev)
+  if (DEV_COORDINATES[d.dev_id]) {
+    return DEV_COORDINATES[d.dev_id]
+  }
   if (d.footprint && d.footprint.coordinates[0]?.[0]) {
     return d.footprint.coordinates[0][0]
   }
-  return DEV_COORDINATES[d.dev_id] || [-79.365, 43.660]
+  return [-79.365, 43.660]
 }
 
 export function getDevelopmentPhase(dev: any): number {
@@ -154,7 +163,7 @@ export function generateDevelopmentsGeoJSON(developments: any[]): FeatureCollect
       type: 'Feature',
       properties: {
         dev_id: dev.dev_id,
-        name: dev.address,
+        name: dev.name || dev.address,
         units: dev.units,
         stage: dev.stage,
         phase: phase,
@@ -333,51 +342,11 @@ export function setupCorridorMapLayers(
         ['==', ['get', 'layer'], 'today'],
       ],
       layout: {
-        visibility: 'none',
+        visibility: 'visible',
       },
       paint: {
         'fill-color': '#0f172a',
         'fill-opacity': 0.38,
-      },
-    } as AnyLayer)
-
-    // Layer 2: Removed - Sunlight gained from cleared buildings (Emerald green)
-    map.addLayer({
-      id: LAYER_SHADOWS_REMOVED,
-      type: 'fill',
-      source: SOURCE_SHADOWS,
-      slot: 'middle',
-      filter: [
-        'all',
-        ['==', ['get', 'local_time'], '2026-06-21T12:00'],
-        ['==', ['get', 'layer'], 'removed'],
-      ],
-      layout: {
-        visibility: 'none',
-      },
-      paint: {
-        'fill-color': '#10b981',
-        'fill-opacity': 0.55,
-      },
-    } as AnyLayer)
-
-    // Layer 3: Added - Sunlight lost from new proposed towers (Vibrant orange)
-    map.addLayer({
-      id: LAYER_SHADOWS_ADDED,
-      type: 'fill',
-      source: SOURCE_SHADOWS,
-      slot: 'middle',
-      filter: [
-        'all',
-        ['==', ['get', 'local_time'], '2026-06-21T12:00'],
-        ['==', ['get', 'layer'], 'added'],
-      ],
-      layout: {
-        visibility: 'none',
-      },
-      paint: {
-        'fill-color': '#f97316',
-        'fill-opacity': 0.65,
       },
     } as AnyLayer)
   }
@@ -395,13 +364,13 @@ export function setupCorridorMapLayers(
         'fill-extrusion-color': [
           'match',
           ['get', 'phase'],
-          1, '#06b6d4', // Phase 1 Cyan
-          2, '#f59e0b', // Phase 2 Amber
-          '#8b5cf6'      // Default purple
+          1, '#0284c7', // Phase 1 Solid Cyan
+          2, '#d97706', // Phase 2 Solid Amber
+          '#7c3aed'      // Default purple
         ],
         'fill-extrusion-height': ['get', 'height_m'],
         'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.95,
+        'fill-extrusion-opacity': 1.0, // Fully solid and opaque so unselected towers are never see-thru
       },
     } as AnyLayer)
   }
@@ -541,6 +510,80 @@ export function updateDevelopmentsPhase(map: MapboxMap, activePhase: number): vo
 }
 
 /**
+ * Toggles individual development visibility based on active development IDs.
+ * Powers the top-left toolbar pill buttons.
+ */
+export function updateDevelopmentsVisibility(
+  map: MapboxMap,
+  visibleDevIds: string[]
+): void {
+  // 1. Proposed Development Towers
+  if (map.getLayer(LAYER_DEVELOPMENTS_EXTRUSION)) {
+    if (visibleDevIds.length === 0) {
+      map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['==', ['get', 'dev_id'], '__none__'])
+    } else if (visibleDevIds.length === 1) {
+      map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, ['==', ['get', 'dev_id'], visibleDevIds[0]])
+    } else {
+      map.setFilter(LAYER_DEVELOPMENTS_EXTRUSION, [
+        'any',
+        ...visibleDevIds.map((id) => ['==', ['get', 'dev_id'], id]),
+      ])
+    }
+  }
+
+  // 2. Walk catchments follow visible developments
+  if (map.getLayer(LAYER_WALK_LINKS)) {
+    if (visibleDevIds.length === 0) {
+      map.setFilter(LAYER_WALK_LINKS, ['==', ['get', 'dev_id'], '__none__'])
+    } else if (visibleDevIds.length === 1) {
+      map.setFilter(LAYER_WALK_LINKS, ['==', ['get', 'dev_id'], visibleDevIds[0]])
+    } else {
+      map.setFilter(LAYER_WALK_LINKS, [
+        'any',
+        ...visibleDevIds.map((id) => ['==', ['get', 'dev_id'], id]),
+      ])
+    }
+  }
+}
+
+/**
+ * Updates building colors and styling when selected or unselected.
+ * When not selected, buildings remain solid and opaque (never see-thru).
+ */
+export function updateDevelopmentsSelected(
+  map: MapboxMap,
+  selectedDevId?: string | null
+): void {
+  if (!map.getLayer(LAYER_DEVELOPMENTS_EXTRUSION)) return
+
+  const targetId = selectedDevId ?? ''
+
+  map.setPaintProperty(LAYER_DEVELOPMENTS_EXTRUSION, 'fill-extrusion-color', [
+    'case',
+    ['==', ['get', 'dev_id'], targetId],
+    // Selected highlight colors (radiant glow)
+    [
+      'match',
+      ['get', 'phase'],
+      1, '#38bdf8', // Luminous Electric Cyan
+      2, '#fde047', // Radiant Gold Highlight
+      '#c084fc'
+    ],
+    // Unselected solid rich colors (opaque, rich contrast)
+    [
+      'match',
+      ['get', 'phase'],
+      1, '#0284c7', // Solid Bold Cyan
+      2, '#d97706', // Solid Bold Amber
+      '#7c3aed'
+    ]
+  ])
+
+  // Always keep fully solid and opaque so they are never see-thru
+  map.setPaintProperty(LAYER_DEVELOPMENTS_EXTRUSION, 'fill-extrusion-opacity', 1.0)
+}
+
+/**
  * Dynamically updates all corridor map sources when data changes
  */
 export function updateCorridorMapData(
@@ -590,70 +633,35 @@ export function updateVehiclePositions(
 }
 
 /**
- * Toggles visibility and updates solar time filter for ground shadow layers
+ * Toggles visibility and updates solar time filter for ground shadow layers.
+ * Sunlight and shadows are cast at all times.
  */
 export function updateShadowTimeAndVisibility(
   map: MapboxMap,
   options: {
-    enabled: boolean
-    localTime: string
-    activePhase: number
+    enabled?: boolean
+    localTime?: string
+    activePhase?: number
   }
 ): void {
-  const { enabled, localTime, activePhase } = options
+  const { enabled = true, localTime = '2026-06-21T12:00' } = options
 
   const isLayerReady = (id: string) => !!map.getLayer(id)
 
+  if (!isLayerReady(LAYER_SHADOWS_TODAY)) return
+
   if (!enabled) {
-    if (isLayerReady(LAYER_SHADOWS_TODAY)) {
-      map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'none')
-    }
-    if (isLayerReady(LAYER_SHADOWS_REMOVED)) {
-      map.setLayoutProperty(LAYER_SHADOWS_REMOVED, 'visibility', 'none')
-    }
-    if (isLayerReady(LAYER_SHADOWS_ADDED)) {
-      map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'none')
-    }
+    map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'none')
     return
   }
 
   // When enabled, update filter and show baseline today shadows
-  if (isLayerReady(LAYER_SHADOWS_TODAY)) {
-    map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'visible')
-    map.setFilter(LAYER_SHADOWS_TODAY, [
-      'all',
-      ['==', ['get', 'local_time'], localTime],
-      ['==', ['get', 'layer'], 'today'],
-    ])
-  }
-
-  // In Phase 0 (Today), proposals are not built yet, so hide added/removed
-  if (activePhase === 0) {
-    if (isLayerReady(LAYER_SHADOWS_REMOVED)) {
-      map.setLayoutProperty(LAYER_SHADOWS_REMOVED, 'visibility', 'none')
-    }
-    if (isLayerReady(LAYER_SHADOWS_ADDED)) {
-      map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'none')
-    }
-  } else {
-    // In Phase 1 or 2, show sunlight gained and sunlight lost
-    if (isLayerReady(LAYER_SHADOWS_REMOVED)) {
-      map.setLayoutProperty(LAYER_SHADOWS_REMOVED, 'visibility', 'visible')
-      map.setFilter(LAYER_SHADOWS_REMOVED, [
-        'all',
-        ['==', ['get', 'local_time'], localTime],
-        ['==', ['get', 'layer'], 'removed'],
-      ])
-    }
-    if (isLayerReady(LAYER_SHADOWS_ADDED)) {
-      map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'visible')
-      map.setFilter(LAYER_SHADOWS_ADDED, [
-        'all',
-        ['==', ['get', 'local_time'], localTime],
-        ['==', ['get', 'layer'], 'added'],
-      ])
-    }
-  }
+  map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'visible')
+  map.setFilter(LAYER_SHADOWS_TODAY, [
+    'all',
+    ['==', ['get', 'local_time'], localTime],
+    ['==', ['get', 'layer'], 'today'],
+  ])
 }
 
 

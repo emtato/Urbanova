@@ -26,7 +26,7 @@ from data.sources.shadows import ground_shadow
 from data.sources.sun import solar_position
 
 TIMEZONE = ZoneInfo("America/Toronto")
-DEFAULT_DATES = {"spring_equinox": "2026-03-20", "summer_solstice": "2026-06-21", "winter_solstice": "2026-12-21"}
+DEFAULT_DATES = {"spring_equinox": "2026-03-20", "summer_solstice": "2026-06-21", "autumn_equinox": "2026-09-22", "winter_solstice": "2026-12-21"}
 DEFAULT_TIMES = ["09:00", "12:00", "15:00", "18:00"]
 # Simplification tolerance in metres; keeps the file small without visibly moving edges.
 SIMPLIFY_M = 0.5

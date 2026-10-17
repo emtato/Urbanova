@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { fetchComparison, isUsingFixture, setUseFixture } from '../lib/api'
 import type { Comparison, Scenario } from '../lib/types'
 import {
@@ -40,15 +40,20 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [selectedDev, setSelectedDev] = useState<CorridorDevelopment | null>(null)
   const [usingFixture, setUsingFixtureState] = useState(isUsingFixture())
   const [activePhase] = useState<number>(2)
+  const [shadowsEnabled, setShadowsEnabled] = useState(true)
   const [showDrawer, setShowDrawer] = useState(false)
-  const [showFixturePopup, setShowFixturePopup] = useState(true)
-  const [shadowsEnabled, setShadowsEnabled] = useState(false)
-  const [hideAllPopups, setHideAllPopups] = useState(false)
+  const [hideAllPopups] = useState(false)
   const [isStopMinimized, setIsStopMinimized] = useState(false)
   const [isDevMinimized, setIsDevMinimized] = useState(false)
   const [activeTool, setActiveTool] = useState<ActiveTool>(null)
   const [isToolMinimized, setIsToolMinimized] = useState(false)
   const [scenarioNotice, setScenarioNotice] = useState<string | null>(null)
+
+  // Preserve map data identity when only page controls change.
+  const developments = useMemo(
+    () => (comparison?.scenario?.developments ?? []).map(normalizeDevelopment),
+    [comparison?.scenario?.developments],
+  )
 
   const handleScenarioChange = (updated: Scenario) => {
     setComparison((prev) => {
@@ -91,13 +96,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
 
   if (loadError) return <main className="contract-review"><h1>Live API unavailable</h1><p role="alert">{loadError}</p><button onClick={() => void loadData()}>Retry</button>{' '}<button onClick={() => { setUseFixture(true); setUsingFixtureState(true); void loadData() }}>Show labelled fixture</button>{' '}<button onClick={() => onNavigate?.('/analysis')}>Scenario workspace</button></main>
 
-  const toggleFixtureMode = () => {
-    const nextState = !usingFixture
-    setUseFixture(nextState)
-    setUsingFixtureState(nextState)
-    loadData()
-  }
-
   if (loading || !comparison) {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-background text-muted-foreground">
@@ -116,7 +114,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     )
   }
 
-  const developments = (comparison.scenario?.developments ?? []).map(normalizeDevelopment)
   const stops = (comparison.corridor?.stops ?? []).map(normalizeStop)
   const totalNewUnits = developments.reduce((sum, d) => sum + d.units, 0)
   const activeDemandCase = comparison.scenario?.demand_case ?? 'central'
@@ -132,9 +129,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
 
   return (
     <div
-      className={`flex flex-col w-screen h-screen overflow-hidden ${
-        shadowsEnabled ? 'theme-sunlight bg-amber-50/20 text-slate-900' : 'bg-background text-foreground'
-      } font-body transition-colors duration-500`}
+      className="flex flex-col w-screen h-screen overflow-hidden bg-background text-foreground font-body transition-colors duration-500"
     >
       {/* Dynamic Scenario Change Notification */}
       {scenarioNotice && (
@@ -151,44 +146,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           >
             ✕
           </button>
-        </div>
-      )}
-
-      {/* Floating Fixture Mode Alert Popup */}
-      {usingFixture && showFixturePopup && !hideAllPopups && (
-        <div
-          role="status"
-          className="fixed bottom-6 right-6 z-50 max-w-md animate-fade-rise bg-amber-950/90 text-amber-100 border border-amber-500/60 rounded-2xl p-4 shadow-2xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-        >
-          <div className="flex items-start gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse mt-1 shrink-0 shadow-[0_0_8px_#fbbf24]" />
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-amber-300">
-                Fixture Mode Active
-              </div>
-              <div className="text-xs text-amber-100/90 mt-0.5 font-normal">
-                505 Dundas Baseline Dataset (Broadview to Yonge)
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-            <button
-              type="button"
-              onClick={toggleFixtureMode}
-              className="liquid-glass rounded-full px-3 py-1.5 text-xs text-foreground hover:scale-[1.03] transition-transform font-medium cursor-pointer"
-            >
-              Switch to Live API
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowFixturePopup(false)}
-              className="p-1 rounded-full text-amber-300/80 hover:text-white hover:bg-amber-800/40 transition-colors cursor-pointer text-sm"
-              title="Dismiss popup"
-              aria-label="Dismiss popup"
-            >
-              ✕
-            </button>
-          </div>
         </div>
       )}
 
@@ -215,15 +172,13 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               Urbanova<sup className="text-xs">®</sup>
             </span>
             {usingFixture && (
-              <button
-                type="button"
-                onClick={() => setShowFixturePopup(true)}
-                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition-all cursor-pointer"
-                title="Fixture mode is active. Click to view alert."
+              <span
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                title="Fixture mode is active."
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 <span>FIXTURE</span>
-              </button>
+              </span>
             )}
           </div>
 
@@ -358,7 +313,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           shadowsEnabled={shadowsEnabled}
           onToggleShadows={setShadowsEnabled}
           hideAllPopups={hideAllPopups}
-          onToggleHideAllPopups={() => setHideAllPopups((prev) => !prev)}
           onSelectStop={(stop) => {
             setSelectedStop(normalizeStop(stop))
             setSelectedDev(null)

@@ -3,14 +3,18 @@ import mapboxgl, {
   type Map as MapboxMap,
   type MapLayerMouseEvent,
 } from 'mapbox-gl'
+import { scheduleSolarUpdate } from './scheduleSolarUpdate'
 import type { Corridor } from '../lib/types'
 import {
+  type CorridorDevelopment,
   normalizeStop,
   normalizeDevelopment,
+  toShortAddress,
 } from './types'
 import {
   setupCorridorMapLayers,
-  updateDevelopmentsPhase,
+  updateDevelopmentsVisibility,
+  updateDevelopmentsSelected,
   updateCorridorMapData,
   updateShadowTimeAndVisibility,
   getDevelopmentCoordinates,
@@ -19,9 +23,12 @@ import {
 } from './MassingLayer'
 import {
   SEASONS,
-  TIMES_OF_DAY,
+  TIME_STEPS,
+  SHADOW_SLOTS,
   getShadowSlot,
   type ShadowSlot,
+  type SeasonId,
+  type TimeOfDayId,
 } from '../data/shadow_metadata'
 
 export interface CorridorMapProps {
@@ -29,11 +36,12 @@ export interface CorridorMapProps {
   developments: any[]
   selectedStopId?: string | null
   selectedDevId?: string | null
-  activePhase?: number // 0 = Today, 1 = Phase 1, 2 = Phase 2
+  activePhase?: number
+  visibleDevIds?: string[]
+  onToggleDevelopment?: (devId: string) => void
   shadowsEnabled?: boolean
   onToggleShadows?: (enabled: boolean) => void
   hideAllPopups?: boolean
-  onToggleHideAllPopups?: () => void
   onSelectStop?: (stop: any) => void
   onSelectDevelopment?: (dev: any) => void
   className?: string
@@ -41,28 +49,53 @@ export interface CorridorMapProps {
 
 const MAPBOX_STANDARD_STYLE = 'mapbox://styles/mapbox/standard'
 
+const DEFAULT_DEVELOPMENTS: CorridorDevelopment[] = [
+  {
+    dev_id: 'toronto-app-22-124214-ste-13-oz',
+    address: '239 DUNDAS ST E',
+    name: '239 Dundas',
+    units: 630,
+    stage: 'Active',
+  },
+  {
+    dev_id: 'toronto-app-26-122451-ste-13-oz',
+    address: '500 DUNDAS ST E',
+    name: '500 Dundas',
+    units: 413,
+    stage: 'Under Review',
+  },
+  {
+    dev_id: 'toronto-app-25-236949-ste-13-oz',
+    address: '761 DUNDAS ST E',
+    name: '761 Dundas',
+    units: 1197,
+    stage: 'Under Review',
+  },
+]
+
 export const CorridorMap: FC<CorridorMapProps> = ({
   corridor,
   developments,
   selectedStopId,
   selectedDevId,
   activePhase = 2,
+  visibleDevIds,
+  onToggleDevelopment,
   shadowsEnabled,
   onToggleShadows,
   hideAllPopups = false,
-  onToggleHideAllPopups,
   onSelectStop,
   onSelectDevelopment,
   className = '',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapboxMap | null>(null)
-  const [is3D, setIs3D] = useState(true)
-  const [currentPhase, setCurrentPhase] = useState(activePhase)
+  const [pitch, setPitch] = useState<number>(55)
+  const is3D = pitch >= 5
   const [statusMessage, setStatusMessage] = useState<string>('Initializing Mapbox Standard 3D Scene...')
 
-  // Sunlight and Precomputed Shadow State (Contract 1.0.0 / Lane C)
-  const [localShadowsEnabled, setLocalShadowsEnabled] = useState(false)
+  // Sunlight and Precomputed Shadow State
+  const [localShadowsEnabled, setLocalShadowsEnabled] = useState(true)
   const isShadowsActive = typeof shadowsEnabled === 'boolean' ? shadowsEnabled : localShadowsEnabled
   const handleToggleShadows = (val?: boolean) => {
     const nextVal = typeof val === 'boolean' ? val : !isShadowsActive
@@ -74,13 +107,47 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   }
 
   const [isSolarMinimized, setIsSolarMinimized] = useState(false)
-  const [isLegendMinimized, setIsLegendMinimized] = useState(false)
-  const [selectedSeason, setSelectedSeason] = useState<string>('summer_solstice')
-  const [selectedTimeStr, setSelectedTimeStr] = useState<string>('12:00')
+  const [selectedSeason, setSelectedSeason] = useState<SeasonId>('summer_solstice')
+  const [selectedTimeId, setSelectedTimeId] = useState<TimeOfDayId>('noon')
+  // Derive the thumb position from the same time used by the map and labels.
+  const sliderIndex = Math.max(0, TIME_STEPS.findIndex((t) => t.id === selectedTimeId))
+
+  const handleSliderChange = (newVal: number) => {
+    const clamped = Math.min(3, Math.max(0, Math.round(newVal)))
+    const step = TIME_STEPS[clamped]
+    if (step && step.id !== selectedTimeId) {
+      setSelectedTimeId(step.id)
+    }
+  }
 
   const currentSlot: ShadowSlot =
-    getShadowSlot(selectedSeason, selectedTimeStr) ||
-    getShadowSlot('summer_solstice', '12:00')!
+    getShadowSlot(selectedSeason, selectedTimeId) ||
+    getShadowSlot('summer_solstice', 'noon') ||
+    SHADOW_SLOTS[0]
+
+  // Development visibility state (powers the 3 development pill buttons)
+  const [localVisibleDevIds, setLocalVisibleDevIds] = useState<string[]>([
+    'toronto-app-22-124214-ste-13-oz',
+    'toronto-app-26-122451-ste-13-oz',
+    'toronto-app-25-236949-ste-13-oz',
+  ])
+  const currentVisibleDevIds = visibleDevIds ?? localVisibleDevIds
+
+  const handleToggleDevelopment = (devId: string) => {
+    if (onToggleDevelopment) {
+      onToggleDevelopment(devId)
+    } else {
+      setLocalVisibleDevIds((prev) => {
+        const next = prev.includes(devId)
+          ? prev.filter((id) => id !== devId)
+          : [...prev, devId]
+        if (mapRef.current && mapRef.current.isStyleLoaded()) {
+          updateDevelopmentsVisibility(mapRef.current, next)
+        }
+        return next
+      })
+    }
+  }
 
   // Mapbox token state (checks env, then localStorage)
   const [mapboxToken, setMapboxToken] = useState<string>(() => {
@@ -98,6 +165,16 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     localStorage.setItem('urbanova_mapbox_token', trimmed)
     setMapboxToken(trimmed)
     setShowTokenPrompt(false)
+  }
+
+  // Map event handlers outlive renders; read current inputs without recreating the camera.
+  const latestMapInputs = useRef({
+    corridor, developments, currentVisibleDevIds, selectedDevId,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment,
+  })
+  latestMapInputs.current = {
+    corridor, developments, currentVisibleDevIds, selectedDevId,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment,
   }
 
   // Map initialization
@@ -125,16 +202,27 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       map.on('style.load', () => {
         // Mapbox Standard 3D lighting configuration
         try {
-          map.setConfigProperty('basemap', 'lightPreset', 'dusk')
+          map.setConfigProperty('basemap', 'lightPreset', latestMapInputs.current.isShadowsActive
+            ? latestMapInputs.current.currentSlot.lightPreset || 'day' : 'day')
           map.setConfigProperty('basemap', 'show3dObjects', true)
         } catch (e) {
           console.warn('Mapbox Standard basemap config note:', e)
         }
       })
 
+      // Track pitch angle reactively on all camera pitch, rotation, and move events
+      const updatePitch = () => {
+        setPitch(Math.round(map.getPitch()))
+      }
+
+      map.on('pitch', updatePitch)
+      map.on('pitchend', updatePitch)
+      map.on('rotate', updatePitch)
+      map.on('move', updatePitch)
+
       map.on('error', (e) => {
         console.warn('Mapbox event error:', e)
-        if (e.error && String(e.error).includes('Forbidden') || String(e.error).includes('Unauthorized') || String(e.error).includes('401')) {
+        if (e.error && (String(e.error).includes('Forbidden') || String(e.error).includes('Unauthorized') || String(e.error).includes('401'))) {
           setStatusMessage('Mapbox Token Invalid or Expired (401). Please check token.')
           setShowTokenPrompt(true)
         }
@@ -143,10 +231,19 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       map.on('load', () => {
         setStatusMessage('')
         map.resize()
+        updatePitch()
 
         try {
+          const { corridor, developments, currentVisibleDevIds, selectedDevId,
+            isShadowsActive, currentSlot, activePhase } = latestMapInputs.current
           setupCorridorMapLayers(map, corridor, developments)
-          updateDevelopmentsPhase(map, currentPhase)
+          updateDevelopmentsVisibility(map, currentVisibleDevIds)
+          updateDevelopmentsSelected(map, selectedDevId)
+          updateShadowTimeAndVisibility(map, {
+            enabled: isShadowsActive && currentSlot.sun_up,
+            localTime: currentSlot.local_time,
+            activePhase: activePhase,
+          })
           fitToCorridor(map, corridor.stops)
         } catch (err) {
           console.error('Error adding corridor layers:', err)
@@ -159,6 +256,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         if (!e.features || e.features.length === 0) return
         const feature = e.features[0]
         const stopId = feature.properties?.stop_id
+        const { corridor, onSelectStop } = latestMapInputs.current
         const stop = (corridor?.stops ?? []).find((s: any) => normalizeStop(s).stop_id === stopId)
         if (stop && onSelectStop) {
           onSelectStop(stop)
@@ -170,6 +268,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         if (!e.features || e.features.length === 0) return
         const feature = e.features[0]
         const devId = feature.properties?.dev_id
+        const { developments, onSelectDevelopment } = latestMapInputs.current
         const dev = developments.find((d: any) => normalizeDevelopment(d).dev_id === devId)
         if (dev && onSelectDevelopment) {
           onSelectDevelopment(dev)
@@ -208,38 +307,45 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       console.error('Mapbox creation error:', err)
       setStatusMessage(`WebGL / Mapbox error: ${err instanceof Error ? err.message : String(err)}`)
     }
-  }, [mapboxToken, corridor, developments])
+  }, [mapboxToken])
 
-  // React to phase or dataset changes
+  // React to development visibility or dataset changes
   useEffect(() => {
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
       updateCorridorMapData(mapRef.current, corridor, developments)
-      updateDevelopmentsPhase(mapRef.current, activePhase)
-      setCurrentPhase(activePhase)
+      updateDevelopmentsVisibility(mapRef.current, currentVisibleDevIds)
     }
-  }, [corridor, developments, activePhase])
+  }, [corridor, developments, currentVisibleDevIds])
 
-  // Synchronize analytical ground shadows and ambient sunlight with map
+  // React to selected development styling changes
   useEffect(() => {
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      updateShadowTimeAndVisibility(mapRef.current, {
-        enabled: isShadowsActive,
+      updateDevelopmentsSelected(mapRef.current, selectedDevId)
+    }
+  }, [selectedDevId])
+
+  // Keep the latest selection pending while Mapbox is rebuilding its style.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    return scheduleSolarUpdate(map, () => {
+      updateShadowTimeAndVisibility(map, {
+        enabled: isShadowsActive && currentSlot.sun_up,
         localTime: currentSlot.local_time,
-        activePhase: currentPhase,
+        activePhase,
       })
 
-      // Synchronize Mapbox Standard lighting preset with solar time of day
+      // Synchronize Mapbox Standard lighting preset with solar time.
       try {
-        if (isShadowsActive && currentSlot.lightPreset) {
-          mapRef.current.setConfigProperty('basemap', 'lightPreset', currentSlot.lightPreset)
-        } else {
-          mapRef.current.setConfigProperty('basemap', 'lightPreset', 'dusk')
-        }
-      } catch (e) {
-        // Fallback gracefully if style doesn't support lightPreset config
+        map.setConfigProperty('basemap', 'lightPreset',
+          isShadowsActive ? currentSlot.lightPreset || 'day' : 'day')
+      } catch {
+        // Fallback gracefully for styles without Standard lighting presets.
       }
-    }
-  }, [isShadowsActive, currentSlot, currentPhase])
+    })
+  }, [isShadowsActive, currentSlot.local_time, currentSlot.lightPreset, currentSlot.sun_up,
+    activePhase, mapboxToken, corridor, developments])
 
   // Center camera when selected stop changes
   useEffect(() => {
@@ -250,15 +356,17 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     })
     if (stop) {
       const norm = normalizeStop(stop)
+      const currentP = mapRef.current.getPitch()
+      const isCurrently3D = currentP >= 5
       mapRef.current.flyTo({
         center: [norm.lon, norm.lat],
         zoom: 15.8,
-        pitch: is3D ? 50 : 0,
-        bearing: is3D ? -20 : 0,
+        pitch: isCurrently3D ? (currentP > 20 ? currentP : 50) : 0,
+        bearing: isCurrently3D ? mapRef.current.getBearing() : 0,
         speed: 1.2,
       })
     }
-  }, [selectedStopId, corridor.stops, is3D])
+  }, [selectedStopId, corridor.stops])
 
   // Center camera when selected development changes
   useEffect(() => {
@@ -269,15 +377,17 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     })
     if (dev) {
       const coords = getDevelopmentCoordinates(dev)
+      const currentP = mapRef.current.getPitch()
+      const isCurrently3D = currentP >= 5
       mapRef.current.flyTo({
         center: [coords[0], coords[1]],
         zoom: 16.4,
-        pitch: is3D ? 60 : 0,
-        bearing: is3D ? -25 : 0,
+        pitch: isCurrently3D ? (currentP > 20 ? currentP : 60) : 0,
+        bearing: isCurrently3D ? mapRef.current.getBearing() : 0,
         speed: 1.2,
       })
     }
-  }, [selectedDevId, developments, is3D])
+  }, [selectedDevId, developments])
 
   // Fit bounds helper (preserves 3D pitch and adds right panel padding)
   const fitToCorridor = (map: MapboxMap, stops: any[]) => {
@@ -287,38 +397,37 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       const s = normalizeStop(raw)
       bounds.extend([s.lon, s.lat])
     })
+    const currentP = map.getPitch()
+    const isCurrently3D = currentP >= 5
     map.fitBounds(bounds, {
       padding: { top: 90, bottom: 90, left: 100, right: 380 },
       maxZoom: 15.6,
       duration: 900,
-      pitch: is3D ? 55 : 0,
-      bearing: is3D ? -20 : 0,
+      pitch: isCurrently3D ? (currentP > 20 ? currentP : 55) : 0,
+      bearing: isCurrently3D ? map.getBearing() : 0,
     })
   }
 
-  // Toggle 2D / 3D tilt
+  // Toggle 2D / 3D tilt: reactive to current angle
   const togglePitch = () => {
     if (!mapRef.current) return
-    const next3D = !is3D
-    setIs3D(next3D)
-    mapRef.current.easeTo({
-      pitch: next3D ? 55 : 0,
-      bearing: next3D ? -25 : 0,
-      duration: 800,
-    })
-  }
-
-  const handlePhaseChange = (phase: number) => {
-    setCurrentPhase(phase)
-    if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      updateDevelopmentsPhase(mapRef.current, phase)
-      updateShadowTimeAndVisibility(mapRef.current, {
-        enabled: isShadowsActive,
-        localTime: currentSlot.local_time,
-        activePhase: phase,
+    const currentP = mapRef.current.getPitch()
+    if (currentP >= 5) {
+      mapRef.current.easeTo({
+        pitch: 0,
+        bearing: 0,
+        duration: 600,
+      })
+    } else {
+      mapRef.current.easeTo({
+        pitch: 55,
+        bearing: -20,
+        duration: 600,
       })
     }
   }
+
+  const displayDevs = developments && developments.length > 0 ? developments : DEFAULT_DEVELOPMENTS
 
   return (
     <div
@@ -403,83 +512,70 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       )}
 
       {/* Floating Map Controls Overlay (Top Left) */}
-      <div className="!absolute top-5 left-6 flex flex-col gap-2.5 z-20">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Phase Toggle Controls */}
-          <div className="liquid-glass rounded-full px-4 py-1.5 flex items-center gap-2 text-xs">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mr-1">
-              Phase:
-            </span>
-            <button
-              type="button"
-              className={`px-3 py-1 rounded-full text-xs transition-all cursor-pointer ${
-                currentPhase === 0
-                  ? 'bg-white/20 text-white font-medium shadow-sm'
-                  : 'text-muted-foreground hover:text-white'
-              }`}
-              onClick={() => handlePhaseChange(0)}
-            >
-              Today
-            </button>
-            <button
-              type="button"
-              className={`px-3 py-1 rounded-full text-xs transition-all cursor-pointer ${
-                currentPhase === 1
-                  ? 'bg-cyan-500/25 text-cyan-300 font-medium border border-cyan-500/50 shadow-sm'
-                  : 'text-muted-foreground hover:text-cyan-300'
-              }`}
-              onClick={() => handlePhaseChange(1)}
-            >
-              Phase 1
-            </button>
-            <button
-              type="button"
-              className={`px-3 py-1 rounded-full text-xs transition-all cursor-pointer ${
-                currentPhase === 2
-                  ? 'bg-amber-500/25 text-amber-300 font-medium border border-amber-500/50 shadow-sm'
-                  : 'text-muted-foreground hover:text-amber-300'
-              }`}
-              onClick={() => handlePhaseChange(2)}
-            >
-              Phase 2
-            </button>
-          </div>
+      {/* Hitbox fix: outer container is pointer-events-none and select-none so clicking outside any pill passes directly to Mapbox */}
+      <div className="!absolute top-5 left-6 flex flex-col items-start gap-2.5 z-20 pointer-events-none select-none">
+        {/* Development Visibility Toggle Pills & Sunlight Button */}
+        <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
+          {displayDevs.map((rawDev) => {
+            const dev = normalizeDevelopment(rawDev)
+            const isVisible = currentVisibleDevIds.includes(dev.dev_id)
+            const label = dev.name || toShortAddress(dev.address) || dev.dev_id
 
-          {/* Sunlight Impact Toggle Button (Contract 1.0.0 / Lane C) */}
+            return (
+              <button
+                key={dev.dev_id}
+                type="button"
+                onClick={() => handleToggleDevelopment(dev.dev_id)}
+                aria-pressed={isVisible}
+                data-tone="cyan"
+                className={`map-toggle liquid-glass rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs transition-all cursor-pointer ${
+                  isVisible
+                    ? 'bg-cyan-500/25 text-cyan-200 border border-cyan-400/50 shadow-md font-medium'
+                    : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/25 hover:border-white/40 shadow-md backdrop-blur-md'
+                }`}
+                title={isVisible ? `Hide ${label} from map` : `Show ${label} on map`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    isVisible
+                      ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
+                      : 'bg-white/30 border border-white/20'
+                  }`}
+                />
+                <span>{label}</span>
+              </button>
+            )
+          })}
+
+          {/* Time of Day Toggle Button */}
           <button
             type="button"
             onClick={() => handleToggleShadows()}
-            className={`liquid-glass rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs transition-all cursor-pointer ${
+            aria-pressed={isShadowsActive}
+            data-tone="amber"
+            className={`map-toggle liquid-glass rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs transition-all cursor-pointer ${
               isShadowsActive
-                ? 'bg-amber-500/25 text-amber-200 border-amber-400/50 shadow-md font-medium'
-                : 'text-muted-foreground hover:text-white'
+                ? 'bg-amber-500/25 text-amber-200 border border-amber-400/50 shadow-md font-medium'
+                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/25 hover:border-white/40 shadow-md backdrop-blur-md'
             }`}
-            title="Toggle precomputed sunlight impact & ground shadows (Contract 1.0.0 / Lane C)"
+            title="Toggle time of day solar analysis"
           >
             <span className="text-amber-400">☀️</span>
-            <span>Sunlight Impact</span>
-            <span
-              className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono uppercase ${
-                isShadowsActive
-                  ? 'bg-amber-400 text-black font-semibold'
-                  : 'bg-white/10 text-muted-foreground'
-              }`}
-            >
-              {isShadowsActive ? 'ON' : 'OFF'}
-            </span>
+            <span>Time of day</span>
           </button>
         </div>
 
-        {/* Camera Perspective & Global UI Visibility Controls */}
-        <div className="liquid-glass rounded-full px-3 py-1 flex items-center gap-2 self-start text-xs">
+        {/* Camera Perspective Controls */}
+        <div className="liquid-glass rounded-full px-3 py-1 flex items-center gap-2 self-start text-xs pointer-events-auto">
           <button
             type="button"
             onClick={togglePitch}
             className={`px-2.5 py-1 rounded-full transition-colors cursor-pointer ${
               is3D ? 'text-rose-400 font-medium' : 'text-muted-foreground hover:text-foreground'
             }`}
+            title={is3D ? 'Switch to 2D top-down plan' : 'Switch to 3D perspective view (55°)'}
           >
-            {is3D ? '3D View (55°)' : '2D Plan'}
+            {is3D ? `3D View (${pitch}°)` : '2D Plan'}
           </button>
           <span className="text-white/20">|</span>
           <button
@@ -489,51 +585,28 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           >
             Fit Corridor
           </button>
-          <span className="text-white/20">|</span>
-          <button
-            type="button"
-            onClick={() => setShowTokenPrompt(true)}
-            className="px-2.5 py-1 rounded-full text-muted-foreground hover:text-cyan-300 transition-colors cursor-pointer"
-            title="Configure Mapbox Token"
-          >
-            Token
-          </button>
-          {onToggleHideAllPopups && (
-            <>
-              <span className="text-white/20">|</span>
-              <button
-                type="button"
-                onClick={onToggleHideAllPopups}
-                className={`px-2.5 py-1 rounded-full transition-colors cursor-pointer flex items-center gap-1 ${
-                  hideAllPopups ? 'bg-cyan-500/25 text-cyan-300 font-medium' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={hideAllPopups ? 'Show all map popups and overlays' : 'Hide all popups for unobstructed map view'}
-              >
-                <span>{hideAllPopups ? '👁️ Show All' : '👁️ Hide All'}</span>
-              </button>
-            </>
-          )}
         </div>
 
-        {/* Interactive Solar Impact Analysis Panel (Lane C) */}
+        {/* Interactive Sunlight & Shadows Panel */}
+        {/* Hitbox fix: panel has its own exact bounded width with pointer-events-auto; empty space around it passes through */}
         {isShadowsActive && !hideAllPopups && (
           isSolarMinimized ? (
             /* Minimized Solar Pill */
-            <div className="liquid-glass rounded-full px-4 py-1.5 flex items-center gap-2.5 text-xs shadow-xl border border-amber-500/40 animate-fade-rise self-start">
+            <div className="liquid-glass rounded-full px-4 py-1.5 flex items-center gap-2.5 text-xs shadow-xl border border-amber-500/40 animate-fade-rise self-start pointer-events-auto select-none">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="font-medium text-foreground">
-                ☀️ {currentSlot.seasonName.split(' ')[0]} {currentSlot.timeStr}
+                ☀️ {currentSlot.seasonName} · {currentSlot.timeLabel}
               </span>
-              <span className="text-[11px] font-mono text-orange-400 font-semibold">
-                {currentPhase === 0 ? '0 m² (Today)' : `+${currentSlot.added_m2.toLocaleString()} m²`}
+              <span className="text-[11px] font-mono text-cyan-300 font-semibold">
+                {currentSlot.clockTime}
               </span>
               <div className="flex items-center gap-1 border-l border-border/40 pl-2">
                 <button
                   type="button"
                   onClick={() => setIsSolarMinimized(false)}
                   className="hover:text-foreground text-muted-foreground cursor-pointer text-xs p-0.5"
-                  title="Expand Solar Controls"
-                  aria-label="Expand Solar Controls"
+                  title="Expand Sunlight & Shadows Controls"
+                  aria-label="Expand Sunlight & Shadows Controls"
                 >
                   ▾
                 </button>
@@ -541,26 +614,27 @@ export const CorridorMap: FC<CorridorMapProps> = ({
                   type="button"
                   onClick={() => handleToggleShadows(false)}
                   className="hover:text-foreground text-muted-foreground cursor-pointer text-xs p-0.5"
-                  title="Turn Off Shadows"
-                  aria-label="Turn Off Shadows"
+                  title="Turn Off Sunlight & Shadows"
+                  aria-label="Turn Off Sunlight & Shadows"
                 >
                   ✕
                 </button>
               </div>
             </div>
           ) : (
-            /* Expanded Solar Impact Card */
-            <div className="liquid-glass-panel rounded-2xl p-4 shadow-2xl flex flex-col gap-3 max-w-sm max-h-[calc(100vh-26rem)] overflow-y-auto animate-fade-rise backdrop-blur-md border border-amber-500/30">
+            /* Expanded Sunlight & Shadows Card */
+            <div className="liquid-glass-panel rounded-2xl p-4 shadow-2xl flex flex-col gap-3.5 w-[360px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-22rem)] overflow-y-auto animate-fade-rise backdrop-blur-md border border-amber-500/30 pointer-events-auto select-none">
+              {/* Card Header */}
               <div className="flex items-center justify-between text-xs border-b border-border/30 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]" />
-                  <span className="font-semibold text-foreground tracking-tight">Solar Impact Analysis</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]" />
+                  <span className="font-semibold text-foreground tracking-tight text-sm">Sunlight &amp; Shadows</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setIsSolarMinimized(true)}
-                    className="text-muted-foreground hover:text-foreground text-sm p-1 cursor-pointer font-bold leading-none"
+                    className="text-muted-foreground hover:text-foreground text-xs p-1 cursor-pointer font-bold leading-none"
                     title="Minimize to pill"
                     aria-label="Minimize to pill"
                   >
@@ -569,80 +643,94 @@ export const CorridorMap: FC<CorridorMapProps> = ({
                   <button
                     type="button"
                     onClick={() => handleToggleShadows(false)}
-                    className="text-muted-foreground hover:text-foreground text-sm p-1 cursor-pointer"
-                    title="Turn Off Shadows"
-                    aria-label="Turn Off Shadows"
+                    className="text-muted-foreground hover:text-foreground text-xs p-1 cursor-pointer"
+                    title="Turn Off Sunlight & Shadows"
+                    aria-label="Turn Off Sunlight & Shadows"
                   >
                     ✕
                   </button>
                 </div>
               </div>
 
-              {/* Season Selector */}
-              <div className="flex items-center gap-1 bg-black/30 p-1 rounded-xl">
-                {SEASONS.map((season) => (
-                  <button
-                    key={season.id}
-                    type="button"
-                    onClick={() => setSelectedSeason(season.id)}
-                    className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
-                      selectedSeason === season.id
-                        ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40 shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <div>{season.name.split(' ')[0]}</div>
-                    <div className="text-[9px] text-muted-foreground/80">{season.date}</div>
-                  </button>
-                ))}
+              {/* Season Selector: 4 Normal Speech Seasons */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">Season</span>
+                  <span className="text-amber-300 font-medium font-mono text-[10px]">{currentSlot.subName || currentSlot.seasonName} · {currentSlot.date}</span>
+                </div>
+                <div className="grid grid-cols-4 gap-1 bg-black/35 p-1 rounded-xl border border-white/5">
+                  {SEASONS.map((season) => {
+                    const isSelected = selectedSeason === season.id
+                    return (
+                      <button
+                        key={season.id}
+                        type="button"
+                        onClick={() => setSelectedSeason(season.id)}
+                        className={`py-1.5 px-1 rounded-lg text-center transition-all cursor-pointer flex flex-col items-center gap-0.5 ${
+                          isSelected
+                            ? 'bg-amber-500/25 text-amber-200 border border-amber-400/50 shadow-sm font-medium scale-[1.02]'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                        }`}
+                      >
+                        <span className="text-xs">{season.icon}</span>
+                        <span className="text-[11px] font-medium leading-none">{season.name}</span>
+                        <span className="text-[9px] text-muted-foreground/75 leading-none">{season.date}</span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
-              {/* Time of Day Slots */}
-              <div className="flex items-center gap-1 bg-black/30 p-1 rounded-xl">
-                {TIMES_OF_DAY.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setSelectedTimeStr(t)}
-                    className={`flex-1 py-1 text-xs font-mono font-medium rounded-lg transition-all cursor-pointer ${
-                      selectedTimeStr === t
-                        ? 'bg-cyan-500/25 text-cyan-200 border border-cyan-500/40 shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-
-              {/* Live Net Impact Metrics */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-2.5">
-                  <div className="text-[10px] text-amber-300 uppercase tracking-wider font-medium flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-sm bg-orange-500 shrink-0" />
-                    <span>Sunlight Lost</span>
-                  </div>
-                  <div className="text-base font-mono font-semibold text-orange-300 mt-1">
-                    {currentPhase === 0 ? '0 m² (Today)' : `+${currentSlot.added_m2.toLocaleString()} m²`}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">New tower shade</div>
+              {/* Time of Day Slider: Morning, Noon, Afternoon, Night */}
+              <div className="flex flex-col gap-2 bg-black/25 p-2.5 rounded-xl border border-white/5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">Time of Day</span>
+                  <span className="text-cyan-300 font-mono font-medium text-xs flex items-center gap-1.5">
+                    <span>{currentSlot.clockTime}</span>
+                    <span className="text-[10px] text-muted-foreground font-sans">({currentSlot.timeLabel})</span>
+                  </span>
                 </div>
 
-                <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-2.5">
-                  <div className="text-[10px] text-emerald-300 uppercase tracking-wider font-medium flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-sm bg-emerald-500 shrink-0" />
-                    <span>Sunlight Gained</span>
+                {/* Thumb centers align with the centers of the four equal label columns. */}
+                <div className="px-1 pt-1">
+                  <input
+                    type="range"
+                    min={0}
+                    max={3}
+                    step={1}
+                    value={sliderIndex}
+                    onChange={(e) => handleSliderChange(Number(e.target.value))}
+                    className="block mx-auto w-[calc(75%+1rem)] h-2 bg-black/50 rounded-lg appearance-none cursor-pointer accent-amber-400 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-amber-400"
+                    aria-label="Time of Day Slider: Morning, Noon, Afternoon, Night"
+                  />
+
+                  {/* 4 Clickable Step Labels */}
+                  <div className="grid grid-cols-4 items-center text-[10px] mt-2">
+                    {TIME_STEPS.map((step) => {
+                      const isActive = selectedTimeId === step.id
+                      return (
+                        <button
+                          key={step.id}
+                          type="button"
+                          onClick={() => setSelectedTimeId(step.id)}
+                          className={`flex flex-col items-center transition-all cursor-pointer ${
+                            isActive
+                              ? 'text-amber-300 font-semibold scale-105'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          <span className="text-xs">{step.icon}</span>
+                          <span className="tracking-tight text-[10px] mt-0.5">{step.label}</span>
+                        </button>
+                      )
+                    })}
                   </div>
-                  <div className="text-base font-mono font-semibold text-emerald-300 mt-1">
-                    {currentPhase === 0 ? '0 m² (Today)' : `+${currentSlot.removed_m2.toLocaleString()} m²`}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">Demolished parcel</div>
                 </div>
               </div>
 
               {/* Sun Angle Metrics */}
               <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t border-border/20 pt-1.5 px-0.5">
-                <span>Sun Altitude: <strong className="text-foreground">{currentSlot.sun_altitude_deg}°</strong></span>
+                <span>Sun Altitude: <strong className="text-foreground">{currentSlot.sun_altitude_deg}°{currentSlot.sun_up ? '' : ' (Night)'}</strong></span>
                 <span>Azimuth: <strong className="text-foreground">{currentSlot.sun_azimuth_deg}°</strong></span>
               </div>
             </div>
@@ -650,82 +738,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         )}
       </div>
 
-      {/* Legend Badge Bottom Left (Minimizable & Collision-Free) */}
-      {!hideAllPopups && (
-        isLegendMinimized ? (
-          <div className="!absolute bottom-6 left-6 z-20 animate-fade-rise">
-            <button
-              type="button"
-              onClick={() => setIsLegendMinimized(false)}
-              className="liquid-glass rounded-full px-3.5 py-1.5 text-xs text-foreground hover:scale-[1.02] transition-transform flex items-center gap-2 shadow-xl border border-border/40 cursor-pointer"
-              title="Expand Map Legend"
-              aria-label="Expand Map Legend"
-            >
-              <span>🗺️</span>
-              <span className="font-medium">Legend</span>
-              <span className="text-[10px] text-muted-foreground font-mono">505 Dundas</span>
-              <span className="text-xs">▴</span>
-            </button>
-          </div>
-        ) : (
-          <div className="!absolute bottom-6 left-6 z-20 min-w-[210px] max-w-[270px] max-h-[260px] overflow-y-auto liquid-glass rounded-2xl p-4 text-xs flex flex-col gap-2 shadow-2xl animate-fade-rise border border-border/30">
-            <div className="flex items-center justify-between border-b border-border/30 pb-1.5">
-              <span
-                className="text-sm tracking-tight text-foreground"
-                style={{ fontFamily: "'Instrument Serif', serif" }}
-              >
-                505 Dundas Corridor
-              </span>
-              <button
-                type="button"
-                onClick={() => setIsLegendMinimized(true)}
-                className="text-muted-foreground hover:text-foreground text-xs p-1 cursor-pointer font-bold leading-none"
-                title="Minimize legend to pill"
-                aria-label="Minimize legend to pill"
-              >
-                −
-              </button>
-            </div>
-            <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
-              <span className="w-3.5 h-1 bg-red-500 rounded-full inline-block"></span>
-              <span>Streetcar Alignment</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-full bg-white border border-slate-900 inline-block"></span>
-              <span>Stops ({corridor.stops.length})</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-sm bg-cyan-400 inline-block"></span>
-              <span>Phase 1 Towers</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
-              <span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>
-              <span>Phase 2 Towers</span>
-            </div>
 
-            {/* Sunlight Impact Legend */}
-            {isShadowsActive && (
-              <div className="border-t border-border/40 pt-2 mt-1 flex flex-col gap-1.5 animate-fade-rise">
-                <div className="text-[10px] uppercase tracking-wider text-amber-300 font-semibold">
-                  Sunlight &amp; Shadows
-                </div>
-                <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block opacity-85"></span>
-                  <span>Sunlight Lost (Tower Shade)</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block opacity-85"></span>
-                  <span>Sunlight Gained (Open Sky)</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-muted-foreground text-[11px]">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-slate-900 border border-slate-700 inline-block opacity-65"></span>
-                  <span>Baseline Building Shade</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )
-      )}
     </div>
   )
 }

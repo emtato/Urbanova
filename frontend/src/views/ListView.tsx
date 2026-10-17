@@ -334,14 +334,14 @@ export const ListView: FC<ListViewProps> = ({
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-sm text-foreground truncate">
-                            {dev.address}
+                            {dev.name || dev.address}
                           </span>
                           <span className="status-chip status-chip-sourced font-mono text-[9px]">
                             {dev.stage}
                           </span>
                         </div>
                         <div className="text-[11px] text-muted-foreground mt-0.5 font-mono">
-                          Ref: {dev.pipeline_ref || 'City Application'} · Recorded {dev.record_date}
+                          {dev.address} · Ref: {dev.pipeline_ref || 'City Application'} · Recorded {dev.record_date}
                         </div>
                       </div>
                     </div>
