@@ -1,0 +1,8 @@
+stop_id,gtfs_stop_id,name,seq,lon,lat,source_ids
+ttc-stop-2118,2118,Dundas St East at Jarvis St,0,-79.374706,43.656947,"[""ttc-gtfs""]"
+ttc-stop-2130,2130,Dundas St East at Sherbourne St,1,-79.371303,43.65822,"[""ttc-gtfs""]"
+ttc-stop-2122,2122,Dundas St East at Ontario St,2,-79.368653,43.658752,"[""ttc-gtfs""]"
+ttc-stop-2124,2124,Dundas St East at Parliament St,3,-79.366291,43.659283,"[""ttc-gtfs""]"
+ttc-stop-15872,15872,Dundas St East at Regent Park Blvd,4,-79.361966,43.660247,"[""ttc-gtfs""]"
+ttc-stop-2126,2126,Dundas St East at River St,5,-79.358272,43.661097,"[""ttc-gtfs""]"
+ttc-stop-2115,2115,Dundas St East at Broadview Ave,6,-79.351814,43.662249,"[""ttc-gtfs""]"

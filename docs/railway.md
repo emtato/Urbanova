@@ -9,7 +9,7 @@ The committed railway.json config uses Railpack, starts FastAPI on Railway's POR
    Root requirements.txt forwards to backend/requirements.txt; .python-version and railway.json stay at the root for discovery. The backend package and SQL schema live in backend/.
    Do not select backend/: it also contains the preserved Express starter.
 3. In the service Variables tab, add DATABASE_URL using the Tiger Data URL from your private .env.
-   Add GEMINI_API_KEY and GEMINI_MODEL when the Gemini integration is needed.
+   Add GEMINI_API_KEY and set GEMINI_MODEL=gemini-3.8-flash for the verified Gemini integration.
    Railway does not receive the ignored .env file.
 4. Set CORS_ORIGINS to a JSON array containing the exact frontend origins, for example:
    ["http://localhost:5173","http://127.0.0.1:5173","https://your-frontend.example"]

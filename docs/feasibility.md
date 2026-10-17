@@ -1,75 +1,95 @@
-# Feasibility check (step 1.2)
+# Phase 01: corridor and feasibility checks
+Scope agreed with the user: Phase 01's corridor/feasibility checks (1.1–1.4), not the full Lane A pipeline or the later schema/fixture contract.
+Product label: **scenario experiment**. Schedules and proposed unit counts are sourced; demand and future occupancy are not observed.
 
-Corridor: Lawrence Ave East westbound, LE01 Markham Rd → LE12 Midland Ave, weekday 07:00–09:00 (see [corridor.md](corridor.md)).
-Checked 2026-10-17 by Owner A.
+## Evidence and status
+| Step | Status | Evidence |
+| --- | --- | --- |
+| 1.1 Corridor | Verified with an explicit window assumption | 505 eastbound Jarvis → Dundas/Broadview, seven consecutive stops; see corridor.md |
+| 1.2 GTFS and developments | Verified as feasibility evidence | Dated weekday service plus three distinct pipeline proposals and estimated pedestrian access |
+| 1.3 Tiger Data and Gemini | Passed live | data/reviewed/access_check.json records PostGIS and a schema-validated Gemini response |
+| 1.4 Tiny case | Passed | sim/tiny_case.py reproduces the hand calculation; tests check conservation, capacity and persistent denied riders |
 
-| Check | Result |
-|---|---|
-| Three developments in the Development Pipeline, with units and stages | **Pass.** Three kept, two in reserve (below). |
-| GTFS has the chosen pattern on a weekday service date | **Pass.** Routes 54 and 154 serve all 12 stops on 2026-10-21 (`service_id` 1), with 29 local trips in the window. |
-| Stop-level demand observations | **Missing.** See [Missing observations](#missing-demand-observations). |
+The analysis window is Friday 2026-10-16, 07:00–09:00 America/Toronto, chosen for reproducibility.
+The feed covers that day, and calendar exceptions are applied. There are 15 scheduled entries, a median 7-minute headway and a roughly 1.97 km segment.
+The user-confirmed endpoints yield seven stops, replacing the original generic 8–12-stop target.
 
-**Label from here on:** stop-level demand is not available, so the product is a **scenario experiment**, not a forecast.
+## Residential development shortlist
+Source: the City's Development Pipeline CSV, resource updated 2026-10-08. Unit counts below are the dataset's **proposed residential units**, not occupied homes, net-new units or an approved completion forecast.
+Application received dates are separate from dataset update/retrieval dates.
 
-## Developments
+| Selected application | Address | Proposed units | Pipeline stage | Nearest modelled stop | Estimated walk |
+| --- | --- | --- | --- | --- | --- |
+| 22 124214 STE 13 OZ | 239 Dundas St E | 630 | Active | Sherbourne, 2130 | 157 m |
+| 26 122451 STE 13 OZ | 500 Dundas St E | 413 | Under Review | Regent Park Blvd, 15872 | 335 m |
+| 25 236949 STE 13 OZ | 761 Dundas St E | 1,197 | Under Review | River, 2126 | 268 m |
 
-The method:
-- **Units, stage and record date** come from the Development Pipeline (`tor-dev-pipeline`).
-- **Coordinates and related files** come from Development Applications (`tor-dev-apps`). X/Y in that file are converted from NAD27 MTM zone 10 (EPSG:2019) to EPSG:4326.
-- **Distance** is straight-line to the nearest corridor stop. It is a stub until A7 computes walking distance.
-- **Units are proposed.** Residents exist only after an occupancy assumption.
+Three spatially distinct sites are selected once each using their OZ application numbers; related site-plan applications are not counted again.
+The review keeps five candidates in development_shortlist.csv. 401 Dundas East (137 units) is a reserve candidate.
+218 Dundas East is held for reconciliation: its numeric unit field is 542, while its description says 522, and the address has multiple municipal address points.
+The selected 239 and 761 unit counts agree with their source descriptions; 500 uses the explicit numeric unit field.
+Pipeline stage "Active" is preserved as published and is not relabelled "Approved".
 
-### Kept (three best documented)
+## Walking access and its limits
+Official Toronto municipal address points locate the projects. Small OpenStreetMap tiles provide the pedestrian network.
+Distances use shortest mapped paths in EPSG:26917 plus explicit straight-line connectors between address points/stops and nearby graph nodes.
+They are estimates from representative address points, not measured walks from confirmed building entrances.
+All three estimates are below the chosen 500 m screening threshold, itself a modelling assumption.
 
-| dev_id | address | units | pipeline status | application status | record date | nearest stop | distance (m) | application |
-|---|---|---|---|---|---|---|---|---|
-| D1 | 3585 Lawrence Ave E | 661 | Under Review | Council Approved | 2025-03-07 | LE01 Markham Rd | 41 | [25 126138 ESC 24 OZ](http://app.toronto.ca/AIC/index.do?folderRsn=z4AanJSZOwm310ZLdFTjew%3D%3D) |
-| D2 | 3434 Lawrence Ave E | 855 | Active | Closed | 2021-12-20 | LE02 Opp. Cedarbrae Mall | 214 | [21 250150 ESC 24 OZ](http://app.toronto.ca/AIC/index.do?folderRsn=pPQ0pVOgGiKjHETwD%2B2yrQ%3D%3D) |
-| D3 | 2683 Lawrence Ave E | 206 | Active | Closed (site plan: NOAC issued) | 2020-11-12 | LE11 Brockley Dr | 83 | [20 217595 ESC 21 OZ](http://app.toronto.ca/AIC/index.do?folderRsn=3O3R%2FvnWj0wPsiF9zqEKsQ%3D%3D) |
+The generated [SVG review map](../data/reviewed/walking_routes.svg) and [PNG preview](../data/reviewed/walking_routes.png) show the routes and red dashed connectors.
+Desktop inspection found routes on the Dundas/Regent/River-side network; none of these three access paths needs to cross the Don River.
+Entrance locations, temporary construction closures, legal pedestrian crossings and connector accessibility still need owner/field review.
+The 500 and 761 paths use service/footway connections; do not silently treat parcel-centre connectors as verified public entrances.
+Each route retains manual_review=pending. Full Lane A walking access to 2–3 alternative stops per development is outside this feasibility check.
 
-Total: **1,722 proposed units**.
+## Missing observations
+- Stop-level weekday arrivals, destinations and rider-group demand.
+- Incoming streetcar occupancy at Jarvis.
+- Observed dwell rates, capacity assumptions, boarding behaviour and travel-time variability.
+- Development occupancy dates, occupied shares and replacement/net-new housing counts.
+- Streetcar-specific intervention effects, costs, fleet constraints and operating-cycle assumptions.
 
-Why these three:
-- **D1:** two towers of 34 and 35 storeys. The description states 661 units, matching the pipeline. Its riders board at the first stop and ride through the whole segment.
-- **D2:** two buildings of 10–23 storeys. The description states 855 units with a unit-mix breakdown, matching the pipeline. Riders board at the second stop.
-- **D3:** an 11-storey mixed-use building. The description states 206 units, matching the pipeline. A site plan with a Notice of Approval Conditions (24 247363 ESC 21 SA) shows it is the furthest along. It is near the downstream end, so it mainly adds boardings close to Midland Ave.
+Do not invent observed ridership or treat the schedules as calibration data for passenger demand.
+The production model needs warm-up, a clearance horizon and explicit reporting of unresolved riders.
 
-### Reserve
+## Hand-calculated tiny case
+Three stops A → B → C; two cars of capacity 4 enter A at 0 s and 60 s.
+Five riders wait at A and five at B at 0 s; all travel to C. Each link takes 30 s with zero dwell as a fixture assumption.
 
-| address | units | pipeline status | application status | nearest stop | distance (m) | why not kept |
-|---|---|---|---|---|---|---|
-| 2650 Lawrence Ave E | 1,001 | Under Review | OMB Approved | LE11 | 138 | The rezoning was appealed (Aug 2025) and has a concurrent OPA, so the stage is less settled. |
-| 799 Brimley Rd | 370 | Active | Closed | LE09 | 151 | The description mixes an earlier 391-unit + 13-townhouse scheme with a revised tower. The unit count needs checking on the AIC page. |
+| Car | At A | At B | At C |
+| --- | --- | --- | --- |
+| 1 | t=0: boards 4, leaves 1 | t=30: full, leaves 5 | t=60: alights 4 |
+| 2 | t=60: boards 1 | t=90: boards 3, leaves 2 | t=120: alights 4 |
 
-Other nearby records with residential units are 3379-3385 Lawrence Ave E, 2740 Lawrence Ave E, 1555 Midland Ave and 525 Markham Rd. They were not shortlisted. One reason: 3379-3385 shows 155 units in the pipeline, but its description says 123.
+At 120 s: 8 arrived, 2 waiting, 0 onboard; 6 riders denied at least once.
+Mean completed-rider wait = (4×0 + 1×60 + 3×90)/8 = 41.25 s.
+The two unresolved riders have wait lower bounds of 120 s; they are reported rather than dropped.
+This is a separately labelled reference case, not a claim that the production simulation is complete.
 
-### Double counting
+## Reproduce from the repository root
+After installing requirements and setting local .env credentials:
+```sh
+python -m backend.scripts.prove_feasibility
+python -m backend.scripts.check_access
+python -m sim.tiny_case
+python -m pytest -q
+```
+The data build reuses checksum-verified caches; on a new laptop it downloads source files into ignored data/raw and data/cache.
+--refresh explicitly replaces snapshots and may make the fixed service date unavailable in a newer feed.
+Only the initial research run used --adopt-existing to register the already-downloaded source files.
+The default build includes walking access. --skip-walk deliberately leaves that part pending.
+Runtime source files are cached, while compact reviewed evidence is committed for the team.
+The source manifest includes official URLs, retrieval timestamps, licences, versions and SHA-256 checksums.
 
-- Each address above has **one** Development Pipeline record.
-- Related applications on the same site appear only in Development Applications, not as extra pipeline rows, so they are not counted again:
-  - D1: 26 120685 ESC 24 OZ
-  - D2: 21 250159 SB, 21 250160 SA, 26 135283 OZ
-  - D3: 24 247363 SA
-  - 2650 Lawrence: 25 202217 OZ
-- Unit counts come from the parent pipeline record only.
+## Local versus Railway configuration
+Local scripts load the root .env. Railway Variables configure the deployed backend and do not update local files.
+The successful Gemini access check uses GEMINI_MODEL=gemini-3.8-flash.
+Set that same value in Railway Variables and apply/redeploy; Google rejected gemini-2.5-flash for the new account.
+Keys and database URLs remain backend-only and are excluded from the committed evidence.
 
-**To do before A3 is final:** open each AIC link and confirm the current unit count and stage.
+## Next gate
+The corridor/feasibility work is ready for the team to review.
+The overall Phase 01 gate remains open until 1.5–1.16 land: Pydantic schemas, matching TypeScript types and a validated full sample Comparison/replay fixture.
+Do not treat corridor.json as that final API contract.
 
-## GTFS pattern
-
-- **Feed:** `ttc-gtfs`, last modified 2026-09-25. The calendar runs 2026-09-30 → 2026-10-31.
-- **Service:** `service_id` 1 runs Mon–Fri and is removed only on 2026-10-12 (Thanksgiving). Routes 54, 154 and 954 have no other weekday service ids.
-- **Trips:** westbound arrivals at LE01 from 07:00 to 09:00 are 24 trips on route 54 (shapes 1123044 and 1123045), 5 on route 154 (shape 1122095), and 15 on the 954 express (excluded).
-- **Times:** no times after 24:00 fall in the window. Some late-night trips have them, so A2 must still handle that format.
-
-## Missing demand observations
-
-| Needed for | Status |
-|---|---|
-| Boardings and alightings by stop and time (AM, westbound) | **Not available** in open data. |
-| Load already on board at LE01 | **Not available.** It becomes an A9 assumption. |
-| Route-level weekday boardings | Available from TTC operating statistics: about 35,800 on Lawrence East (Nov 2025). This bounds the total only and doesn't validate how it is spread across stops. |
-| Observed headways and run times | **Not available** from GTFS. A11 (BusTime recording) is optional and covers weekend service only. |
-| Priority-lane effect on this street | **None observed.** Use Eglinton East RapidTO results as a *transferred assumption*. |
-| Occupancy dates and completion shares | **Not sourced.** They are scenario inputs. |
-| Walking access from each development | **Not computed yet** (A7). Straight-line distances are used above. |
+The separate [Lawrence East study](feasibility-lawrence-east.md) is preserved for reference; this handoff follows the confirmed 505 endpoints.

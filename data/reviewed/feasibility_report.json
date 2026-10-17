@@ -1,0 +1,54 @@
+{
+  "service_date": "2026-10-16",
+  "window": {
+    "start": "07:00:00",
+    "end": "09:00:00",
+    "status": "assumed",
+    "reason": "A representative weekday AM peak for the initial scenario experiment; selected for reproducibility, not inferred from demand observations."
+  },
+  "corridor": {
+    "stop_count": 7,
+    "trip_count": 15,
+    "length_m": 1970.54,
+    "median_scheduled_headway_s": 420.0,
+    "median_scheduled_segment_time_s": 760
+  },
+  "developments": [
+    {
+      "address": "239 DUNDAS ST E",
+      "proposed_units": 630,
+      "stage": "Active",
+      "nearest_stop_id": "ttc-stop-2130",
+      "straight_line_distance_m": 124.2,
+      "walk_status": "network_estimate_manual_review_pending",
+      "walk_distance_m": 156.73
+    },
+    {
+      "address": "500 DUNDAS ST E",
+      "proposed_units": 413,
+      "stage": "Under Review",
+      "nearest_stop_id": "ttc-stop-15872",
+      "straight_line_distance_m": 181.32,
+      "walk_status": "network_estimate_manual_review_pending",
+      "walk_distance_m": 334.84
+    },
+    {
+      "address": "761 DUNDAS ST E",
+      "proposed_units": 1197,
+      "stage": "Under Review",
+      "nearest_stop_id": "ttc-stop-2126",
+      "straight_line_distance_m": 152.92,
+      "walk_status": "network_estimate_manual_review_pending",
+      "walk_distance_m": 267.98
+    }
+  ],
+  "missing_observations": [
+    "Stop-level weekday passenger arrivals and destinations",
+    "Incoming streetcar occupancy at Jarvis",
+    "Observed dwell/boarding rates and travel-time variability",
+    "Development occupancy dates and occupied shares",
+    "Verified development entrances and manual walking-route/crossing review"
+  ],
+  "product_label": "scenario experiment",
+  "contract_frozen": false
+}

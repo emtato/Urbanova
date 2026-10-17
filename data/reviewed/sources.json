@@ -1,0 +1,112 @@
+[
+  {
+    "source_id": "ttc-gtfs",
+    "title": "Merged GTFS - TTC Routes and Schedules",
+    "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/b811ead4-6eaf-4adb-8408-d389fb5a069c/resource/c920e221-7a1c-488b-8c5b-6d8cd4e85eaf/download/completegtfs.zip",
+    "publisher": "Toronto Transit Commission / City of Toronto",
+    "version": "S1000542",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T06:36:33.015052+00:00",
+    "sha256": "5e0191d59cb991b6c88ba9c1a5f2ca93a5a064a4d258dbc7ba93801d15f3dfca",
+    "bytes": 84337545
+  },
+  {
+    "source_id": "toronto-development-pipeline",
+    "title": "Development Pipeline",
+    "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/a7a327c5-4e25-4881-816d-c8b145e02832/resource/dc28845a-299f-4562-b605-27b6fefc17e0/download/development-pipeline.csv",
+    "publisher": "City of Toronto / City Planning",
+    "version": "2026-10-08T07:24:47.445084",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T06:36:34.968042+00:00",
+    "sha256": "3644fd68f2b7163301ca71c1db5284b0ad75857e85ca980a0e8f5cc2bed1dbad",
+    "bytes": 1169101
+  },
+  {
+    "source_id": "toronto-address-796104",
+    "title": "Toronto One Address Repository: 239 Dundas St E",
+    "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22239+Dundas+St+E%22%7D&limit=100",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T06:38:16.078288+00:00",
+    "sha256": "f805dc445b39cb810b52bd3d675b5ed1e521878b06d5b5297aa69f81e3c67851",
+    "bytes": 8016
+  },
+  {
+    "source_id": "toronto-address-30009862",
+    "title": "Toronto One Address Repository: 500 Dundas St E",
+    "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22500+Dundas+St+E%22%7D&limit=100",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T06:38:20.211229+00:00",
+    "sha256": "409b45a83360191f69f783592274bf9d7ac685938d84c13cb056e6fea46f51df",
+    "bytes": 8021
+  },
+  {
+    "source_id": "toronto-address-7667205",
+    "title": "Toronto One Address Repository: 761 Dundas St E",
+    "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22761+Dundas+St+E%22%7D&limit=100",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T06:38:21.663662+00:00",
+    "sha256": "4807dbdb4d797f18c7eecfd80b0b9ba1ca0bc148fd62a0072d65d5dd39bc7877",
+    "bytes": 8018
+  },
+  {
+    "source_id": "toronto-address-7650832",
+    "title": "Toronto One Address Repository: 401 Dundas St E",
+    "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22401+Dundas+St+E%22%7D&limit=100",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T06:38:22.462487+00:00",
+    "sha256": "fba034b04cc5e30f4abe7ae552338144520fb3e426f4485e4f3dee82a451441e",
+    "bytes": 8018
+  },
+  {
+    "source_id": "toronto-address-796099",
+    "title": "Toronto One Address Repository: 218 Dundas St E",
+    "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search?resource_id=0b3756af-9caf-4f0f-ac28-9c6617adede4&filters=%7B%22ADDRESS_FULL%22%3A+%22218+Dundas+St+E%22%7D&limit=100",
+    "publisher": "City of Toronto",
+    "version": "retrieved snapshot",
+    "licence": "https://open.toronto.ca/open-data-licence/",
+    "retrieved_at": "2026-10-17T06:38:23.357595+00:00",
+    "sha256": "a53af2f462cf1b9240f0b12cc949d9d3f4ed5443759c9cd3c6b628551c6a24ce",
+    "bytes": 9510
+  },
+  {
+    "source_id": "osm-walk-239",
+    "title": "OpenStreetMap pedestrian map around 239 DUNDAS ST E",
+    "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.375,43.6565,-79.3705,43.659",
+    "publisher": "OpenStreetMap contributors",
+    "version": "retrieved snapshot",
+    "licence": "https://www.openstreetmap.org/copyright",
+    "retrieved_at": "2026-10-17T06:49:48.203776+00:00",
+    "sha256": "9d13aae62cb1469589f845c611968ddd049beca2c12c3fc0b81ba8987d4c9581",
+    "bytes": 633524
+  },
+  {
+    "source_id": "osm-walk-500",
+    "title": "OpenStreetMap pedestrian map around 500 DUNDAS ST E",
+    "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.3675,43.658,-79.3615,43.662",
+    "publisher": "OpenStreetMap contributors",
+    "version": "retrieved snapshot",
+    "licence": "https://www.openstreetmap.org/copyright",
+    "retrieved_at": "2026-10-17T06:52:29.237546+00:00",
+    "sha256": "075bc6ad12967aed29e3d64b2801cbec7bc16a3d7a950193b6ded9761e0a013d",
+    "bytes": 1322303
+  },
+  {
+    "source_id": "osm-walk-761",
+    "title": "OpenStreetMap pedestrian map around 761 DUNDAS ST E",
+    "url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.361,43.6595,-79.354,43.663",
+    "publisher": "OpenStreetMap contributors",
+    "version": "retrieved snapshot",
+    "licence": "https://www.openstreetmap.org/copyright",
+    "retrieved_at": "2026-10-17T06:52:31.884378+00:00",
+    "sha256": "8bae93ef0f728fe6f4839098ce1e48bd9e03e5d278331953aa47dc686090be26",
+    "bytes": 1553463
+  }
+]

@@ -32,7 +32,7 @@ Restart the backend and worker after editing .env. Database access requires a ne
 - Put the Tiger Data PostgreSQL connection URL and Gemini API key in each laptop's root .env. Foundation health checks do not call Gemini.
 - All four owners must confirm the table above; product implementation waits until it passes.
 - Push the foundation changes and share the commit SHA with all owners.
-- Phase 01 still needs the corridor/direction/peak window, source data and model/schema decisions; those are outside Foundation.
+- Phase 01 corridor/feasibility evidence is in docs/feasibility.md; the schema and full comparison-fixture contract still need freezing.
 
 FutureProof uses port 8010 to avoid other local apps. Restart Vite after a proxy configuration change.
 In Command Prompt, run .venv\Scripts\python.exe -m uvicorn backend.main:app --reload --reload-dir backend --port 8010 from the repository root; no activation is needed.

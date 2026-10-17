@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     )
 
     gemini_api_key: SecretStr = SecretStr("")
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.8-flash"
     database_url: PostgresDsn | None = Field(default=None, repr=False)
     data_cache_dir: Path = ROOT_DIR / "data/cache"
     sim_runs: int = Field(default=100, ge=1)

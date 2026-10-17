@@ -1,0 +1,61 @@
+{
+  "corridor_id": "ttc-505-east-jarvis-broadview",
+  "service_date": "2026-10-16",
+  "window": {
+    "start": "07:00:00",
+    "end": "09:00:00",
+    "status": "assumed",
+    "reason": "A representative weekday AM peak for the initial scenario experiment; selected for reproducibility, not inferred from demand observations."
+  },
+  "access_threshold_m": 500,
+  "projects": [
+    {
+      "application_number": "22 124214 STE 13 OZ",
+      "address": "239 Dundas St E",
+      "selected": true,
+      "reason": "West end; numeric units agree with the current description.",
+      "osm_bbox": [
+        -79.375,
+        43.6565,
+        -79.3705,
+        43.659
+      ]
+    },
+    {
+      "application_number": "26 122451 STE 13 OZ",
+      "address": "500 Dundas St E",
+      "selected": true,
+      "reason": "Middle of corridor; recent under-review residential proposal.",
+      "osm_bbox": [
+        -79.3675,
+        43.658,
+        -79.3615,
+        43.662
+      ]
+    },
+    {
+      "application_number": "25 236949 STE 13 OZ",
+      "address": "761 Dundas St E",
+      "selected": true,
+      "reason": "East end; numeric units agree with the current description.",
+      "osm_bbox": [
+        -79.361,
+        43.6595,
+        -79.354,
+        43.663
+      ]
+    },
+    {
+      "application_number": "20 233607 STE 13 OZ",
+      "address": "401 Dundas St E",
+      "selected": false,
+      "reason": "Valid reserve candidate; the selected projects give wider corridor coverage."
+    },
+    {
+      "application_number": "20 151363 STE 13 OZ",
+      "address": "218 Dundas St E",
+      "selected": false,
+      "reason": "Hold for review: numeric unit field is 542 but description says 522; multiple municipal address points."
+    }
+  ]
+}
