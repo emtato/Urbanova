@@ -108,11 +108,12 @@ def test_reviewed_evidence_has_sources_and_matching_geometries():
     sources = {s["source_id"]: s for s in json.loads((reviewed / "sources.json").read_text())}
     assert bundle["corridor_id"] == selection["corridor_id"]
     assert bundle["direction_id"] == selection["corridor"]["direction_id"]
-    assert len(bundle["stops"]) == 7
-    assert len(bundle["links"]) == 6
+    assert len(bundle["stops"]) == 9
+    assert len(bundle["links"]) == 8
     assert bundle["stops"][0]["gtfs_stop_id"] == selection["corridor"]["start_stop_id"]
     assert bundle["stops"][-1]["gtfs_stop_id"] == selection["corridor"]["end_stop_id"]
-    assert len({s["stop_id"] for s in bundle["stops"]}) == 7
+    assert len({s["stop_id"] for s in bundle["stops"]}) == 9
+    assert bundle["stops"][-1]["gtfs_stop_id"] == "2136"
     assert all(source["sha256"] and source["retrieved_at"] and source["licence"] for source in sources.values())
     with (reviewed / "developments.csv").open(newline="") as stream:
         projects = list(csv.DictReader(stream))

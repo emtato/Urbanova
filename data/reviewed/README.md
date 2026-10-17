@@ -1,5 +1,5 @@
 # Reviewed Phase 01 evidence
-This directory contains compact, derived feasibility artifacts for TTC 505 westbound from Dundas/Broadview to Jarvis.
+This directory contains compact, derived feasibility artifacts for TTC 505 westbound from Dundas/Broadview to TMU Station.
 It is not the frozen Comparison API contract or a calibrated simulation output.
 
 - corridor.json / corridor.geojson / stops.csv: dated GTFS corridor, schedule and geometry.
