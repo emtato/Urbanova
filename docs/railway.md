@@ -8,6 +8,6 @@ Startup applies the additive Tiger Data schema. Check /health, /api/health/db an
 
 The Vite development proxy points to http://127.0.0.1:8010. Production frontend hosting needs its API URL or a host-level proxy plus the matching CORS origin. Database and Gemini keys never belong in VITE variables.
 
-Python under backend/ remains the simulation/data implementation; uvicorn can still run its foundation endpoints locally. Express owns the Lane C routes and scheduler. Actual scenario metrics stay in explicit fixture mode until B11. See [Lane C](lane-c.md) for package assumptions and integration limits.
+Python under backend/ remains the simulation/data implementation; uvicorn can still run its foundation endpoints locally. Express owns the Lane C routes and scheduler and computes real B11 results by default. See [Lane C](lane-c.md) for package assumptions and [the live workspace](live-analysis.md) for frontend settings and the deployment migration.
 
 References: [Railway Dockerfiles](https://docs.railway.com/builds/dockerfiles), [configuration reference](https://docs.railway.com/config-as-code/reference).
