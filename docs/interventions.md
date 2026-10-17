@@ -57,6 +57,7 @@ Required vehicles = `ceil(cycle_s / headway_s)`; Lane C computes this, A10 only 
 ## Dependencies and risks
 - **Budgets and fleet are zero in Lane C's default scenario** (`server/src/services/bundle.ts`: `capital_budget_cad: 0`, `fleet_allowance: 0`). With A10 in place, any upgrade still fails "over budget" until a user or Lane C supplies budgets and a fleet allowance. Not part of A10; Lane C needs to know.
 - **The simulator has no streetcar-priority mechanism.** Extra service works through `headway_s`. For priority to change crowding, Lane B needs to apply A10's per-link savings to `link_travel_times_s`. Agree this with Lane B before building.
+- **Costs cover both directions; benefits are westbound only.** The simulation models westbound AM only. Eastbound is used only because a car must run back eastbound before its next westbound trip, so vehicle counts use the full round trip. Priority is assumed built in both directions, so its capital cost and the shorter round trip (`lane_cycle_s`) include eastbound, but eastbound time savings for riders are not simulated. This understates priority's benefit, which is the conservative direction.
 - **Cost figures may be incomplete.** Anything not found is marked `assumed` with a wide range; no number is presented as a TTC quote.
 - **Spare fleet.** Whether TTC has the 3–14 extra streetcars these headways need at the AM peak is not something A10 can establish. `fleet_allowance` stays a scenario input.
 
