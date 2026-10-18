@@ -73,9 +73,24 @@ The 3D buildings are simplified representations, and the shadow comparison model
 
 ### Zain
 
+- Built the interactive corridor map frontend, including the TypeScript types, the API client and the design-token system.
+- Built the 3D map with Mapbox, showing extruded towers and accurate massing for the proposed buildings by development phase, along with their ground shadows and sunlight impact.
+- Built the development panel, stop inspector, scenario controls and replay timeline, with walking catchments, Street View and links to City application records.
+- Designed Urbanova's look and feel, and added the Gemini copilot that answers questions from the research while treating simulation results as the ground truth.
+
 ### Una
 
+- Co-wrote the project design document and the backend stack decision, and researched corridor feasibility before moving the study area to the westbound 505 Dundas corridor.
+- Built the 3D massing and sunlight data, covering 2,444 corridor buildings, simplified models of the three proposals, and ground shadows with and without the proposals across different seasons and times of day.
+- Moved the simulation's key assumptions out of the code into validated inputs with sources, and built a costed catalogue of service improvements like more frequent streetcars and streetcar priority.
+- Added the headway selector, cost card and before/after impact card to the Run simulation page, fixed the transit metrics in the station panel, and polished the overall map experience.
+
 ### Matt
+
+- Set up the development foundation and the shared comparison contract that the simulation, backend and frontend all follow.
+- Supplied the reviewed data and assumptions behind the simulation inputs, including the building unit inventory and the 505 Dundas route data.
+- Built the Express API and background workers, connected them to the real simulation, and integrated Gemini with a research-based assumption auditor.
+- Set up the database, deployed the backend on Railway, and tested the full deployed app end to end.
 
 ## Running and exploring the project
 
