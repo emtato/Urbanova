@@ -20,7 +20,7 @@ export function MapReplayControls({ playing, time, horizon, startTime, speed, si
   const clock = replayClock(startTime, time)
   return <section className="map-replay-controls" aria-label="Simulation replay controls">
     <button type="button" data-testid="sim-replay-play-btn" className="map-replay-play"
-      onClick={onTogglePlay} aria-label={playing ? 'Pause simulation replay' : 'Play simulation replay'} title={playing ? 'Pause replay' : 'Play replay'}>
+      onClick={onTogglePlay} aria-label={playing ? 'Pause simulation replay' : 'Play simulation replay'} title={playing ? 'Pause replay (Space)' : 'Play replay (Space)'}>
       {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
     </button>
     <output className="map-replay-clock" aria-label="Simulation clock">{clock}</output>

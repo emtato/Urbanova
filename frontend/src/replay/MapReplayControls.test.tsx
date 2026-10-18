@@ -20,4 +20,14 @@ describe('map replay clock and controls', () => {
     expect(html).toContain('aria-label="Silly mode: spin streetcars" aria-pressed="true"')
     expect(html).toMatch(/aria-label="Restart simulation replay"[^]*?<\/button><button[^]*?aria-label="Silly mode/)
   })
+
+  it('indicates Space shortcut on the play and pause buttons', () => {
+    const playHtml = renderToString(<MapReplayControls playing={false} time={0} horizon={7200} startTime={25200} speed={1} silly={false}
+      onTogglePlay={() => {}} onSeek={() => {}} onSpeed={() => {}} onRestart={() => {}} onToggleSilly={() => {}} />)
+    expect(playHtml).toContain('title="Play replay (Space)"')
+
+    const pauseHtml = renderToString(<MapReplayControls playing={true} time={0} horizon={7200} startTime={25200} speed={1} silly={false}
+      onTogglePlay={() => {}} onSeek={() => {}} onSpeed={() => {}} onRestart={() => {}} onToggleSilly={() => {}} />)
+    expect(pauseHtml).toContain('title="Pause replay (Space)"')
+  })
 })

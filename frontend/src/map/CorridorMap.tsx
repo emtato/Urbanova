@@ -8,6 +8,7 @@ import { animateStreetView } from './animateStreetView'
 import { buildingStreetViewLocation } from './buildingStreetView'
 import { LAYER_500_MODEL, is500Development } from './Dundas500Model'
 import { getDevelopmentColors } from './developmentColors'
+import { setupMapKeyboardNavigation } from './mapKeyboardNavigation'
 import type { Corridor } from '../lib/types'
 import {
   normalizeStop,
@@ -157,6 +158,10 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   })
   const [tokenInput, setTokenInput] = useState<string>('')
   const [showTokenPrompt, setShowTokenPrompt] = useState<boolean>(!mapboxToken)
+  const showTokenPromptRef = useRef(showTokenPrompt)
+  useEffect(() => {
+    showTokenPromptRef.current = showTokenPrompt
+  }, [showTokenPrompt])
 
   const handleSaveToken = () => {
     const trimmed = tokenInput.trim()
@@ -207,6 +212,10 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       })
 
       map.addControl(new mapboxgl.NavigationControl({ showCompass: true }), 'bottom-right')
+
+      const cleanupKeyboard = setupMapKeyboardNavigation(map, {
+        enabled: () => !showTokenPromptRef.current,
+      })
 
       map.on('style.load', () => {
         // Mapbox Standard 3D lighting configuration
@@ -354,6 +363,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       resizeObserver.observe(mapContainerRef.current)
 
       return () => {
+        cleanupKeyboard()
         resizeObserver.disconnect()
         map.remove()
         mapRef.current = null
@@ -551,6 +561,9 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       {/* Mapbox Canvas Container */}
       <div
         ref={mapContainerRef}
+        tabIndex={0}
+        aria-label="3D Corridor Map"
+        role="region"
         style={{
           position: 'absolute',
           top: 0,
@@ -559,6 +572,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           bottom: 0,
           width: '100%',
           height: '100%',
+          outline: 'none',
         }}
       />
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { configurationSummary, mapComparison, setActiveSimulation, todayBaseline, useSimulationHistory } from '../lib/simulationHistory'
 import { getSimulations } from '../lib/api'
 import { SimulationPicker } from '../panels/SimulationPicker'
@@ -12,6 +12,7 @@ import {
   normalizeDevelopment,
 } from '../map/types'
 import { CorridorMap } from '../map/CorridorMap'
+import { isTextInputTarget } from '../map/mapKeyboardNavigation'
 import { getActiveSimulationStreetcars } from '../map/streetcarReplay'
 import { mapProposals } from '../map/proposals'
 import { DevelopmentPanel } from '../panels/DevelopmentPanel'
@@ -101,7 +102,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     [saved.history, saved.activeId]
   )
   const activeBatch = useMemo(
-    () => batches.find(b => b.id === saved.activeId) ?? selectedSim?.batch ?? null,
+    () => batches.find(b => b.id === saved.activeId) ?? selectedSim?.batch ?? todayBaseline,
     [batches, saved.activeId, selectedSim]
   )
   const pickerLabel = selectedSim ? selectedSim.name : 'Past sims'
@@ -131,21 +132,60 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   // Use elapsed wall time so 1x stays real-time even if a timer fires late.
   // Spin is visual only and continues while the replay is paused.
   useEffect(() => {
-    if (!selectedSim || (!isPlaying && !sillyMode)) return
+    if (!activeBatch || (!isPlaying && !sillyMode)) return
     let previous = performance.now()
     const timer = setInterval(() => {
       const now = performance.now()
       const elapsed = (now - previous) / 1000
       previous = now
-      if (isPlaying) setSimTime(value => Math.min(maxHorizon, value + elapsed * playbackSpeed))
+      if (isPlaying) {
+        setSimTime(value => {
+          const next = value + elapsed * playbackSpeed
+          if (next >= maxHorizon) {
+            setIsPlaying(false)
+            return maxHorizon
+          }
+          return next
+        })
+      }
       if (sillyMode) setSpinDegrees(value => (value + elapsed * 450) % 360)
     }, 50)
     return () => clearInterval(timer)
-  }, [isPlaying, sillyMode, playbackSpeed, maxHorizon, selectedSim?.id])
+  }, [isPlaying, sillyMode, playbackSpeed, maxHorizon, activeBatch])
 
+  const simTimeRef = useRef(simTime)
   useEffect(() => {
-    if (isPlaying && simTime >= maxHorizon) setIsPlaying(false)
-  }, [simTime, maxHorizon, isPlaying])
+    simTimeRef.current = simTime
+  }, [simTime])
+
+  const maxHorizonRef = useRef(maxHorizon)
+  useEffect(() => {
+    maxHorizonRef.current = maxHorizon
+  }, [maxHorizon])
+
+  const togglePlay = useCallback(() => {
+    if (!activeBatch) return
+    if (simTimeRef.current >= maxHorizonRef.current) {
+      setSimTime(0)
+    }
+    setIsPlaying(value => !value)
+  }, [activeBatch])
+
+  // Space key toggles simulation play / pause
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ' || e.code === 'Space') {
+        if (isTextInputTarget(e.target)) return
+        e.preventDefault()
+        if (e.target instanceof HTMLElement && e.target.tagName === 'BUTTON') {
+          e.target.blur()
+        }
+        togglePlay()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [togglePlay])
 
   // Compute live active simulation streetcars along Dundas line geometry
   const replayVehicles = useMemo(() => {
@@ -269,13 +309,10 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             <p>505 Dundas demo · {selectedSim?.name ?? 'Today baseline'} · {configurationSummary(activeBatch ?? todayBaseline)}</p>
           </div>
 
-          {selectedSim && <MapReplayControls
+          {activeBatch && <MapReplayControls
             playing={isPlaying} time={simTime} horizon={maxHorizon} startTime={startTime}
             speed={playbackSpeed} silly={sillyMode}
-            onTogglePlay={() => {
-              if (simTime >= maxHorizon) setSimTime(0)
-              setIsPlaying(value => !value)
-            }}
+            onTogglePlay={togglePlay}
             onSeek={setSimTime} onSpeed={setPlaybackSpeed}
             onRestart={() => { setIsPlaying(false); setSimTime(0); setSpinDegrees(0) }}
             onToggleSilly={() => { setSillyMode(value => !value); setSpinDegrees(0) }}
