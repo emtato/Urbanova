@@ -5,6 +5,8 @@ import { SimulationPicker } from '../panels/SimulationPicker'
 import { MapReplayControls } from '../replay/MapReplayControls'
 import type { Comparison, Scenario } from '../lib/types'
 import type { NativeBatch } from '../lib/liveTypes'
+import type { FeatureCollection } from 'geojson'
+import { indexWalkingRoutes, preparePassengerReplay, type WalkingRoutes } from '../map/passengerReplay'
 import {
   type CorridorStop,
   type CorridorDevelopment,
@@ -92,6 +94,16 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [playbackSpeed, setPlaybackSpeed] = useState(15)
   const [sillyMode, setSillyMode] = useState(false)
   const [spinDegrees, setSpinDegrees] = useState(0)
+  const [walkingRoutes, setWalkingRoutes] = useState<WalkingRoutes>(() => new Map())
+
+  useEffect(() => {
+    const abort = new AbortController()
+    void fetch('/data/simulation_walking_routes.geojson', { signal: abort.signal })
+      .then(response => { if (!response.ok) throw Error('Walking routes unavailable'); return response.json() })
+      .then((collection: FeatureCollection) => setWalkingRoutes(indexWalkingRoutes(collection)))
+      .catch(() => { /* Retain direct estimated connectors when reviewed geometry is unavailable. */ })
+    return () => abort.abort()
+  }, [])
 
   useEffect(() => {
     void getSimulations().then(list => setBatches(list)).catch(() => {})
@@ -106,6 +118,8 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     [batches, saved.activeId, selectedSim]
   )
   const pickerLabel = selectedSim ? selectedSim.name : 'Past sims'
+  const passengerReplay = useMemo(() => preparePassengerReplay(activeBatch, walkingRoutes), [activeBatch, walkingRoutes])
+  const passengerFrame = useMemo(() => passengerReplay(simTime), [passengerReplay, simTime])
   const startTime = typeof activeBatch?.individual_results[0]?.inputs.start_time_s === 'number'
     ? activeBatch.individual_results[0].inputs.start_time_s : 25200
 
@@ -355,6 +369,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           developments={proposalOptions}
           visibleDevIds={visibleProposalIds}
           simVehicles={simVehicles}
+          passengerFrame={passengerFrame}
           onToggleDevelopment={id => setVisibleProposalIds(previous => previous.includes(id)
             ? previous.filter(value => value !== id) : [...previous, id])}
           selectedStopId={selectedStop?.stop_id}

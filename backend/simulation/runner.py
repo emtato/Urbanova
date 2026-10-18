@@ -74,18 +74,18 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
 
     # Combine existing housing clusters (rider_group="existing") and new proposals (rider_group="new").
     housing_sources = [
-        ("existing", None, cluster.latitude, cluster.longitude,
+        ("existing", None, cluster.id, cluster.latitude, cluster.longitude,
          cluster.total_units * cluster.occupied_share * cluster.residents_per_occupied_unit,
          cluster.accessible_stop_ids)
         for cluster in inputs.existing_residences
     ] + [
-        ("new", dev.id, dev.latitude, dev.longitude,
+        ("new", dev.id, dev.id, dev.latitude, dev.longitude,
          dev.net_added_units * dev.occupied_share * dev.residents_per_occupied_unit,
          dev.accessible_stop_ids)
         for dev in inputs.developments
     ]
 
-    for rider_group, dev_id, lat, lon, estimated_residents, accessible_stop_ids in housing_sources:
+    for rider_group, dev_id, home_id, lat, lon, estimated_residents, accessible_stop_ids in housing_sources:
         # Scale by how close the building is to Dundas vs. College/Queen (1.0, 0.5, or 0.0).
         route_share = corridor_505_share(lat, lon, inputs.stops, bands=inputs.parallel_route_bands)
         if route_share <= 0:
@@ -122,6 +122,9 @@ def generate_passengers(inputs: SimulationInput) -> dict[str, Passenger]:
                 get_to_stop_time=get_to_stop_time,
                 rider_group=rider_group,
                 development_id=dev_id,
+                home_id=home_id,
+                home_latitude=lat,
+                home_longitude=lon,
             )
 
     return passengers

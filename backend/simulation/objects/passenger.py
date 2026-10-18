@@ -18,4 +18,9 @@ class Passenger:
     boarding_time_s: float | None = None #objective time (since simulation start) of boarding
     exit_time_s: float | None = None  # Alighting or crossing the corridor boundary.
     denied_boarding_once: bool = False     # Remains true even if the passenger boards a later vehicle: useful log to keep track of how many people couldnt board because of overcrowding
+    # Replay provenance for generated corridor riders. Incoming onboard riders
+    # have no local home journey and deliberately leave these fields unset.
+    home_id: str | None = None
+    home_latitude: float | None = None
+    home_longitude: float | None = None
 

@@ -83,6 +83,7 @@ export interface NativeCar {
 export interface NativeEvent {
   time_s: number; action: string; streetcar: NativeCar | null; stop_id: string | null; count: number
   stop_queues: Record<string, number>; onboard_count_after: number | null
+  passenger_ids?: string[]
 }
 export interface NativeReplay {
   format_version: 'b11-events-v1'; comparison_id: string; run_id: string; scenario_id: string

@@ -920,18 +920,19 @@ export function setupCorridorMapLayers(
       data: { type: 'FeatureCollection', features: [] },
     })
 
-    // Ground vehicle marker ring
+    // Keep the red streetcar locator visible at corridor scale, including
+    // compact runs where occupancy history is unavailable.
     map.addLayer({
       id: LAYER_VEHICLES,
       type: 'circle',
       source: SOURCE_VEHICLES,
       slot: 'top',
       paint: {
-        'circle-radius': 9,
-        'circle-color': '#c8102e', // TTC Red
-        'circle-stroke-width': 2.5,
+        'circle-radius': 6,
+        'circle-color': '#c8102e',
+        'circle-stroke-width': 1.5,
         'circle-stroke-color': '#ffffff',
-        'circle-opacity': 0.85,
+        'circle-opacity': 0.9,
       },
     } as AnyLayer)
   }
@@ -1152,7 +1153,7 @@ export function updateVehiclePositions(
     vehicle_id: string
     lon: number
     lat: number
-    load?: number
+    load?: number | null
     capacity?: number
     bearing?: number
     yaw?: number
@@ -1166,6 +1167,8 @@ export function updateVehiclePositions(
   const features: Feature[] = vehicles.map((v) => {
     const bearing = v.bearing ?? 253
     const calculatedYaw = v.yaw ?? streetcarModelYaw(bearing)
+    const loadKnown = typeof v.load === 'number' && Number.isFinite(v.load) &&
+      typeof v.capacity === 'number' && Number.isFinite(v.capacity) && v.capacity > 0
 
     return {
       type: 'Feature',
@@ -1173,6 +1176,8 @@ export function updateVehiclePositions(
         vehicle_id: v.vehicle_id,
         load: v.load ?? 0,
         capacity: v.capacity ?? 130,
+        load_known: loadKnown,
+        occupancy: loadKnown ? Math.max(0, Math.min(1, v.load! / v.capacity!)) : 0,
         bearing,
         yaw: calculatedYaw,
         rotation: [0, 0, calculatedYaw],

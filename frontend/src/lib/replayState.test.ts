@@ -16,4 +16,6 @@ it('replays timed arrivals and incoming occupancy, interpolates motion and remov
   expect(replayState(replay, 5).queues[stops[0].id]).toBe(1)
   expect(replayState(replay, 20).vehicles[0]).toMatchObject({ position: .5, onboard_passenger_ids: ['incoming-1', 'incoming-2'] })
   expect(replayState(replay, 40).vehicles).toHaveLength(0)
+  expect(replayState(replay, 5).queues[stops[0].id]).toBe(1)
+  expect(replayState(replay, 0).queues[stops[0].id]).toBe(0)
 })

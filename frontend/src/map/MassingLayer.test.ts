@@ -22,6 +22,7 @@ import {
   PHASE2_761_PLACEMENT,
   LAYER_STREETCAR_MODEL,
   MODEL_STREETCAR_ID,
+  LAYER_VEHICLES,
 } from './MassingLayer'
 import sampleComparison from '../data/sample_comparison.json'
 import type { Comparison } from '../lib/types'
@@ -191,6 +192,8 @@ describe('MassingLayer GeoJSON Generators (Contract 1.0.0)', () => {
     } as any
 
     setupCorridorMapLayers(map, data.corridor, data.scenario.developments)
+    expect(layers[LAYER_VEHICLES].paint['circle-color']).toBe('#c8102e')
+    expect(layers[LAYER_VEHICLES].filter).toBeUndefined()
     const model = sources[SOURCE_761_MODEL].models[MODEL_761_ID]
     expect(model.uri).toBe(MODEL_761_URL)
     expect(model.position).toEqual([-79.3565813, 43.661246])
@@ -306,6 +309,11 @@ describe('MassingLayer GeoJSON Generators (Contract 1.0.0)', () => {
     expect(feat.properties.yaw).toBe(287)
     expect(feat.properties.rotation).toEqual([0, 0, 287])
     expect(feat.properties.scale).toEqual([1, 1, 1])
+    expect(feat.properties.load_known).toBe(true)
+    expect(feat.properties.occupancy).toBeCloseTo(55 / 130)
+
+    updateVehiclePositions(mockMap, [{ vehicle_id: 'unknown-load', lon: -79.356, lat: 43.661, load: null }])
+    expect(updatedGeoJSON.features[0].properties.load_known).toBe(false)
   })
 
   it('ensures streetcar model registration and layer addition', () => {

@@ -21,7 +21,7 @@ export interface StreetcarMarkerState {
   lat: number
   bearing: number
   yaw: number
-  load: number
+  load: number | null
   capacity: number
   progress: number
   status: 'at_stop' | 'in_transit' | 'finished'
@@ -123,12 +123,16 @@ export function getStreetcarPositionOnLine(
 /**
  * Builds a NativeReplay object from a batch.
  */
+const replayCache = new WeakMap<NativeBatch, Map<number, NativeReplay>>()
+
 export function batchToReplay(batch: NativeBatch, runIndex = 0): NativeReplay | null {
+  const cached = replayCache.get(batch)?.get(runIndex)
+  if (cached) return cached
   const run = batch.individual_results?.[runIndex] ?? batch.individual_results?.[0]
   if (!run || !Array.isArray(run.inputs?.stops)) return null
   const start = typeof run.inputs.start_time_s === 'number' ? run.inputs.start_time_s : 25200
   const end = typeof run.inputs.end_time_s === 'number' ? run.inputs.end_time_s : 32400
-  return {
+  const replay: NativeReplay = {
     format_version: 'b11-events-v1',
     comparison_id: batch.id,
     run_id: `${batch.id}:seed-${run.inputs.seed ?? 42}`,
@@ -140,6 +144,10 @@ export function batchToReplay(batch: NativeBatch, runIndex = 0): NativeReplay | 
     stops: run.inputs.stops,
     events: run.sim_log ?? [],
   }
+  const entries = replayCache.get(batch) ?? new Map<number, NativeReplay>()
+  entries.set(runIndex, replay)
+  replayCache.set(batch, entries)
+  return replay
 }
 
 /**
@@ -163,8 +171,7 @@ export function getActiveSimulationStreetcars(
   // 1. If sim_log events exist, use discrete event interpolation from replayState
   if (replay.events && replay.events.length > 0) {
     const state = replayState(replay, timeSeconds)
-    if (state.vehicles && state.vehicles.length > 0) {
-      return state.vehicles.map((car: NativeCar & { position: number }) => {
+    return state.vehicles.map((car: NativeCar & { position: number }) => {
         const { lon, lat, bearing, yaw } = getStreetcarPositionOnLine(car.position, normStops)
         return {
           vehicle_id: car.id,
@@ -177,8 +184,7 @@ export function getActiveSimulationStreetcars(
           progress: car.position,
           status: car.status ?? 'in_transit',
         }
-      })
-    }
+    })
   }
 
   // 2. Schedule-based kinematic interpolation fallback
@@ -201,18 +207,15 @@ export function getActiveSimulationStreetcars(
       const progressPos = progressFrac * (numStops - 1)
       const { lon, lat, bearing, yaw } = getStreetcarPositionOnLine(progressPos, normStops)
 
-      // Simulated realistic passenger loading
-      const baseLoad = 35 + ((j * 17) % 55)
-      const load = Math.min(130, Math.round(baseLoad + progressFrac * 40))
-
       activeVehicles.push({
         vehicle_id: `flexity-${j + 1}`,
         lon,
         lat,
         bearing,
         yaw,
-        load,
-        capacity: 130,
+        // Compact runs do not retain occupancy. Never invent a load halo.
+        load: null,
+        capacity: Number(run?.inputs?.streetcar_capacity ?? 130),
         progress: progressPos,
         status: 'in_transit',
       })

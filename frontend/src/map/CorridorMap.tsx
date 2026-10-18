@@ -9,6 +9,9 @@ import { buildingStreetViewLocation } from './buildingStreetView'
 import { LAYER_500_MODEL, is500Development } from './Dundas500Model'
 import { getDevelopmentColors } from './developmentColors'
 import { setupMapKeyboardNavigation } from './mapKeyboardNavigation'
+import { setupPassengerLayers } from './PassengerLayer'
+import type { PassengerFrame } from './passengerReplay'
+import { syncReplayLayers } from './syncReplayLayers'
 import type { Corridor } from '../lib/types'
 import {
   normalizeStop,
@@ -22,7 +25,6 @@ import {
   updateDevelopmentsSelected,
   updateCorridorMapData,
   updateShadowTimeAndVisibility,
-  updateVehiclePositions,
   getDevelopmentCoordinates,
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
@@ -54,13 +56,14 @@ export interface CorridorMapProps {
   onSelectStop?: (stop: any) => void
   onSelectDevelopment?: (dev: any) => void
   className?: string
+  passengerFrame?: PassengerFrame
   simVehicles?: Array<{
     vehicle_id: string
     lon: number
     lat: number
     bearing?: number
     yaw?: number
-    load?: number
+    load?: number | null
     capacity?: number
   }>
 }
@@ -84,6 +87,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   onSelectDevelopment,
   className = '',
   simVehicles,
+  passengerFrame,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapboxMap | null>(null)
@@ -174,11 +178,11 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   // Map event handlers outlive renders; read current inputs without recreating the camera.
   const latestMapInputs = useRef({
     corridor, developments, currentVisibleDevIds, selectedDevId,
-    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles, passengerFrame,
   })
   latestMapInputs.current = {
     corridor, developments, currentVisibleDevIds, selectedDevId,
-    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles, passengerFrame,
   }
 
   // Map initialization
@@ -262,6 +266,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           const { corridor, developments, currentVisibleDevIds, selectedDevId,
             isShadowsActive, currentSlot, activePhase, simVehicles: initialVehicles } = latestMapInputs.current
           setupCorridorMapLayers(map, corridor, developments)
+          setupPassengerLayers(map)
           updateDevelopmentsPhase(map, activePhase)
           updateDevelopmentsVisibility(map, currentVisibleDevIds)
           updateDevelopmentsSelected(map, selectedDevId)
@@ -270,9 +275,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
             localTime: currentSlot.local_time,
             activePhase: activePhase,
           })
-          if (initialVehicles && initialVehicles.length > 0) {
-            updateVehiclePositions(map, initialVehicles)
-          }
+          syncReplayLayers(map, initialVehicles ?? [], latestMapInputs.current.passengerFrame)
         } catch (err) {
           console.error('Error adding corridor layers:', err)
           setStatusMessage(`Layer load issue: ${err instanceof Error ? err.message : String(err)}`)
@@ -423,10 +426,12 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
   // Synchronize moving simulation streetcars with map layers
   useEffect(() => {
-    if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      updateVehiclePositions(mapRef.current, simVehicles ?? [])
-    }
-  }, [simVehicles])
+    const map = mapRef.current
+    if (!map) return
+    // Streaming GeoJSON updates make isStyleLoaded() temporarily false. Each
+    // updater checks its own source, so vehicle motion must not wait on it.
+    syncReplayLayers(map, simVehicles ?? [], passengerFrame)
+  }, [simVehicles, passengerFrame])
 
   // Center camera when selected stop changes
   useEffect(() => {
