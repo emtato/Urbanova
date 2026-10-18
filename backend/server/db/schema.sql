@@ -91,4 +91,12 @@ CREATE TABLE IF NOT EXISTS c_simulations (
 );
 ALTER TABLE c_simulations ADD COLUMN IF NOT EXISTS name text;
 CREATE INDEX IF NOT EXISTS c_simulations_history ON c_simulations(created_at DESC,id DESC);
+-- Assumption-auditor jobs and their ordered investigation trails. The JSON
+-- retains exact recipes, seeds, human notes, evidence mode and source versions.
+CREATE TABLE IF NOT EXISTS c_investigations (
+  id uuid PRIMARY KEY, payload jsonb NOT NULL, status text NOT NULL,
+  revision integer NOT NULL DEFAULT 0, lease_token uuid, lease_until timestamptz,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS c_investigations_queue ON c_investigations(status,updated_at);
 COMMIT;

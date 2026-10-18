@@ -162,3 +162,11 @@ The real Tiger Data smoke passed HTTP enqueue, worker thread/Python computation,
 The existing ten live Gemini questions and grounded explanation passed before this integration; the prompt was unchanged, so no additional paid calls were made. Forms and templated explanations remain available when Gemini fails. Railway image construction, public API/database health and a real public B11 job were verified on 2026-10-17; see [the deployment record](live-analysis.md).
 
 Final local checks: 31 Node tests, 129 Python tests, frozen-contract validation, and frontend contract/build checks passed. Frontend lint completed with existing warnings, including the vendored map worker.
+
+# Research-team assumption auditor
+
+`/api/investigations` runs a bounded matched-seed B11 investigation and pauses for
+an actual human redirect. `GET /api/investigations/integration` reports connection
+status. See `docs/assumption-auditor.md` for requests, metric definitions and the
+UI replay handoff. Papiers is unconnected until a sponsor transport proves a real
+read; manual notes are explicitly labelled and external writeback stays pending.
