@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { ArrowLeft, Play, Settings2 } from 'lucide-react'
+import { ArrowLeft, Check, Play, Settings2 } from 'lucide-react'
 import { simulationTimes } from '../lib/analysisParameters'
+import { planAnalysisCases, type AnalysisCase } from '../lib/analysisCases'
 import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, renameSimulation, runSimulation, setUseFixture } from '../lib/api'
 import type { Scenario } from '../lib/types'
 import type { NativeBatch, NativeReplay } from '../lib/liveTypes'
@@ -53,7 +54,8 @@ export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode 
   const [headwayS, setHeadwayS] = useState(DEFAULT_HEADWAY_S)
   const [headwayValid, setHeadwayValid] = useState(true)
   const [progress, setProgress] = useState('')
-  const [impactPair, setImpactPair] = useState<ImpactPair | null>(null)
+  const [impactPairs, setImpactPairs] = useState<ImpactPair[]>([])
+  const [impactIndex, setImpactIndex] = useState(0)
   const [impactInputs, setImpactInputs] = useState('')
   const [headwayRandomnessS, setHeadwayRandomnessS] = useState(0)
   const [linkVariationShare, setLinkVariationShare] = useState(0)
@@ -103,10 +105,11 @@ export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode 
 
   const inputsKey = JSON.stringify([includedDevs, runCount, seed, headwayS, headwayRandomnessS, linkVariationShare, startHours, endHours, rushHours])
   const times = simulationTimes(startHours, endHours, rushHours)
-  const canRun = headwayValid && runCount > 0 && times.values !== null && headwayRandomnessS < headwayS
+  const canRun = headwayValid && runCount > 0 && times.values !== null && headwayRandomnessS < Math.min(headwayS, BASELINE_HEADWAY_S)
   const includedCount = Object.values(includedDevs).filter(Boolean).length
   const includedUnits = defaults?.developments.filter(d => includedDevs[d.id]).reduce((total, d) => total + d.net_added_units, 0) ?? 0
-  const impactStale = impactPair !== null && impactInputs !== inputsKey
+  const impactStale = impactPairs.length > 0 && impactInputs !== inputsKey
+  const scenarioCount = 1 + (includedCount > 0 ? 1 : 0) + (isBaseline(headwayS) ? 0 : 1)
 
   const currentBatch = simulations.find(item => item.id === selectedBatchId) ?? simulations[0] ?? null
   const replay = currentBatch ? toReplay(currentBatch, selectedRunIndex) : null
@@ -121,39 +124,40 @@ export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode 
     setError('')
     try {
       const development_ids = defaults.developments.filter(d => includedDevs[d.id]).map(d => d.id)
-      const request = (headway_s: number) => runSimulation({
+      const cases = planAnalysisCases({
         run_count: runCount,
         seed,
         development_ids,
-        headway_s,
+        headway_s: headwayS,
         headway_randomness_s: headwayRandomnessS,
         link_travel_time_variation_share: linkVariationShare,
         ...times.values,
-      }, abort.signal)
-      // A non-current headway also runs today's service with the same buildings and seeds, for a fair before/after.
-      const compare = !isBaseline(headwayS)
-      setProgress(compare ? `Running today's service (${Math.round(BASELINE_HEADWAY_S)} s)…` : 'Running simulation…')
-      const before = compare ? await request(BASELINE_HEADWAY_S) : null
-      if (abort.signal.aborted) return
-      if (compare) setProgress(`Running ${Math.round(headwayS)} s headway…`)
-      const batch = await request(headwayS)
-      if (abort.signal.aborted) return
-      const now = new Date()
-      const timestamp = formatSimulationTimestamp(now)
-      if (before) {
-        const baselineName = `${timestamp} (Baseline)`
-        before.name = baselineName
-        void renameSimulation(before.id, baselineName).catch(() => {})
+      })
+      const completed: { configuration: AnalysisCase; batch: NativeBatch }[] = []
+      for (const [index, configuration] of cases.entries()) {
+        setProgress(`Running ${index + 1} of ${cases.length}: ${configuration.label.toLowerCase()}…`)
+        const batch = await runSimulation(configuration.request, abort.signal)
+        if (abort.signal.aborted) return
+        completed.push({ configuration, batch })
       }
-      if (!batch.name) {
-        batch.name = timestamp
-        void renameSimulation(batch.id, timestamp).catch(() => {})
+      const baseline = completed.find(item => item.configuration.role === 'baseline')!.batch
+      const growth = completed.find(item => item.configuration.role === 'growth')?.batch
+      const chosenService = completed.find(item => item.configuration.role === 'selected')?.batch
+      const batch = completed[completed.length - 1].batch
+      const timestamp = formatSimulationTimestamp(new Date())
+      for (const item of completed) {
+        // The API acknowledgement updates the shared database-backed list and its name.
+        void renameSimulation(item.batch.id, `${timestamp} · ${item.configuration.label}`).catch(() => {})
       }
-      const added = before ? [batch, before] : [batch]
+      const added = completed.map(item => item.batch).reverse()
       setSimulations(prev => [...added, ...prev.filter(item => !added.some(a => a.id === item.id))])
       setSelectedBatchId(batch.id)
       setSelectedRunIndex(0)
-      setImpactPair(before ? { before, after: batch, before_headway_s: BASELINE_HEADWAY_S, after_headway_s: headwayS } : null)
+      const pairs: ImpactPair[] = []
+      if (growth) pairs.push({ kind: 'housing', before: baseline, after: growth, before_headway_s: BASELINE_HEADWAY_S, after_headway_s: BASELINE_HEADWAY_S })
+      if (chosenService) pairs.push({ kind: 'service', before: growth ?? baseline, after: chosenService, before_headway_s: BASELINE_HEADWAY_S, after_headway_s: headwayS })
+      setImpactPairs(pairs)
+      setImpactIndex(0)
       setImpactInputs(inputsKey)
     } catch (reason) {
       if (!abort.signal.aborted) setError(message(reason))
@@ -286,7 +290,7 @@ export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode 
               <div className="analysis-control-heading"><div><label htmlFor="simulation-runs">Number of runs</label><p className="analysis-help">Repeat with a different seed for each trial</p></div><output htmlFor="simulation-runs" className="analysis-value">{runCount}<small> / 25</small></output></div>
               <input id="simulation-runs" type="range" min={0} max={25} step={1} value={runCount} onChange={e => setRunCount(Number(e.target.value))} aria-describedby="run-count-help" style={{ '--range-progress': `${runCount / 25 * 100}%` } as CSSProperties} />
               <div className="analysis-range-labels"><span>0</span><span>25 trials</span></div>
-              <p id="run-count-help" className={runCount === 0 ? 'analysis-field-error' : 'analysis-help'}>{runCount === 0 ? 'Choose at least one run to start a simulation.' : isBaseline(headwayS) ? `${runCount} seeded ${runCount === 1 ? 'trial' : 'trials'} at today’s service level.` : `${runCount} ${runCount === 1 ? 'trial' : 'trials'} per service level, plus today’s service for comparison.`}</p>
+              <p id="run-count-help" className={runCount === 0 ? 'analysis-field-error' : 'analysis-help'}>{runCount === 0 ? 'Choose at least one run to start a simulation.' : `${runCount} ${runCount === 1 ? 'trial' : 'trials'} per scenario · ${scenarioCount} ${scenarioCount === 1 ? 'scenario' : 'scenarios'} · ${runCount * scenarioCount} total runs. ${includedCount > 0 ? 'Includes existing homes and new homes at unchanged service.' : 'Existing homes only.'}`}</p>
             </div>
           </section>
           <section className="analysis-card analysis-timing" aria-labelledby="timing-title">
@@ -307,7 +311,7 @@ export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode 
               </div>
               <p className="analysis-help">A seed controls random choices. Keep the same seed and settings to reproduce a run. Travel-time variation ranges from 0 to 99%.</p>
             </details>
-            {headwayRandomnessS >= headwayS && <p className="analysis-field-error" role="alert">Departure-time variation must be smaller than the interval between streetcars.</p>}
+            {headwayRandomnessS >= Math.min(headwayS, BASELINE_HEADWAY_S) && <p className="analysis-field-error" role="alert">Departure-time variation must be smaller than both compared streetcar intervals.</p>}
           </section>
         </div>
         <div className="analysis-launch">
@@ -320,7 +324,10 @@ export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode 
       <ServiceCostCard headway_s={headwayS} />
       <div>
         {impactStale && <p className="service-stale" role="status">Inputs changed since this comparison ran; run again to update it.</p>}
-        <HeadwayImpactCard pair={impactPair} />
+        {impactPairs.length > 1 && <div className="analysis-comparison-switch" role="group" aria-label="Impact comparison">
+          {impactPairs.map((pair, index) => <button type="button" key={pair.kind} aria-pressed={impactIndex === index} onClick={() => setImpactIndex(index)}>{pair.kind === 'housing' ? 'Impact of new homes' : 'Impact of service'}</button>)}
+        </div>}
+        <HeadwayImpactCard pair={impactPairs[impactIndex] ?? null} />
       </div>
     </div>
 
@@ -379,30 +386,37 @@ export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode 
               <div className="analysis-saved-actions">
                 <button type="button" aria-pressed={isSelected} onClick={() => { setSelectedBatchId(batch.id); setSelectedRunIndex(0) }}>{isSelected ? 'Viewing results' : 'View results'}</button>
                 <button type="button" onClick={() => void handleRename(batch.id, displayName)}>Rename</button>
-                <div className="analysis-delete-action-wrapper">
+                <button
+                  type="button"
+                  className="analysis-delete-button"
+                  disabled={(deleting && pendingDeleteId === batch.id) || isDeletingBatch}
+                  onClick={() => setPendingDeleteId(batch.id)}
+                >
+                  {deleting && pendingDeleteId === batch.id ? 'Deleting…' : 'Delete'}
+                </button>
+                {isBatchMode && (
                   <button
                     type="button"
-                    className="analysis-delete-button"
-                    disabled={(deleting && pendingDeleteId === batch.id) || isDeletingBatch}
-                    onClick={() => setPendingDeleteId(batch.id)}
+                    role="checkbox"
+                    aria-checked={isBatchSelected}
+                    className={`analysis-saved-checkbox-btn${isBatchSelected ? ' is-checked' : ''}`}
+                    onClick={e => {
+                      e.stopPropagation()
+                      toggleSelect(batch.id)
+                    }}
+                    aria-label={`Select ${displayName} for deletion`}
                   >
-                    {deleting && pendingDeleteId === batch.id ? 'Deleting…' : 'Delete'}
+                    <input
+                      type="checkbox"
+                      className="analysis-sr-only"
+                      checked={isBatchSelected}
+                      readOnly
+                      tabIndex={-1}
+                      aria-hidden="true"
+                    />
+                    {isBatchSelected && <Check size={16} strokeWidth={2.5} />}
                   </button>
-                  {isBatchMode && (
-                    <label
-                      className="analysis-saved-checkbox-wrapper"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <input
-                        type="checkbox"
-                        className="analysis-saved-checkbox"
-                        checked={selectedIds.has(batch.id)}
-                        onChange={() => toggleSelect(batch.id)}
-                        aria-label={`Select ${displayName} for deletion`}
-                      />
-                    </label>
-                  )}
-                </div>
+                )}
               </div>
             </article>
           })}

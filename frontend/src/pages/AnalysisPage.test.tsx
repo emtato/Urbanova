@@ -39,7 +39,7 @@ describe('AnalysisPage batch delete functionality', () => {
     expect(html).not.toContain('Cancel')
   })
 
-  it('renders Cancel button and floating checkboxes when batch mode is active with 0 selected', () => {
+  it('renders Cancel button and square checkbox button when batch mode is active with 0 selected', () => {
     const raw = renderToString(
       <AnalysisPage
         onNavigate={() => {}}
@@ -52,10 +52,11 @@ describe('AnalysisPage batch delete functionality', () => {
     expect(html).toContain('Cancel')
     expect(html).toContain('Batch delete')
     expect(html).not.toContain('confirm delete')
-    expect(html).toContain('class="analysis-saved-checkbox-wrapper"')
-    expect(html).toContain('class="analysis-saved-checkbox"')
+    expect(html).toContain('class="analysis-saved-checkbox-btn')
+    expect(html).toContain('role="checkbox"')
     expect(html).toContain('is-batch-mode')
     expect(html).not.toContain('is-batch-selected')
+    expect(html).not.toContain('is-checked')
   })
 
   it('changes button text to "confirm delete" and applies selection highlight when items are selected', () => {
@@ -71,6 +72,7 @@ describe('AnalysisPage batch delete functionality', () => {
     expect(html).toContain('confirm delete')
     expect(html).not.toContain('Batch delete</button>')
     expect(html).toContain('is-batch-selected')
-    expect(html).toContain('checked=""')
+    expect(html).toContain('is-checked')
+    expect(html).toContain('aria-checked="true"')
   })
 })

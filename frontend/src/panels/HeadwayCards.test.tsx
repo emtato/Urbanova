@@ -60,7 +60,7 @@ describe('service cost card', () => {
 
 describe('before/after card', () => {
   it('prompts for a run when there is no comparison', () => {
-    expect(html(<HeadwayImpactCard pair={null} />)).toContain('Run a simulation with a headway other than today')
+    expect(html(<HeadwayImpactCard pair={null} />)).toContain('Select developments or change the streetcar interval, then run a simulation to compare impacts.')
   })
 
   it('shows before, after and change, marking improvements', () => {
@@ -73,5 +73,20 @@ describe('before/after card', () => {
     expect(out).toContain('−20.0 percentage points')
     expect(out).toContain('no change')
     expect(out).toContain('class="is-better"')
+  })
+
+  it('labels housing comparisons correctly and scores more regular spacing as an improvement', () => {
+    const before = batch('a', { streetcar_occupancy: .8, stop_crowding: 10, observed_gap_s: 300, spacing_score: 2 })
+    const after = batch('b', { streetcar_occupancy: .6, stop_crowding: 5, observed_gap_s: 200, spacing_score: 8 })
+    const out = html(<HeadwayImpactCard pair={{ before, after, kind: 'housing', before_headway_s: BASELINE_HEADWAY_S, after_headway_s: BASELINE_HEADWAY_S }} />)
+    expect(out).toContain('Existing homes')
+    expect(out).toContain('With new homes')
+    expect(out).toContain('Service stays at a streetcar every')
+    expect(out).toContain('Average streetcar occupancy')
+    expect(out).toContain('Average people waiting per stop')
+    expect(out).toContain('Average gap between streetcars')
+    expect(out).toContain('80.0%')
+    expect(out).toContain('60.0%')
+    expect(out).toContain('<dd class="is-better">+6.0 points</dd>')
   })
 })

@@ -1,63 +1,54 @@
+import { useMemo } from 'react'
 import type { NativeBatch } from '../lib/liveTypes'
-import { readableTime } from './SimulationResults'
+import { ANALYSIS_METRICS, analysisStatistics, formatAnalysisMetric, readableTime, type AnalysisMetric } from '../lib/analysisMetrics'
 
 export interface ImpactPair {
   before: NativeBatch
   after: NativeBatch
   before_headway_s: number
   after_headway_s: number
+  kind?: 'housing' | 'service'
 }
 
-type Kind = 'seconds' | 'share' | 'count'
-const METRICS: { key: string; label: string; kind: Kind }[] = [
-  { key: 'mean_wait_s', label: 'Average wait', kind: 'seconds' },
-  { key: 'p95_wait_s', label: 'Longer waits (95th percentile)', kind: 'seconds' },
-  { key: 'denied_boarding_share', label: 'Riders left behind at least once', kind: 'share' },
-  { key: 'unresolved_passengers', label: 'Still waiting after a full streetcar', kind: 'count' },
-]
-
-const show = (value: number | null | undefined, kind: Kind) => {
-  if (value === null || value === undefined) return 'Not available'
-  if (kind === 'seconds') return readableTime(value)
-  if (kind === 'share') return `${(value * 100).toFixed(1)}%`
-  return value.toFixed(1)
-}
-
-const change = (before: number | null | undefined, after: number | null | undefined, kind: Kind) => {
-  if (before === null || before === undefined || after === null || after === undefined) return { text: '—', tone: '' }
+const change = (before: number | null | undefined, after: number | null | undefined, metric: AnalysisMetric) => {
+  if (before == null || after == null) return { text: '—', tone: '' }
   const diff = after - before
   if (Math.abs(diff) < 1e-9) return { text: 'no change', tone: '' }
   const sign = diff > 0 ? '+' : '−'
-  const amount = kind === 'share' ? `${(Math.abs(diff) * 100).toFixed(1)} percentage points` : kind === 'seconds' ? `${Math.abs(diff).toFixed(1)} s` : Math.abs(diff).toFixed(1)
-  const pct = before !== 0 && kind !== 'share' ? ` (${sign}${Math.abs((diff / before) * 100).toFixed(0)}%)` : ''
-  // Lower is better for every metric shown.
-  return { text: `${sign}${amount}${pct}`, tone: diff < 0 ? 'is-better' : 'is-worse' }
+  const amount = metric.kind === 'share' ? `${(Math.abs(diff) * 100).toFixed(1)} percentage points`
+    : metric.kind === 'seconds' ? `${Math.abs(diff).toFixed(1)} s`
+    : metric.kind === 'score' ? `${Math.abs(diff).toFixed(1)} points` : Math.abs(diff).toFixed(1)
+  const pct = before !== 0 && metric.kind !== 'share' && metric.kind !== 'score' ? ` (${sign}${Math.abs((diff / before) * 100).toFixed(0)}%)` : ''
+  const better = metric.higherIsBetter ? diff > 0 : diff < 0
+  return { text: `${sign}${amount}${pct}`, tone: better ? 'is-better' : 'is-worse' }
 }
 
-/** Same buildings, seeds and settings; only the headway differs. Averages across the batch's runs. */
 export function HeadwayImpactCard({ pair }: { pair: ImpactPair | null }) {
-  if (!pair) return <section className="service-card" aria-labelledby="impact-title">
+  const before = useMemo(() => pair ? analysisStatistics(pair.before) : null, [pair?.before])
+  const after = useMemo(() => pair ? analysisStatistics(pair.after) : null, [pair?.after])
+  if (!pair || !before || !after) return <section className="service-card" aria-labelledby="impact-title">
     <h2 id="impact-title">Before and after for riders</h2>
-    <p>Run a simulation with a headway other than today's to compare rider waits against today's service.</p>
+    <p>Select developments or change the streetcar interval, then run a simulation to compare impacts.</p>
   </section>
-  const before = pair.before.overall_results
-  const after = pair.after.overall_results
+  const housing = pair.kind === 'housing'
   return <section className="service-card" aria-labelledby="impact-title">
     <h2 id="impact-title">Before and after for riders</h2>
-    <p className="service-note">
-      Today: a streetcar every {readableTime(pair.before_headway_s)}. Your service: every {readableTime(pair.after_headway_s)}.
-      {' '}Same buildings, settings and random seeds; only the service interval changes. Values are averages across {after.run_count} {after.run_count === 1 ? 'run' : 'runs'} per service level.
+    <p className="service-note">{housing
+      ? `Impact of new homes: existing housing compared with the selected developments added. Service stays at a streetcar every ${readableTime(pair.before_headway_s)}.`
+      : `Impact of service: current service every ${readableTime(pair.before_headway_s)} compared with your chosen interval of ${readableTime(pair.after_headway_s)}. Housing stays the same.`}
+      {' '}Other settings and random seeds match. Values are averages across {pair.after.overall_results.run_count} {pair.after.overall_results.run_count === 1 ? 'run' : 'runs'} per scenario.
     </p>
     <div className="analysis-impact-list">
-      {METRICS.map(({ key, label, kind }) => {
-        const b = before.metrics[key]?.mean
-        const a = after.metrics[key]?.mean
-        const delta = change(b, a, kind)
-        return <div key={key} className="analysis-impact-item">
-          <h3>{label}</h3>
+      {ANALYSIS_METRICS.filter(metric => metric.key !== 'in_progress_at_cutoff_passengers').map(metric => {
+        const b = before[metric.key].mean
+        const a = after[metric.key].mean
+        const delta = change(b, a, metric)
+        return <div key={metric.key} className="analysis-impact-item">
+          <h3>{metric.label}</h3>
+          <p className="analysis-help">{metric.help}</p>
           <dl>
-            <div><dt>Today</dt><dd>{show(b, kind)}</dd></div>
-            <div><dt>Your service</dt><dd>{show(a, kind)}</dd></div>
+            <div><dt>{housing ? 'Existing homes' : 'Current service'}</dt><dd>{formatAnalysisMetric(b, metric.kind)}</dd></div>
+            <div><dt>{housing ? 'With new homes' : 'Chosen service'}</dt><dd>{formatAnalysisMetric(a, metric.kind)}</dd></div>
             <div><dt>Change</dt><dd className={delta.tone}>{delta.text}</dd></div>
           </dl>
         </div>
