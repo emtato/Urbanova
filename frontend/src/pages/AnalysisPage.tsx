@@ -10,13 +10,12 @@ import { HeadwaySelector } from '../panels/HeadwaySelector'
 import { ConfirmDialog } from '../panels/ConfirmDialog'
 import { ServiceCostCard } from '../panels/ServiceCostCard'
 import { HeadwayImpactCard, type ImpactPair } from '../panels/HeadwayImpactCard'
+import { SimulationResults, readableTime } from '../panels/SimulationResults'
 import { BASELINE_HEADWAY_S, DEFAULT_HEADWAY_S, isBaseline } from '../lib/serviceOptions'
 import '../App.css'
 import './AnalysisPage.css'
 
 const message = (error: unknown) => error instanceof Error ? error.message : String(error)
-const seconds = (value: number | null | undefined) => value === null || value === undefined ? 'Unknown' : `${value.toFixed(1)} s`
-const percent = (value: number | null | undefined) => value === null || value === undefined ? 'Unknown' : `${(value * 100).toFixed(1)}%`
 
 function toReplay(batch: NativeBatch, runIndex: number): NativeReplay | null {
   const run = batch.individual_results[runIndex] ?? batch.individual_results[0]
@@ -228,12 +227,12 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
               <summary><Settings2 size={15} /> Randomness &amp; seed</summary>
               <div className="analysis-advanced-grid">
                 <label htmlFor="simulation-seed">Starting seed<input id="simulation-seed" required type="number" min={0} max={2147483647} step={1} value={seed} onChange={e => setSeed(Number(e.target.value))} /></label>
-                <label htmlFor="headway-randomness">Headway randomness (s)<input id="headway-randomness" required type="number" min={0} max={headwayS} step="any" value={headwayRandomnessS} onChange={e => setHeadwayRandomnessS(Number(e.target.value))} /></label>
-                <label htmlFor="link-variation">Link variation share<input id="link-variation" required type="number" min={0} max={0.99} step="any" value={linkVariationShare} onChange={e => setLinkVariationShare(Number(e.target.value))} /></label>
+                <label htmlFor="headway-randomness">Departure-time variation (seconds)<input id="headway-randomness" required type="number" min={0} max={headwayS} step="any" value={headwayRandomnessS} onChange={e => setHeadwayRandomnessS(Number(e.target.value))} /><span className="analysis-field-help">Maximum change either side of the interval between streetcars.</span></label>
+                <label htmlFor="link-variation"><span id="travel-variation-label">Travel-time variation (%)</span><input id="link-variation" required type="number" min={0} max={99} step="any" value={Number((linkVariationShare * 100).toFixed(8))} onChange={e => setLinkVariationShare(Number(e.target.value) / 100)} aria-labelledby="travel-variation-label" aria-describedby="travel-variation-help" /><span id="travel-variation-help" className="analysis-field-help">Between stops: 25% lets a 2-minute trip take 1½–2½ minutes. Use 0 for fixed travel times.</span></label>
               </div>
-              <p className="analysis-help">The same seed reproduces the same scenario. Link variation ranges from 0 to 0.99.</p>
+              <p className="analysis-help">A seed controls random choices. Keep the same seed and settings to reproduce a run. Travel-time variation ranges from 0 to 99%.</p>
             </details>
-            {headwayRandomnessS >= headwayS && <p className="analysis-field-error" role="alert">Headway randomness must be less than the headway.</p>}
+            {headwayRandomnessS >= headwayS && <p className="analysis-field-error" role="alert">Departure-time variation must be smaller than the interval between streetcars.</p>}
           </section>
         </div>
         <div className="analysis-launch">
@@ -251,125 +250,41 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     </div>
 
     {simulations.length > 0 && (
-      <section className="analysis-results-card" aria-label="Saved simulation batches">
-        <h2>Saved simulation batches ({simulations.length})</h2>
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th className="analysis-col-simulation">Simulation</th>
-                <th>Buildings included</th>
-                <th>Headway</th>
-                <th>Runs (seeds)</th>
-                <th>Mean wait (avg)</th>
-                <th>P95 wait (avg)</th>
-                <th className="analysis-col-denied">Denied % (avg)</th>
-                <th>Runtime</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {simulations.map(batch => {
-                const devs = batch.individual_results[0]?.inputs.developments ?? []
-                const metrics = batch.overall_results.metrics
-                const isSelected = currentBatch?.id === batch.id
-                const displayName = batch.name || formatSimulationTimestamp(
-                  batch.provenance?.recorded_at ? new Date(batch.provenance.recorded_at) : undefined
-                )
-                return (
-                  <tr key={batch.id} className={isSelected ? 'is-active-row' : undefined}>
-                    <th className="analysis-id analysis-col-simulation" title={batch.id}>
-                      <strong className="analysis-simulation-name">{displayName}</strong>
-                    </th>
-                    <td>{devs.length ? devs.map(d => d.name).join(', ') : 'None (baseline only)'}</td>
-                    <td>{typeof batch.individual_results[0]?.inputs.headway_s === 'number' ? `${Math.round(batch.individual_results[0].inputs.headway_s)} s` : 'Unknown'}</td>
-                    <td>{batch.overall_results.run_count} ({batch.overall_results.seeds.join(', ')})</td>
-                    <td>{seconds(metrics.mean_wait_s?.mean)}</td>
-                    <td>{seconds(metrics.p95_wait_s?.mean)}</td>
-                    <td className="analysis-col-denied">{percent(metrics.denied_boarding_share?.mean)}</td>
-                    <td>{seconds(batch.overall_results.runtime.total_s)}</td>
-                    <td>
-                      <button type="button" onClick={() => { setSelectedBatchId(batch.id); setSelectedRunIndex(0) }}>
-                        {isSelected ? 'Viewing' : 'View'}
-                      </button>{' '}
-                      <button type="button" onClick={() => void handleRename(batch.id, displayName)}>Rename</button>{' '}
-                      <button type="button" onClick={() => setPendingDeleteId(batch.id)}>Delete</button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+      <section className="analysis-results-card" aria-labelledby="saved-simulations-title">
+        <h2 id="saved-simulations-title">Saved simulations ({simulations.length})</h2>
+        <p className="analysis-help">Choose a simulation to see its results and replay.</p>
+        <div className="analysis-saved-list">
+          {simulations.map(batch => {
+            const inputs = batch.individual_results[0]?.inputs
+            const devs = inputs?.developments ?? []
+            const metrics = batch.overall_results.metrics
+            const isSelected = currentBatch?.id === batch.id
+            const displayName = batch.name || formatSimulationTimestamp(
+              batch.provenance?.recorded_at ? new Date(batch.provenance.recorded_at) : undefined
+            )
+            return <article key={batch.id} className={`analysis-saved-item${isSelected ? ' is-selected' : ''}`}>
+              <div className="analysis-saved-heading"><h3>{displayName}</h3><span className="analysis-result-badge">{batch.overall_results.run_count} {batch.overall_results.run_count === 1 ? 'run' : 'runs'}</span></div>
+              <p className="analysis-help">{devs.length ? devs.map(d => d.name).join(' · ') : 'Existing homes only'}</p>
+              <dl className="analysis-saved-measures">
+                <div><dt>Streetcar interval</dt><dd>{readableTime(inputs?.headway_s)}</dd></div>
+                <div><dt>Average wait</dt><dd>{readableTime(metrics.mean_wait_s?.mean)}</dd></div>
+                <div><dt>Left behind at least once</dt><dd>{metrics.denied_boarding_share?.mean == null ? 'Not available' : `${(metrics.denied_boarding_share.mean * 100).toFixed(1)}%`}</dd></div>
+              </dl>
+              <div className="analysis-saved-actions">
+                <button type="button" aria-pressed={isSelected} onClick={() => { setSelectedBatchId(batch.id); setSelectedRunIndex(0) }}>{isSelected ? 'Viewing results' : 'View results'}</button>
+                <button type="button" onClick={() => void handleRename(batch.id, displayName)}>Rename</button>
+                <button type="button" onClick={() => setPendingDeleteId(batch.id)}>Delete</button>
+              </div>
+            </article>
+          })}
         </div>
       </section>
     )}
 
-    {currentBatch && (
-      <>
-        <section className="analysis-results-card">
-          <h2>Overall batch summary</h2>
-          <p className="analysis-id">Batch {currentBatch.id} · {currentBatch.overall_results.run_count} {currentBatch.overall_results.run_count === 1 ? 'run' : 'runs'} · total runtime {seconds(currentBatch.overall_results.runtime.total_s)}</p>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr><th>Metric</th><th>Mean</th><th>Median</th><th>Min</th><th>Max</th><th>Std Dev</th></tr>
-              </thead>
-              <tbody>
-                {(['mean_wait_s', 'p95_wait_s', 'denied_boarding_share', 'unresolved_passengers', 'in_progress_at_cutoff_passengers'] as const).map(key => {
-                  const stat = currentBatch.overall_results.metrics[key]
-                  if (!stat) return null
-                  const fmt = key.endsWith('_s') ? seconds : key.endsWith('_share') ? percent : (v: number | null) => v === null ? 'Unknown' : v.toFixed(1)
-                  return (
-                    <tr key={key}>
-                      <th>{key}</th>
-                      <td>{fmt(stat.mean)}</td>
-                      <td>{fmt(stat.median)}</td>
-                      <td>{fmt(stat.min)}</td>
-                      <td>{fmt(stat.max)}</td>
-                      <td>{fmt(stat.stddev)}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="analysis-results-card">
-          <h2>Individual runs in batch</h2>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr><th>Run #</th><th>Seed</th><th>Mean wait</th><th>P95 wait</th><th>Denied</th><th>Stranded</th><th>In progress at cutoff</th><th>Replay</th></tr>
-              </thead>
-              <tbody>
-                {currentBatch.individual_results.map((run, idx) => {
-                  const m = run.summary.overview
-                  return (
-                    <tr key={run.inputs.seed}>
-                      <th>#{idx + 1}</th>
-                      <td>{run.inputs.seed}</td>
-                      <td>{seconds(m.mean_wait_s)}</td>
-                      <td>{seconds(m.p95_wait_s)}</td>
-                      <td>{percent(m.denied_boarding_share)}</td>
-                      <td>{m.unresolved_passengers}</td>
-                      <td>{m.in_progress_at_cutoff_passengers}</td>
-                      <td>
-                        <button type="button" onClick={() => setSelectedRunIndex(idx)}>
-                          {selectedRunIndex === idx ? 'Selected' : 'Show replay'}
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {replay && <NativeReplayPanel key={replay.run_id} replay={replay} />}
-      </>
-    )}
+    {currentBatch && <>
+      <SimulationResults batch={currentBatch} selectedRunIndex={selectedRunIndex} onSelectRun={setSelectedRunIndex} />
+      {replay && <NativeReplayPanel key={replay.run_id} replay={replay} />}
+    </>}
     </div>
     <ConfirmDialog
       open={!!pendingDeleteId}

@@ -797,11 +797,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
               <span className="text-[11px] font-mono text-cyan-300 font-semibold">
                 · {currentSlot.timeLabel}
               </span>
-              {currentVisibleDevIds.length > 0 && currentSlot.sun_up && currentSlot.added_m2 > 0 && (
-                <span className="text-[10px] text-amber-300 font-mono font-medium bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/30">
-                  +{currentSlot.added_m2.toLocaleString()} m² shadow
-                </span>
-              )}
               <div className="flex items-center gap-1 border-l border-border/40 pl-2">
                 <button
                   type="button"
@@ -916,17 +911,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
                 <span>Sun Altitude: <strong className="text-foreground">{currentSlot.sun_altitude_deg}°{currentSlot.sun_up ? '' : ' (Night)'}</strong></span>
                 <span>Azimuth: <strong className="text-foreground">{currentSlot.sun_azimuth_deg}°</strong></span>
               </div>
-
-              {/* Added Shadow Metric when proposed buildings are shown */}
-              {currentVisibleDevIds.length > 0 && currentSlot.sun_up && currentSlot.added_m2 > 0 && (
-                <div className="flex items-center justify-between text-[10px] text-amber-200 bg-amber-500/15 px-2.5 py-1.5 rounded-lg border border-amber-500/30 font-medium">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-slate-900 border border-amber-400/60" />
-                    <span>New tower shadow on ground</span>
-                  </span>
-                  <span className="font-mono font-semibold">+{currentSlot.added_m2.toLocaleString()} m²</span>
-                </div>
-              )}
             </div>
           )
         )}

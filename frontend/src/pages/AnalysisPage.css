@@ -120,3 +120,50 @@
   .analysis-selection-summary { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) { .analysis-studio * { transition: none !important; } }
+
+/* Results: everyday measures first; statistical detail is available on demand. */
+.analysis-field-help { display: block; margin-top: 8px; font-size: 11px; font-weight: 400; color: #a1b4c4; line-height: 1.6; }
+.analysis-results-heading, .analysis-saved-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.analysis-studio .analysis-results-heading h2 { margin-bottom: 0; overflow-wrap: anywhere; }
+.analysis-studio .analysis-eyebrow { margin: 0 0 7px; font-size: 10px; color: #91a9bb; letter-spacing: .08em; text-transform: uppercase; }
+.analysis-result-badge { flex: none; font-size: 11px; color: #b1d6dc; padding: 6px 9px; border-radius: 7px; background: #67e8f90a; }
+.analysis-metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 22px 0 0; }
+.analysis-metric { padding: 19px; background: #07162244; border: 1px solid #d7e6f51c; border-radius: 12px; min-width: 0; }
+.analysis-metric dt { font-size: 12px; color: #c1d2df; line-height: 1.5; }
+.analysis-metric dd { margin: 10px 0; color: #c1eff3; font-size: clamp(21px, 2.1vw, 28px); line-height: 1.3; font-variant-numeric: tabular-nums; }
+.analysis-studio .analysis-metric p { margin: 0; font-size: 11px; color: #a1b4c4; line-height: 1.7; }
+.analysis-result-details { border-top: 1px solid #d7e6f51c; margin-top: 22px; padding-top: 10px; }
+.analysis-result-details summary { font-size: 12px; color: #bfd0de; }
+.analysis-run-info { display: grid; gap: 12px; font-size: 11px; margin: 14px 0; }
+.analysis-run-info dt { color: #91a9bb; margin-bottom: 4px; }
+.analysis-run-info dd { margin: 0; overflow-wrap: anywhere; font-family: var(--font-mono); }
+.analysis-saved-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.analysis-saved-item { min-width: 0; padding: 18px; border: 1px solid #d7e6f526; border-radius: 12px; background: #07162233; }
+.analysis-saved-item.is-selected { border-color: #80d7df80; background: #67e8f908; }
+.analysis-saved-heading { align-items: center; }
+.analysis-saved-heading h3 { margin: 0; min-width: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; flex: 1; }
+.analysis-saved-measures, .analysis-run-measures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
+.analysis-saved-measures dt, .analysis-run-measures dt { color: #91a9bb; font-size: 11px; line-height: 1.6; }
+.analysis-saved-measures dd, .analysis-run-measures dd { margin: 5px 0 0; font-size: 14px; font-variant-numeric: tabular-nums; }
+.analysis-saved-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid #d7e6f51a; }
+.analysis-saved-actions button[aria-pressed='true'] { background: #67e8f91a; border-color: #80d7df80; color: #b2e8ee; }
+.analysis-studio .analysis-run-select { max-width: 420px; }
+.analysis-run-select select { display: block; width: 100%; margin: 9px 0 18px; padding: 12px; border: 1px solid #d7e6f533; border-radius: 9px; background: #142b3b; color: #edf3f8; font: inherit; color-scheme: dark; }
+.analysis-run-select select:focus-visible { outline: 2px solid #67e8f9; outline-offset: 4px; }
+.analysis-impact-list { display: grid; gap: 16px; }
+.analysis-impact-item { border-top: 1px solid #d7e6f51c; padding-top: 14px; }
+.analysis-impact-item h3 { font-size: 12px; font-weight: 500; margin: 0 0 10px; }
+.analysis-impact-item dl { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 10px; margin: 0; }
+.analysis-impact-item dt { font-size: 10px; color: #91a9bb; }
+.analysis-impact-item dd { font-size: 12px; margin: 6px 0 0; line-height: 1.6; font-variant-numeric: tabular-nums; }
+.analysis-impact-item .is-better { color: #34d399; }
+.analysis-impact-item .is-worse { color: #f87171; }
+@media (max-width: 850px) {
+  .analysis-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analysis-saved-list { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 450px) {
+  .analysis-metric-grid { grid-template-columns: minmax(0, 1fr); }
+  .analysis-saved-measures, .analysis-run-measures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analysis-result-badge { white-space: normal; }
+}

@@ -2,16 +2,22 @@
 .simulation-picker-trigger:disabled { opacity: .45; cursor: default; }
 .simulation-picker-popup { position: fixed; z-index: 200; max-height: min(380px, calc(100vh - 24px)); overflow-y: auto; border-radius: 16px; padding: 12px; border: 1px solid rgba(180,210,230,.3); background: linear-gradient(145deg,rgba(255,255,255,.05),transparent 45%),rgba(35,51,67,.98); color: #e8f6ff; box-shadow: 0 20px 45px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15); backdrop-filter: blur(20px); }
 .simulation-picker-heading { display: flex; justify-content: space-between; align-items: center; padding: 2px 3px 10px; font-size: 12px; }
+.simulation-picker-heading-actions { display: flex; align-items: center; gap: 4px; }
 .simulation-picker-heading button { padding: 5px; cursor: pointer; }
+.simulation-picker-heading .simulation-picker-delete,
+.simulation-picker-heading .simulation-picker-rename { padding: 4px 6px; font-size: 10px; }
 .simulation-picker-empty { padding: 22px 12px; border: 1px dashed rgba(180,210,230,.2); border-radius: 11px; font-size: 12px; text-align: center; }
 .simulation-picker-empty p { margin-top: 7px; opacity: .7; font-size: 11px; line-height: 1.6; }
-.simulation-picker-popup li { display: flex; align-items: flex-start; border-top: 1px solid rgba(180,210,230,.15); }
+.simulation-picker-popup li { display: flex; align-items: flex-start; border-top: 1px solid rgba(180,210,230,.15); position: relative; padding-right: 28px; }
 .simulation-picker-option { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 5px; padding: 12px 8px; border-radius: 9px; text-align: left; cursor: pointer; }
 .simulation-picker-option:hover:not(:disabled), .simulation-picker-today:hover { background: rgba(85,139,163,.2); }
 .simulation-picker-option:disabled { opacity: .5; cursor: default; }
+.simulation-picker-option-selected { background: rgba(248,113,113,.15) !important; }
 .simulation-picker-option strong { font-size: 12px; overflow-wrap: anywhere; }
 .simulation-picker-option time, .simulation-picker-option small { font-size: 10px; opacity: .7; line-height: 1.5; }
-.simulation-picker-actions { display: flex; align-items: center; gap: 2px; }
+.simulation-picker-actions { display: flex; align-items: center; gap: 2px; position: relative; }
+.simulation-picker-checkbox-wrapper { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; margin-left: 5px; cursor: pointer; z-index: 2; }
+.simulation-picker-checkbox { width: 14px; height: 14px; cursor: pointer; accent-color: #f87171; border-radius: 3px; margin: 0; }
 .simulation-picker-rename, .simulation-picker-delete { font-size: 10px; padding: 12px 6px; cursor: pointer; border: none; background: transparent; }
 .simulation-picker-rename { color: #a5e5f5; }
 .simulation-picker-rename:hover { color: #d4f4fa; }
