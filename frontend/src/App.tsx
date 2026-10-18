@@ -1,16 +1,14 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
-import { ContractLandingPage } from './pages/ContractLandingPage'
+import { CorridorMapPage } from './pages/CorridorMapPage'
 import { sampleComparison } from './lib/sampleComparison'
 
-const CorridorMapPage = lazy(() => import('./pages/CorridorMapPage'))
 const ListView = lazy(() => import('./views/ListView'))
 const AnalysisPage = lazy(() => import('./pages/AnalysisPage').then(module => ({ default: module.AnalysisPage })))
 const route = (raw: string) => {
   const path = raw.replace(/^#\/?/, '/')
   if (path.includes('/analysis')) return '/analysis'
-  if (path.includes('/map')) return '/map'
   if (path.includes('/list')) return '/list'
-  return '/'
+  return '/map'
 }
 
 export function App() {
@@ -19,7 +17,7 @@ export function App() {
       if (window.location.hash) return route(window.location.hash)
       return route(window.location.pathname)
     }
-    return '/'
+    return '/map'
   })
 
   useEffect(() => {
@@ -47,20 +45,6 @@ export function App() {
 
   if (currentPath === '/analysis') return <Suspense fallback={<p role="status">Loading scenario workspace…</p>}><AnalysisPage onNavigate={navigate} /></Suspense>
 
-  if (currentPath === '/map') {
-    return (
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-screen w-screen bg-[#081424] text-cyan-300 font-serif text-2xl">
-            Loading 3D Corridor...
-          </div>
-        }
-      >
-        <CorridorMapPage onNavigate={navigate} />
-      </Suspense>
-    )
-  }
-
   if (currentPath === '/list') {
     return (
       <Suspense
@@ -78,7 +62,7 @@ export function App() {
     )
   }
 
-  return <ContractLandingPage onNavigate={navigate} />
+  return <CorridorMapPage onNavigate={navigate} />
 }
 
 export default App

@@ -290,19 +290,8 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
       {/* Header: brand, planning workspace, replay, and simulation selection. */}
       <header className="relative z-20 w-full bg-background/80 backdrop-blur-md border-b border-border/40 shrink-0">
         <div className="map-header-row">
-          {/* Left: Back to Policy Briefing + Urbanova Logo */}
-          <div className="map-header-brand">
-            {onNavigate && (
-              <button
-                type="button"
-                onClick={() => onNavigate('/')}
-                className="liquid-glass rounded-full px-3 py-1 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 hover:scale-[1.02] transition-all cursor-pointer mr-1"
-                title="Return to Contract & Policy Briefing"
-              >
-                <span>←</span>
-                <span>Policy Briefing</span>
-              </button>
-            )}
+          {/* Left: Urbanova Logo (shifted right) */}
+          <div className="map-header-brand pl-3 sm:pl-5">
             <span
               className="text-2xl md:text-3xl tracking-tight text-foreground select-none cursor-pointer"
               style={{ fontFamily: "'Instrument Serif', serif" }}

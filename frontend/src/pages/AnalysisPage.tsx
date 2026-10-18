@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { ArrowLeft, ArrowUpRight, Play, Settings2 } from 'lucide-react'
+import { ArrowLeft, Play, Settings2 } from 'lucide-react'
 import { simulationTimes } from '../lib/analysisParameters'
 import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, renameSimulation, runSimulation, setUseFixture } from '../lib/api'
 import type { Scenario } from '../lib/types'
@@ -169,8 +169,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   return <main className="contract-review analysis-workspace analysis-studio">
     <div className="analysis-shell">
     <nav className="analysis-nav" aria-label="Simulation navigation">
-      <button onClick={() => onNavigate('/')}><ArrowLeft size={15} /> Policy briefing</button>
-      <button onClick={() => { setActiveSimulation(currentBatch?.id ?? null); setUseFixture(false); onNavigate('/map') }}>View map <ArrowUpRight size={15} /></button>
+      <button onClick={() => { setActiveSimulation(currentBatch?.id ?? null); setUseFixture(false); onNavigate('/map') }}><ArrowLeft size={15} /> Back to map</button>
     </nav>
     <header className="analysis-hero">
       <div>

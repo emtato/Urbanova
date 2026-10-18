@@ -33,6 +33,5 @@
   .map-replay-end { display: none; }
   .map-header-actions .simulation-picker-trigger { max-width: 120px; }
   .map-header-actions > button { font-size: 10px; padding: 6px 9px; }
-  .map-header-brand > button span:last-child { display: none; }
   .map-header-brand > span { font-size: 24px; }
 }

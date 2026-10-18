@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'frontend/**'
-      - '.github/workflows/deploy-pages.yml'
+      - '.github/workflows/deploy.yaml'
   workflow_dispatch:
 
 permissions:
@@ -43,6 +43,7 @@ jobs:
           npm run build
           cp dist/index.html dist/404.html
         env:
+          BASE_PATH: '/${{ github.event.repository.name }}/'
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || secrets.VITE_API_BASE_URL || 'https://urbanova-production-ec5f.up.railway.app/api' }}
           VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN || vars.VITE_MAPBOX_TOKEN }}
           VITE_USE_FIXTURE: ${{ vars.VITE_USE_FIXTURE || 'false' }}

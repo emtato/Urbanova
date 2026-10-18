@@ -1,6 +1,6 @@
 # Live analysis workspace
 
-Open `/analysis` in the Vite frontend, or choose **Run live B11 comparison** on the policy briefing. It uses real B11 jobs regardless of the map's fixture toggle. Run Express on port 8010 and Vite on 5173 for the default development proxy.
+Open `/analysis` in the Vite frontend, or choose **Run simulation** on the 3D map header. It uses real B11 jobs regardless of the map's fixture toggle. Run Express on port 8010 and Vite on 5173 for the default development proxy.
 
 Enter housing counts, phase year, budgets and fleet allowance. Select the upgrade checkbox to inspect and explicitly submit the interface's cycle, headway and cost assumptions. Since the A10 integration, omitted policies use the server's reviewed 300-second policy, exposed at `/api/corridor/interventions`; zero budgets still reject upgrades. These are scenario assumptions and transferred cost ranges, not project quotes. The server validates ranges, budgets, sources, availability and the extra-service fleet constraint. The headless demo additionally supports two phases and 20 seeds; Lane D must decide how to expose those controls in its interface.
 
