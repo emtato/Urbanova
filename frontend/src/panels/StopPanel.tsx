@@ -8,6 +8,7 @@ import { SimulationPicker } from './SimulationPicker'
 import './StopPanel.css'
 
 export interface StopPanelProps {
+  liveWaiting?: number | null
   stop: CorridorStop | any
   stops?: Array<CorridorStop | any>
   developments?: Array<CorridorDevelopment | any>
@@ -39,7 +40,7 @@ function MetricTable({ columns, rows }: { columns: Column[]; rows: { label: stri
   </div>
 }
 
-export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops = [], onViewPlatform,
+export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops = [], onViewPlatform, liveWaiting,
   isMinimized = false, onToggleMinimize, className = '' }) => {
   const [scope, setScope] = useState<'station' | 'line'>('station')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -84,6 +85,12 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
           {station && onViewPlatform && <button type="button" onClick={onViewPlatform} className="transit-platform-button">📍 View station in street view</button>}
         </div>
       </div>
+
+      {station && <section className="transit-section" aria-label="Current station passengers">
+        <div className="transit-metric inspector-stat-card"><span>Currently waiting · replay</span><strong>{count(liveWaiting)}</strong>
+          {liveWaiting == null && <small>Passenger history unavailable</small>}
+        </div>
+      </section>}
 
       <section className="transit-section" aria-label="Selected comparisons">
         <div className="transit-section-heading"><h3>Compare simulations</h3><SimulationPicker label="Add comparison" history={saved.history} loading={saved.loading} error={saved.error}

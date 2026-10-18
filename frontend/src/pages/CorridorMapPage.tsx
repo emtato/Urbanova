@@ -19,6 +19,7 @@ import { getActiveSimulationStreetcars } from '../map/streetcarReplay'
 import { mapProposals } from '../map/proposals'
 import { DevelopmentPanel } from '../panels/DevelopmentPanel'
 import { StopPanel } from '../panels/StopPanel'
+import { StreetcarPanel } from '../panels/StreetcarPanel'
 import { ScenarioEditor } from '../panels/ScenarioEditor'
 import { ReplaySpine } from '../replay/ReplaySpine'
 import { CaseCompare } from '../panels/CaseCompare'
@@ -49,6 +50,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [buildingViewRequest, setBuildingViewRequest] = useState<{ devId: string; requestId: number } | null>(null)
   const [platformViewRequest, setPlatformViewRequest] = useState<{ stopId: string; requestId: number } | null>(null)
   const [selectedStop, setSelectedStop] = useState<CorridorStop | null>(null)
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null)
   const [visibleProposalIds, setVisibleProposalIds] = useState<string[]>([])
   const [selectedDev, setSelectedDev] = useState<CorridorDevelopment | null>(null)
   const usingFixture = false
@@ -380,7 +382,13 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           shadowsEnabled={shadowsEnabled}
           onToggleShadows={setShadowsEnabled}
           hideAllPopups={hideAllPopups}
+          onSelectVehicle={id => {
+            setSelectedVehicleId(id)
+            setSelectedStop(null)
+            setSelectedDev(null)
+          }}
           onSelectStop={(stop) => {
+            setSelectedVehicleId(null)
                 setBuildingViewRequest(null)
                 setPlatformViewRequest(null)
             setSelectedStop(normalizeStop(stop))
@@ -388,6 +396,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             setIsStopMinimized(false)
           }}
           onSelectDevelopment={(dev) => {
+            setSelectedVehicleId(null)
             setBuildingViewRequest(null)
             setPlatformViewRequest(null)
             setSelectedDev(normalizeDevelopment(dev))
@@ -507,11 +516,20 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           </div>
         )}
 
+        {selectedVehicleId && !selectedStop && !selectedDev && !hideAllPopups && (
+          <div className="!absolute top-6 right-6 z-30"><StreetcarPanel vehicleId={selectedVehicleId}
+            vehicle={simVehicles.find(vehicle => vehicle.vehicle_id === selectedVehicleId)}
+            onClose={() => setSelectedVehicleId(null)} /></div>
+        )}
+
         {/* Selected Stop Panel (Lane D5 - Top Right) */}
         {selectedStop && !selectedDev && !hideAllPopups && (
           <div className="!absolute top-6 right-6 z-30">
             <StopPanel
               stop={selectedStop}
+              liveWaiting={passengerFrame.hasReplay
+                ? passengerFrame.queues.find(queue => queue.stop_id === selectedStop.stop_id)?.count ?? 0
+                : null}
               onViewPlatform={() => {
                 setBuildingViewRequest(null)
                 setPlatformViewRequest(previous => ({ stopId: selectedStop.stop_id, requestId: (previous?.requestId ?? 0) + 1 }))

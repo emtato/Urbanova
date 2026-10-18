@@ -9,7 +9,7 @@ import { buildingStreetViewLocation } from './buildingStreetView'
 import { LAYER_500_MODEL, is500Development } from './Dundas500Model'
 import { getDevelopmentColors } from './developmentColors'
 import { setupMapKeyboardNavigation } from './mapKeyboardNavigation'
-import { setupPassengerLayers } from './PassengerLayer'
+import { setupPassengerLayers, LAYER_PASSENGER_QUEUES } from './PassengerLayer'
 import type { PassengerFrame } from './passengerReplay'
 import { syncReplayLayers } from './syncReplayLayers'
 import type { Corridor } from '../lib/types'
@@ -29,6 +29,8 @@ import {
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
   LAYER_761_MODEL,
+  LAYER_VEHICLES,
+  LAYER_STREETCAR_MODEL,
 } from './MassingLayer'
 import {
   SEASONS,
@@ -54,6 +56,7 @@ export interface CorridorMapProps {
   onToggleShadows?: (enabled: boolean) => void
   hideAllPopups?: boolean
   onSelectStop?: (stop: any) => void
+  onSelectVehicle?: (vehicleId: string) => void
   onSelectDevelopment?: (dev: any) => void
   className?: string
   passengerFrame?: PassengerFrame
@@ -84,6 +87,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   onToggleShadows,
   hideAllPopups = false,
   onSelectStop,
+  onSelectVehicle,
   onSelectDevelopment,
   className = '',
   simVehicles,
@@ -178,11 +182,11 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   // Map event handlers outlive renders; read current inputs without recreating the camera.
   const latestMapInputs = useRef({
     corridor, developments, currentVisibleDevIds, selectedDevId,
-    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles, passengerFrame,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectVehicle, onSelectDevelopment, simVehicles, passengerFrame,
   })
   latestMapInputs.current = {
     corridor, developments, currentVisibleDevIds, selectedDevId,
-    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles, passengerFrame,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectVehicle, onSelectDevelopment, simVehicles, passengerFrame,
   }
 
   // Map initialization
@@ -283,7 +287,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       })
 
       // Click handler for stops
-      map.on('click', LAYER_STOPS_CIRCLE, (e: MapLayerMouseEvent) => {
+      const selectStop = (e: MapLayerMouseEvent) => {
         if (!e.features || e.features.length === 0) return
         const feature = e.features[0]
         const stopId = feature.properties?.stop_id
@@ -292,7 +296,18 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         if (stop && onSelectStop) {
           onSelectStop(stop)
         }
-      })
+      }
+      map.on('click', LAYER_STOPS_CIRCLE, selectStop)
+      map.on('click', LAYER_PASSENGER_QUEUES, selectStop)
+
+      for (const layer of [LAYER_VEHICLES, LAYER_STREETCAR_MODEL]) {
+        map.on('click', layer, (e: MapLayerMouseEvent) => {
+          const id = e.features?.[0]?.properties?.vehicle_id
+          if (typeof id === 'string') latestMapInputs.current.onSelectVehicle?.(id)
+        })
+        map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer' })
+        map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = '' })
+      }
 
       // Click handler for developments
       map.on('click', LAYER_DEVELOPMENTS_EXTRUSION, (e: MapLayerMouseEvent) => {
@@ -566,6 +581,15 @@ export const CorridorMap: FC<CorridorMapProps> = ({
       {/* Mapbox Canvas Container */}
       <div
         ref={mapContainerRef}
+        onClickCapture={event => {
+          const id = (event.target as HTMLElement).closest<HTMLElement>('[data-streetcar-occupancy]')?.dataset.streetcarOccupancy
+          if (id) { event.stopPropagation(); onSelectVehicle?.(id) }
+        }}
+        onKeyDownCapture={event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return
+          const id = (event.target as HTMLElement).closest<HTMLElement>('[data-streetcar-occupancy]')?.dataset.streetcarOccupancy
+          if (id) { event.preventDefault(); event.stopPropagation(); onSelectVehicle?.(id) }
+        }}
         tabIndex={0}
         aria-label="3D Corridor Map"
         role="region"

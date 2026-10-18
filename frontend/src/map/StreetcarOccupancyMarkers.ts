@@ -38,8 +38,10 @@ export function updateStreetcarOccupancyMarkers(map: MapboxMap, vehicles: Vehicl
     if (!marker) {
       const element = document.createElement('div')
       element.dataset.streetcarOccupancy = vehicle.vehicle_id
-      element.setAttribute('aria-hidden', 'true')
-      element.style.cssText = 'pointer-events:none;border-radius:50%;background:rgba(0,0,0,0.35);'
+      element.setAttribute('role', 'button')
+      element.tabIndex = 0
+      element.setAttribute('aria-label', `Show passengers on streetcar ${vehicle.vehicle_id}`)
+      element.style.cssText = 'pointer-events:auto;cursor:pointer;border-radius:50%;background:rgba(0,0,0,0.35);'
       marker = new mapboxgl.Marker({
         element, anchor: 'center', altitude: 4,
         pitchAlignment: 'viewport', rotationAlignment: 'viewport', occludedOpacity: 1,

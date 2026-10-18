@@ -7,6 +7,15 @@ const props = { stop: comparison.corridor.stops[4], stops: comparison.corridor.s
 const clean = (html: string) => html.replace(/<!--.*?-->/g, '')
 
 describe('saved-configuration inspector', () => {
+  it('shows current station queue separately from historical comparison metrics', () => {
+    const live = clean(renderToString(<StopPanel {...props} liveWaiting={27} />))
+    expect(live).toContain('Currently waiting · replay')
+    expect(live).toContain('<strong>27</strong>')
+    const empty = clean(renderToString(<StopPanel {...props} liveWaiting={0} />))
+    expect(empty).toContain('<strong>0</strong>')
+    const unknown = clean(renderToString(<StopPanel {...props} liveWaiting={null} />))
+    expect(unknown).toContain('Passenger history unavailable')
+  })
   it('shows Today with an add picker, not invented custom scenarios', () => {
     const html = clean(renderToString(<StopPanel {...props} />))
     expect(html).toContain('Station')
