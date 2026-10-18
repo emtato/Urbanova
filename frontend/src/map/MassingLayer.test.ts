@@ -6,12 +6,22 @@ import {
   generate761ModelGeoJSON,
   generateWalkCatchmentsGeoJSON,
   generateSurroundingMassingGeoJSON,
+  setupCorridorMapLayers,
+  updateCorridorMapData,
   updateDevelopmentsPhase,
   updateDevelopmentsVisibility,
   updateDevelopmentsSelected,
+  updateVehiclePositions,
+  ensureStreetcarModelLayer,
   LAYER_761_MODEL,
   MODEL_761_ID,
+  MODEL_761_URL,
+  SOURCE_761_MODEL,
+  SOURCE_761_SITE,
+  LAYER_761_REPLACEMENT,
   PHASE2_761_PLACEMENT,
+  LAYER_STREETCAR_MODEL,
+  MODEL_STREETCAR_ID,
 } from './MassingLayer'
 import sampleComparison from '../data/sample_comparison.json'
 import type { Comparison } from '../lib/types'
@@ -144,33 +154,182 @@ describe('MassingLayer GeoJSON Generators (Contract 1.0.0)', () => {
     expect(dev761?.geometry.type).toBe('Polygon')
   })
 
+  it('does not create a 761 model for empty or unrelated development lists', () => {
+    expect(generate761ModelGeoJSON([]).features).toEqual([])
+    expect(generate761ModelGeoJSON([{ id: 'other', name: '500 Dundas' }]).features).toEqual([])
+    const fixture = generate761ModelGeoJSON([{ id: 'fixture-development-3' }])
+    expect(fixture.features[0].properties?.dev_id).toBe('fixture-development-3')
+  })
+
+  it('loads the attached GLB at 761 and replaces only the existing site building', () => {
+    const sources: Record<string, any> = {}
+    const layers: Record<string, any> = {}
+    const listeners: Record<string, Array<(event: any) => void>> = {}
+    let modelReady = false
+    const map = {
+      on: (event: string, listener: (event: any) => void) => {
+        ;(listeners[event] ??= []).push(listener)
+      },
+      getSource: (id: string) => sources[id],
+      addSource: (id: string, source: any) => {
+        sources[id] = {
+          ...source,
+          setData(value: any) { this.data = value },
+          setModels(value: any) { this.models = value },
+          getModels() { return modelReady ? Object.keys(this.models ?? {}).map(id => ({ id })) : [] },
+        }
+      },
+      getLayer: (id: string) => layers[id],
+      addLayer: (layer: any) => { layers[layer.id] = layer },
+      setLayoutProperty: (id: string, key: string, value: any) => {
+        layers[id].layout = { ...layers[id].layout, [key]: value }
+      },
+      setPaintProperty: (id: string, key: string, value: any) => {
+        layers[id].paint[key] = value
+      },
+      setFilter: () => {},
+    } as any
+
+    setupCorridorMapLayers(map, data.corridor, data.scenario.developments)
+    const model = sources[SOURCE_761_MODEL].models[MODEL_761_ID]
+    expect(model.uri).toBe(MODEL_761_URL)
+    expect(model.position).toEqual([-79.3565813, 43.661246])
+    expect(model.featureProperties.dev_id).toBe('toronto-app-25-236949-ste-13-oz')
+    expect(layers[LAYER_761_MODEL].paint['model-scale']).toEqual([1, 1, 1])
+    expect(layers[LAYER_761_REPLACEMENT].layout).toMatchObject({
+      'clip-layer-scope': ['basemap'],
+      visibility: 'none',
+    })
+    // The original building survives a pending or failed GLB load.
+    listeners.sourcedata.forEach(listener => listener({ sourceId: SOURCE_761_MODEL }))
+    expect(layers[LAYER_761_REPLACEMENT].layout.visibility).toBe('none')
+    modelReady = true
+    listeners.sourcedata.forEach(listener => listener({ sourceId: SOURCE_761_MODEL }))
+    expect(layers[LAYER_761_REPLACEMENT].layout.visibility).toBe('visible')
+    expect(sources[SOURCE_761_SITE].data.features[0].properties.building_id)
+      .toBe('osm-way-195214544')
+
+    // An off switch must survive a phase update, and vice versa.
+    updateDevelopmentsVisibility(map, [])
+    updateDevelopmentsPhase(map, 2)
+    expect(layers[LAYER_761_MODEL].layout.visibility).toBe('none')
+    expect(layers[LAYER_761_REPLACEMENT].layout.visibility).toBe('none')
+    updateDevelopmentsPhase(map, 0)
+    updateDevelopmentsVisibility(map, ['toronto-app-25-236949-ste-13-oz'])
+    expect(layers[LAYER_761_MODEL].layout.visibility).toBe('none')
+    expect(layers[LAYER_761_REPLACEMENT].layout.visibility).toBe('none')
+    updateDevelopmentsPhase(map, 2)
+    expect(layers[LAYER_761_MODEL].layout.visibility).toBe('visible')
+
+    // Switching to a dataset without this proposal restores the original building.
+    updateCorridorMapData(map, data.corridor, [])
+    expect(sources[SOURCE_761_MODEL].models).toEqual({})
+    expect(layers[LAYER_761_MODEL].layout.visibility).toBe('none')
+    expect(layers[LAYER_761_REPLACEMENT].layout.visibility).toBe('none')
+    updateCorridorMapData(map, data.corridor, data.scenario.developments)
+    expect(layers[LAYER_761_MODEL].layout.visibility).toBe('visible')
+    expect(layers[LAYER_761_REPLACEMENT].layout.visibility).toBe('visible')
+  })
+
   it('updates 761 model visibility across phases and development selections', () => {
-    const filters: Record<string, any> = {}
+    const layoutProps: Record<string, Record<string, any>> = {}
+    const paintProps: Record<string, Record<string, any>> = {}
     const mockMap = {
       getLayer: (_id: string) => true,
-      setFilter: (id: string, filter: any) => {
-        filters[id] = filter
+      setFilter: (_id: string, _filter: any) => {},
+      setLayoutProperty: (layerId: string, name: string, value: any) => {
+        if (!layoutProps[layerId]) layoutProps[layerId] = {}
+        layoutProps[layerId][name] = value
+      },
+      setPaintProperty: (layerId: string, name: string, value: any) => {
+        if (!paintProps[layerId]) paintProps[layerId] = {}
+        paintProps[layerId][name] = value
       },
     } as any
 
     // Phase 1: 761 model hidden
     updateDevelopmentsPhase(mockMap, 1)
-    expect(filters[LAYER_761_MODEL]).toEqual(['==', ['get', 'phase'], -1])
+    expect(layoutProps[LAYER_761_MODEL]?.visibility).toBe('none')
+    expect(paintProps[LAYER_761_MODEL]?.['model-opacity']).toBe(0)
 
     // Phase 2: 761 model shown
     updateDevelopmentsPhase(mockMap, 2)
-    expect(filters[LAYER_761_MODEL]).toEqual(['<=', ['get', 'phase'], 2])
+    expect(layoutProps[LAYER_761_MODEL]?.visibility).toBe('visible')
+    expect(paintProps[LAYER_761_MODEL]?.['model-opacity']).toBe(1.0)
 
     // Visibility toggled off for 761
     updateDevelopmentsVisibility(mockMap, ['toronto-app-22-124214-ste-13-oz'])
-    expect(filters[LAYER_761_MODEL]).toEqual(['==', ['get', 'dev_id'], '__none__'])
+    expect(layoutProps[LAYER_761_MODEL]?.visibility).toBe('none')
+    expect(paintProps[LAYER_761_MODEL]?.['model-opacity']).toBe(0)
 
     // Visibility toggled on for 761
     updateDevelopmentsVisibility(mockMap, ['toronto-app-25-236949-ste-13-oz'])
-    expect(filters[LAYER_761_MODEL]).toEqual([
-      'any',
-      ['==', ['get', 'dev_id'], 'toronto-app-25-236949-ste-13-oz'],
-      ['==', ['get', 'dev_id'], 'fixture-development-3'],
+    expect(layoutProps[LAYER_761_MODEL]?.visibility).toBe('visible')
+    expect(paintProps[LAYER_761_MODEL]?.['model-opacity']).toBe(1.0)
+  })
+
+  it('updates vehicle positions with Point features, bearing, yaw, and rotation properties', () => {
+    let updatedGeoJSON: any = null
+    const mockMap = {
+      getSource: (id: string) => {
+        if (id === 'source-vehicles') {
+          return {
+            setData: (data: any) => {
+              updatedGeoJSON = data
+            },
+          }
+        }
+        return null
+      },
+      getLayer: () => true,
+    } as any
+
+    updateVehiclePositions(mockMap, [
+      {
+        vehicle_id: 'flexity-1',
+        lon: -79.356,
+        lat: 43.661,
+        bearing: 253,
+        yaw: 287,
+        load: 55,
+        capacity: 130,
+      },
     ])
+
+    expect(updatedGeoJSON).not.toBeNull()
+    expect(updatedGeoJSON.type).toBe('FeatureCollection')
+    expect(updatedGeoJSON.features.length).toBe(1)
+    const feat = updatedGeoJSON.features[0]
+    expect(feat.geometry.coordinates).toEqual([-79.356, 43.661])
+    expect(feat.properties.vehicle_id).toBe('flexity-1')
+    expect(feat.properties.bearing).toBe(253)
+    expect(feat.properties.yaw).toBe(287)
+    expect(feat.properties.rotation).toEqual([0, 0, 287])
+    expect(feat.properties.scale).toEqual([1, 1, 1])
+  })
+
+  it('ensures streetcar model registration and layer addition', () => {
+    const addedModels: Record<string, string> = {}
+    let addedLayer: any = null
+    const mockMap = {
+      addModel: (id: string, url: string) => {
+        addedModels[id] = url
+      },
+      hasModel: (id: string) => !!addedModels[id],
+      getSource: (id: string) => id === 'source-vehicles',
+      getLayer: (id: string) => (id === LAYER_STREETCAR_MODEL ? addedLayer !== null : false),
+      addLayer: (layer: any) => {
+        addedLayer = layer
+      },
+    } as any
+
+    ensureStreetcarModelLayer(mockMap)
+
+    expect(addedModels[MODEL_STREETCAR_ID]).toBeDefined()
+    expect(addedLayer).not.toBeNull()
+    expect(addedLayer.id).toBe(LAYER_STREETCAR_MODEL)
+    expect(addedLayer.type).toBe('model')
+    expect(addedLayer.source).toBe('source-vehicles')
+    expect(addedLayer.layout?.['model-id']).toBe(MODEL_STREETCAR_ID)
   })
 })

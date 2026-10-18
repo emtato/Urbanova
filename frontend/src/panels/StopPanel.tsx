@@ -81,7 +81,7 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
     <div role="tabpanel" id={`${tabId}-content`} aria-labelledby={`${tabId}-${scope}`} className="transit-inspector-content">
       <div className="transit-identity"><span className="transit-eyebrow">{station ? `TTC STOP #${stop.gtfs_stop_id}` : 'MODELED CORRIDOR'}</span><h2 data-testid="stop-name">{title}</h2>
         <div className="transit-stop-summary-row"><div className="transit-stop-summary-text"><p>{station ? `Sequence ${stop.seq + 1} of ${stops.length || '—'} · Westbound` : 'Westbound · Broadview to Yonge / TMU'}</p><p>{windowLabel} · {todayDate}</p></div>
-          {station && onViewPlatform && <button type="button" onClick={onViewPlatform} className="transit-platform-button">📍 View stop in 3D</button>}
+          {station && onViewPlatform && <button type="button" onClick={onViewPlatform} className="transit-platform-button">📍 View station in street view</button>}
         </div>
       </div>
 

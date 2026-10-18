@@ -33,7 +33,7 @@ describe('saved-configuration inspector', () => {
   })
   it('retains in-map view and minimizes without exposing external navigation', () => {
     const html = clean(renderToString(<StopPanel {...props} onViewPlatform={() => {}} />))
-    expect(html).toContain('View stop in 3D')
+    expect(html).toContain('View station in street view')
     expect(html).not.toContain('google.com/maps')
     const minimized = clean(renderToString(<StopPanel {...props} isMinimized onToggleMinimize={() => {}} />))
     expect(minimized).toContain('Expand stop details')

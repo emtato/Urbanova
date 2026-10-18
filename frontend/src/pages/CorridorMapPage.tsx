@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { configurationSummary, mapComparison, setActiveSimulation, todayBaseline, useSimulationHistory } from '../lib/simulationHistory'
 import { getSimulations } from '../lib/api'
 import { SimulationPicker } from '../panels/SimulationPicker'
+import { MapReplayControls } from '../replay/MapReplayControls'
 import type { Comparison, Scenario } from '../lib/types'
+import type { NativeBatch } from '../lib/liveTypes'
 import {
   type CorridorStop,
   type CorridorDevelopment,
@@ -10,6 +12,7 @@ import {
   normalizeDevelopment,
 } from '../map/types'
 import { CorridorMap } from '../map/CorridorMap'
+import { getActiveSimulationStreetcars } from '../map/streetcarReplay'
 import { mapProposals } from '../map/proposals'
 import { DevelopmentPanel } from '../panels/DevelopmentPanel'
 import { StopPanel } from '../panels/StopPanel'
@@ -82,9 +85,81 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     }, 4000)
   }
 
+  const [batches, setBatches] = useState<NativeBatch[]>([])
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [simTime, setSimTime] = useState(0)
+  const [playbackSpeed, setPlaybackSpeed] = useState(15)
+  const [sillyMode, setSillyMode] = useState(false)
+  const [spinDegrees, setSpinDegrees] = useState(0)
+
   useEffect(() => {
-    void getSimulations().catch(() => {})
+    void getSimulations().then(list => setBatches(list)).catch(() => {})
   }, [])
+
+  const selectedSim = useMemo(
+    () => saved.history.find(value => value.id === saved.activeId) ?? null,
+    [saved.history, saved.activeId]
+  )
+  const activeBatch = useMemo(
+    () => batches.find(b => b.id === saved.activeId) ?? selectedSim?.batch ?? null,
+    [batches, saved.activeId, selectedSim]
+  )
+  const pickerLabel = selectedSim ? selectedSim.name : 'Past sims'
+  const startTime = typeof activeBatch?.individual_results[0]?.inputs.start_time_s === 'number'
+    ? activeBatch.individual_results[0].inputs.start_time_s : 25200
+
+  const maxHorizon = useMemo(() => {
+    if (!activeBatch) return 7200
+    const run = activeBatch.individual_results?.[0]
+    const start = typeof run?.inputs?.start_time_s === 'number' ? run.inputs.start_time_s : 25200
+    const end = typeof run?.inputs?.end_time_s === 'number' ? run.inputs.end_time_s : 32400
+    return Math.max(1, end - start)
+  }, [activeBatch])
+
+  // Reset time when active simulation switches
+  const previousActiveId = useRef(saved.activeId)
+  useEffect(() => {
+    if (previousActiveId.current !== saved.activeId) {
+      previousActiveId.current = saved.activeId
+      setSimTime(0)
+      setIsPlaying(false)
+      setSillyMode(false)
+      setSpinDegrees(0)
+    }
+  }, [saved.activeId])
+
+  // Use elapsed wall time so 1x stays real-time even if a timer fires late.
+  // Spin is visual only and continues while the replay is paused.
+  useEffect(() => {
+    if (!selectedSim || (!isPlaying && !sillyMode)) return
+    let previous = performance.now()
+    const timer = setInterval(() => {
+      const now = performance.now()
+      const elapsed = (now - previous) / 1000
+      previous = now
+      if (isPlaying) setSimTime(value => Math.min(maxHorizon, value + elapsed * playbackSpeed))
+      if (sillyMode) setSpinDegrees(value => (value + elapsed * 450) % 360)
+    }, 50)
+    return () => clearInterval(timer)
+  }, [isPlaying, sillyMode, playbackSpeed, maxHorizon, selectedSim?.id])
+
+  useEffect(() => {
+    if (isPlaying && simTime >= maxHorizon) setIsPlaying(false)
+  }, [simTime, maxHorizon, isPlaying])
+
+  // Compute live active simulation streetcars along Dundas line geometry
+  const replayVehicles = useMemo(() => {
+    if (!activeBatch) return []
+    return getActiveSimulationStreetcars(
+      activeBatch,
+      simTime,
+      comparison?.corridor?.stops ?? []
+    )
+  }, [activeBatch, simTime, comparison?.corridor?.stops])
+
+  const simVehicles = useMemo(() => sillyMode
+    ? replayVehicles.map(vehicle => ({ ...vehicle, yaw: (vehicle.yaw + spinDegrees) % 360 }))
+    : replayVehicles, [replayVehicles, sillyMode, spinDegrees])
 
   useEffect(() => {
     if (saved.loading) return
@@ -156,11 +231,11 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
         </div>
       )}
 
-      {/* Slim Header: Urbanova (Left), 505 Dundas Corridor (Center), Toggle (Right) */}
+      {/* Header: brand, planning workspace, replay, and simulation selection. */}
       <header className="relative z-20 w-full bg-background/80 backdrop-blur-md border-b border-border/40 shrink-0">
-        <div className="flex items-center justify-between px-6 py-2.5 w-full">
+        <div className="map-header-row">
           {/* Left: Back to Policy Briefing + Urbanova Logo */}
-          <div className="flex items-center gap-3 min-w-[200px]">
+          <div className="map-header-brand">
             {onNavigate && (
               <button
                 type="button"
@@ -189,23 +264,42 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             )}
           </div>
 
-          {/* Center: 505 Dundas Streetcar Corridor */}
-          <div className="text-center flex-1 px-4">
-            <h1
-              className="text-xl md:text-2xl lg:text-3xl text-foreground font-normal tracking-tight leading-tight"
-              style={{ fontFamily: "'Instrument Serif', serif" }}
-            >
-              505 Dundas Streetcar Corridor
-            </h1>
-            <p className="text-[11px] text-muted-foreground hidden md:block">
-              {saved.history.find(value => value.id === saved.activeId)?.name ?? 'Today baseline'} · {configurationSummary(saved.history.find(value => value.id === saved.activeId)?.batch ?? todayBaseline)}
-            </p>
+          <div className="map-header-title">
+            <h1>Housing &amp; Transit Readiness</h1>
+            <p>505 Dundas demo · {selectedSim?.name ?? 'Today baseline'} · {configurationSummary(activeBatch ?? todayBaseline)}</p>
           </div>
 
+          {selectedSim && <MapReplayControls
+            playing={isPlaying} time={simTime} horizon={maxHorizon} startTime={startTime}
+            speed={playbackSpeed} silly={sillyMode}
+            onTogglePlay={() => {
+              if (simTime >= maxHorizon) setSimTime(0)
+              setIsPlaying(value => !value)
+            }}
+            onSeek={setSimTime} onSpeed={setPlaybackSpeed}
+            onRestart={() => { setIsPlaying(false); setSimTime(0); setSpinDegrees(0) }}
+            onToggleSilly={() => { setSillyMode(value => !value); setSpinDegrees(0) }}
+          />}
+
           {/* Right: Actions */}
-          <div className="flex items-center justify-end gap-2 min-w-[140px]">
-            <SimulationPicker label="Past sims" history={saved.history} loading={saved.loading} error={saved.error}
-              onToday={() => setActiveSimulation(null)} onSelect={simulation => setActiveSimulation(simulation.id)} />
+          <div className="map-header-actions">
+            <SimulationPicker
+              label={pickerLabel}
+              history={saved.history}
+              loading={saved.loading}
+              error={saved.error}
+              onToday={() => {
+                setActiveSimulation(null)
+                setIsPlaying(false)
+                setSimTime(0)
+              }}
+              onSelect={(simulation) => {
+                setActiveSimulation(simulation.id)
+                setSimTime(0)
+              }}
+            />
+
+
             <button
               type="button"
               onClick={() => onNavigate?.('/analysis')}
@@ -223,6 +317,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           corridor={comparison.corridor}
           developments={proposalOptions}
           visibleDevIds={visibleProposalIds}
+          simVehicles={simVehicles}
           onToggleDevelopment={id => setVisibleProposalIds(previous => previous.includes(id)
             ? previous.filter(value => value !== id) : [...previous, id])}
           selectedStopId={selectedStop?.stop_id}

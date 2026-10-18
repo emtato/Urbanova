@@ -113,7 +113,7 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
     <div className="transit-inspector-content">
       <div className="transit-identity"><span className="transit-eyebrow">PROPOSED HOUSING</span><h2 data-testid="dev-address">{title}</h2>
         <div className="transit-stop-summary-row"><div className="transit-stop-summary-text"><p>{development.address}</p><p data-testid="stage-badge">{development.stage || 'Planning status unavailable'}</p></div>
-          {onViewBuilding && <button type="button" className="transit-platform-button" onClick={onViewBuilding}>📍 View building in 3D</button>}
+          {onViewBuilding && <button type="button" className="transit-platform-button" onClick={onViewBuilding}>📍 View building in street view</button>}
         </div>
       </div>
 

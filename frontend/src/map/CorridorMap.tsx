@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from 'react'
+import { useEffect, useRef, useState, type FC, type CSSProperties } from 'react'
 import mapboxgl, {
   type Map as MapboxMap,
   type MapLayerMouseEvent,
@@ -6,6 +6,8 @@ import mapboxgl, {
 import { scheduleSolarUpdate } from './scheduleSolarUpdate'
 import { animateStreetView } from './animateStreetView'
 import { buildingStreetViewLocation } from './buildingStreetView'
+import { LAYER_500_MODEL, is500Development } from './Dundas500Model'
+import { getDevelopmentColors } from './developmentColors'
 import type { Corridor } from '../lib/types'
 import {
   normalizeStop,
@@ -19,6 +21,7 @@ import {
   updateDevelopmentsSelected,
   updateCorridorMapData,
   updateShadowTimeAndVisibility,
+  updateVehiclePositions,
   getDevelopmentCoordinates,
   LAYER_STOPS_CIRCLE,
   LAYER_DEVELOPMENTS_EXTRUSION,
@@ -50,6 +53,15 @@ export interface CorridorMapProps {
   onSelectStop?: (stop: any) => void
   onSelectDevelopment?: (dev: any) => void
   className?: string
+  simVehicles?: Array<{
+    vehicle_id: string
+    lon: number
+    lat: number
+    bearing?: number
+    yaw?: number
+    load?: number
+    capacity?: number
+  }>
 }
 
 const MAPBOX_STANDARD_STYLE = 'mapbox://styles/mapbox/standard'
@@ -70,6 +82,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   onSelectStop,
   onSelectDevelopment,
   className = '',
+  simVehicles,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapboxMap | null>(null)
@@ -156,11 +169,11 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   // Map event handlers outlive renders; read current inputs without recreating the camera.
   const latestMapInputs = useRef({
     corridor, developments, currentVisibleDevIds, selectedDevId,
-    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles,
   })
   latestMapInputs.current = {
     corridor, developments, currentVisibleDevIds, selectedDevId,
-    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment,
+    isShadowsActive, currentSlot, activePhase, onSelectStop, onSelectDevelopment, simVehicles,
   }
 
   // Map initialization
@@ -238,7 +251,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
         try {
           const { corridor, developments, currentVisibleDevIds, selectedDevId,
-            isShadowsActive, currentSlot, activePhase } = latestMapInputs.current
+            isShadowsActive, currentSlot, activePhase, simVehicles: initialVehicles } = latestMapInputs.current
           setupCorridorMapLayers(map, corridor, developments)
           updateDevelopmentsPhase(map, activePhase)
           updateDevelopmentsVisibility(map, currentVisibleDevIds)
@@ -248,6 +261,9 @@ export const CorridorMap: FC<CorridorMapProps> = ({
             localTime: currentSlot.local_time,
             activePhase: activePhase,
           })
+          if (initialVehicles && initialVehicles.length > 0) {
+            updateVehiclePositions(map, initialVehicles)
+          }
         } catch (err) {
           console.error('Error adding corridor layers:', err)
           setStatusMessage(`Layer load issue: ${err instanceof Error ? err.message : String(err)}`)
@@ -293,6 +309,15 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         }
       })
 
+      map.on('click', LAYER_500_MODEL, (e: MapLayerMouseEvent) => {
+        if (!e.features?.length) return
+        const devId = e.features[0].properties?.dev_id
+        const { developments, onSelectDevelopment } = latestMapInputs.current
+        const dev = developments.find((value: any) =>
+          devId ? normalizeDevelopment(value).dev_id === devId : is500Development(value))
+        if (dev && onSelectDevelopment) onSelectDevelopment(dev)
+      })
+
       // Hover cursor
       map.on('mouseenter', LAYER_STOPS_CIRCLE, () => {
         map.getCanvas().style.cursor = 'pointer'
@@ -310,6 +335,12 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         map.getCanvas().style.cursor = 'pointer'
       })
       map.on('mouseleave', LAYER_761_MODEL, () => {
+        map.getCanvas().style.cursor = ''
+      })
+      map.on('mouseenter', LAYER_500_MODEL, () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', LAYER_500_MODEL, () => {
         map.getCanvas().style.cursor = ''
       })
 
@@ -379,6 +410,13 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     })
   }, [isShadowsActive, currentSlot.local_time, currentSlot.lightPreset, currentSlot.sun_up,
     activePhase, mapboxToken, corridor, developments])
+
+  // Synchronize moving simulation streetcars with map layers
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.isStyleLoaded()) {
+      updateVehiclePositions(mapRef.current, simVehicles ?? [])
+    }
+  }, [simVehicles])
 
   // Center camera when selected stop changes
   useEffect(() => {
@@ -587,6 +625,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
             const dev = normalizeDevelopment(rawDev)
             const isVisible = currentVisibleDevIds.includes(dev.dev_id)
             const label = dev.name || toShortAddress(dev.address) || dev.dev_id
+            const palette = getDevelopmentColors(dev)
 
             return (
               <button
@@ -594,20 +633,17 @@ export const CorridorMap: FC<CorridorMapProps> = ({
                 type="button"
                 onClick={() => handleToggleDevelopment(dev.dev_id)}
                 aria-pressed={isVisible}
-                data-tone="cyan"
-                className={`map-toggle liquid-glass rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs transition-all cursor-pointer ${
-                  isVisible
-                    ? 'bg-cyan-500/25 text-cyan-200 border border-cyan-400/50 shadow-md font-medium'
-                    : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/25 hover:border-white/40 shadow-md backdrop-blur-md'
-                }`}
+                data-tone={palette.tone}
+                style={{
+                  '--development-dark': palette.dark,
+                  '--development-light': palette.light,
+                } as CSSProperties}
+                className="map-toggle development-toggle liquid-glass rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs transition-all cursor-pointer border shadow-md font-medium backdrop-blur-md"
                 title={isVisible ? `Hide ${label} from map` : `Show ${label} on map`}
               >
                 <span
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    isVisible
-                      ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
-                      : 'bg-white/30 border border-white/20'
-                  }`}
+                  className="w-2 h-2 rounded-full transition-all"
+                  style={{ backgroundColor: isVisible ? palette.dark : palette.light }}
                 />
                 <span>{label}</span>
               </button>

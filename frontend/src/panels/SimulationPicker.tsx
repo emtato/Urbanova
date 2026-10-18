@@ -66,9 +66,12 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
     }
   }, [open])
   return <>
-    <button ref={trigger} type="button" className="simulation-picker-trigger" disabled={disabled} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpen(value => !value)}>{label}<span aria-hidden="true">⌄</span></button>
+    <button ref={trigger} type="button" className="simulation-picker-trigger max-w-[240px]" disabled={disabled} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpen(value => !value)}>
+      <span className="truncate">{label}</span>
+      <span aria-hidden="true">⌄</span>
+    </button>
     {open && createPortal(<div id={id} ref={popup} tabIndex={-1} role="dialog" aria-label={label} className="simulation-picker-popup" style={position}>
-      <div className="simulation-picker-heading"><strong>{label === 'Past sims' ? 'Load a saved simulation' : 'Compare a saved simulation'}</strong><button type="button" aria-label="Close saved simulations" onClick={close}>✕</button></div>
+      <div className="simulation-picker-heading"><strong>{label === 'Past sims' ? 'Load a saved simulation' : label === 'Add comparison' ? 'Compare a saved simulation' : 'Saved simulations'}</strong><button type="button" aria-label="Close saved simulations" onClick={close}>✕</button></div>
       {onToday && <button className="simulation-picker-today" type="button" onClick={() => { onToday(); close() }}>Today baseline <span>Bundled reference</span></button>}
       {actionError && <p role="alert" className="simulation-picker-error">{actionError}</p>}
       {loading ? <p className="simulation-picker-empty">Loading saved simulations…</p> : error ? <p role="alert" className="simulation-picker-empty">{error}</p> : !history.length ? <div className="simulation-picker-empty"><strong>No past simulations yet</strong><p>Completed runs will appear here by name and timestamp.</p></div> : <ul>

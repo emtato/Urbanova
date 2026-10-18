@@ -11,6 +11,7 @@
   --font-display: 'Instrument Serif', serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+  --tracking-display: 0.025em;
 
   /* =========================================================================
      2. Color Theme (HSL Values)
@@ -53,6 +54,11 @@
   --status-user-border: #2563eb;
 
   --metric-danger: #ef4444;
+}
+
+/* Apply tracking only to the display typeface, including existing inline headings. */
+:is([style*="Instrument Serif"], .font-display, .map-header-title h1, .transit-identity h2) {
+  letter-spacing: var(--tracking-display);
 }
 
 /* =========================================================================
@@ -153,6 +159,29 @@
   background: #285461 !important;
   color: #d5fbff !important;
   border-color: #22d3ee !important;
+}
+
+/* Share the map building's hue in both sunlight and night themes. */
+.liquid-glass.map-toggle.development-toggle {
+  background: var(--development-dark) !important;
+  color: #ffffff !important;
+  border-color: var(--development-dark) !important;
+  outline-color: var(--development-light);
+}
+
+.liquid-glass.map-toggle.development-toggle[aria-pressed='true'] {
+  background: var(--development-light) !important;
+  color: #172033 !important;
+  border-color: var(--development-light) !important;
+}
+
+.liquid-glass.map-toggle.development-toggle:hover {
+  filter: brightness(1.08);
+}
+
+.liquid-glass.map-toggle.development-toggle:focus-visible {
+  outline: 2px solid var(--development-light);
+  outline-offset: 3px;
 }
 
 /* Text & border adaptations when sunlight theme is active */
