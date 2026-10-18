@@ -21,6 +21,9 @@ export function App() {
   })
 
   useEffect(() => {
+    if (window.location.hash && route(window.location.hash) === '/map') {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
     const handleNavigation = () => {
       if (typeof window !== 'undefined') {
         const next = window.location.hash ? route(window.location.hash) : route(window.location.pathname)
@@ -37,9 +40,14 @@ export function App() {
 
   const navigate = (toPath: string) => {
     if (typeof window !== 'undefined') {
-      const normalized = toPath.startsWith('/') ? toPath : `/${toPath}`
-      window.location.hash = `#${normalized}`
-      setCurrentPath(route(normalized))
+      const next = route(toPath.startsWith('/') ? toPath : `/${toPath}`)
+      // The map is the home page, so it lives at the bare URL instead of #/map.
+      if (next === '/map') {
+        if (window.location.hash) window.history.pushState(null, '', window.location.pathname + window.location.search)
+      } else {
+        window.location.hash = `#${next}`
+      }
+      setCurrentPath(next)
     }
   }
 
