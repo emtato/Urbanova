@@ -3,13 +3,14 @@ import type { FeatureCollection } from 'geojson'
 import site from '../data/dundas_500_site.json'
 import { normalizeDevelopment } from './types'
 import { DEVELOPMENT_COLORS } from './developmentColors'
+import { publicAssetPath } from '../lib/publicAssetPath'
 
 export const SOURCE_500_MODEL = 'source-500-model'
 export const SOURCE_500_SITE = 'source-500-site'
 export const LAYER_500_MODEL = 'layer-500-model'
 export const LAYER_500_REPLACEMENT = 'layer-500-replacement'
 export const MODEL_500_ID = 'model-500-dundas'
-export const MODEL_500_URL = '/models/dundas_500.mapbox.glb'
+export const MODEL_500_URL = publicAssetPath('models/dundas_500.mapbox.glb')
 export const DEV_500_ID = 'toronto-app-26-122451-ste-13-oz'
 export const DUNDAS_500_PLACEMENT = {
   anchor: [-79.3642039, 43.6600907] as [number, number],
@@ -71,7 +72,7 @@ function modelsFor(state: ModelState): Record<string, {
     [MODEL_500_ID]: {
       uri: typeof window === 'undefined'
         ? MODEL_500_URL
-        : new URL(MODEL_500_URL, window.location.origin).href,
+        : new URL(MODEL_500_URL, window.location.href).href,
       position: DUNDAS_500_PLACEMENT.anchor,
       featureProperties: { dev_id: dev.dev_id, name: dev.address, phase: 2 },
     },

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type FC, type CSSProperties, type ReactNode } from 'react'
 import mapboxgl, {
   type Map as MapboxMap,
   type MapLayerMouseEvent,
@@ -72,6 +72,7 @@ export interface CorridorMapProps {
   isCopilotActive?: boolean
   onToggleCopilot?: () => void
   onOpenList?: () => void
+  activeToolPanel?: ReactNode
 }
 
 const MAPBOX_STANDARD_STYLE = 'mapbox://styles/mapbox/standard'
@@ -98,6 +99,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   isCopilotActive,
   onToggleCopilot,
   onOpenList,
+  activeToolPanel,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapboxMap | null>(null)
@@ -772,6 +774,13 @@ export const CorridorMap: FC<CorridorMapProps> = ({
             </>
           )}
         </div>
+
+        {/* Active Tool Panel (e.g. Copilot) */}
+        {activeToolPanel && (
+          <div className="pointer-events-auto select-auto max-w-[calc(100vw-3rem)] z-30">
+            {activeToolPanel}
+          </div>
+        )}
 
         {/* Interactive Sunlight & Shadows Panel */}
         {/* Hitbox fix: panel has its own exact bounded width with pointer-events-auto; empty space around it passes through */}

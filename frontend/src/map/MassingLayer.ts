@@ -18,6 +18,7 @@ import {
 import { reviewedWalkingRoutes, dundasStreetcarLine } from '../data'
 import dundas761Site from '../data/dundas_761_site.json'
 import { streetcarModelYaw } from './streetcarOrientation'
+import { publicAssetPath } from '../lib/publicAssetPath'
 import { DEVELOPMENT_COLORS, getDevelopmentColors, developmentExtrusionColor } from './developmentColors'
 import {
   DUNDAS_500_PLACEMENT,
@@ -74,7 +75,7 @@ export const LAYER_SHADOWS_REMOVED = 'layer-shadows-removed'
 export const LAYER_SHADOWS_ADDED = 'layer-shadows-added'
 
 export const MODEL_761_ID = 'model-761-dundas'
-export const MODEL_761_URL = '/models/dundas_761.mapbox.glb'
+export const MODEL_761_URL = publicAssetPath('models/dundas_761.mapbox.glb')
 
 const DEV_761_ID = 'toronto-app-25-236949-ste-13-oz'
 const is761Id = (id: string) => id === DEV_761_ID || id === 'fixture-development-3'
@@ -126,7 +127,7 @@ function get761Models(developments: any[]) {
     [MODEL_761_ID]: {
       uri: typeof window === 'undefined'
         ? MODEL_761_URL
-        : new URL(MODEL_761_URL, window.location.origin).href,
+        : new URL(MODEL_761_URL, window.location.href).href,
       position: PHASE2_761_PLACEMENT.anchor,
       featureProperties: feature.properties,
     },
@@ -134,7 +135,7 @@ function get761Models(developments: any[]) {
 }
 
 export const MODEL_STREETCAR_ID = 'model-flexity-streetcar'
-export const MODEL_STREETCAR_URL = '/models/flexity_outlook.glb'
+export const MODEL_STREETCAR_URL = publicAssetPath('models/flexity_outlook.glb')
 
 /**
  * Creates surrounding perimeter blocks (used in tests or fallback).
@@ -723,7 +724,7 @@ export function setupCorridorMapLayers(
   if (!map.getSource(SOURCE_SHADOWS)) {
     map.addSource(SOURCE_SHADOWS, {
       type: 'geojson',
-      data: '/data/shadows.geojson',
+      data: publicAssetPath('data/shadows.geojson'),
     })
 
     // Layer 1: Today - Baseline shaded open ground (Deep slate/grey)
@@ -947,7 +948,7 @@ export function setupCorridorMapLayers(
 export function ensureStreetcarModelLayer(map: MapboxMap): void {
   const resolvedStreetcarUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/models/flexity_outlook.glb`
+      ? new URL(MODEL_STREETCAR_URL, window.location.href).href
       : MODEL_STREETCAR_URL
 
   if (typeof (map as any).addModel === 'function') {

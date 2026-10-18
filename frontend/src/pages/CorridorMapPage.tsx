@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { configurationSummary, mapComparison, setActiveSimulation, todayBaseline, useSimulationHistory } from '../lib/simulationHistory'
 import { getSimulations } from '../lib/api'
+import { publicAssetPath } from '../lib/publicAssetPath'
 import { SimulationPicker } from '../panels/SimulationPicker'
 import { MapReplayControls } from '../replay/MapReplayControls'
 import type { Comparison, Scenario } from '../lib/types'
@@ -100,7 +101,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
 
   useEffect(() => {
     const abort = new AbortController()
-    void fetch('/data/simulation_walking_routes.geojson', { signal: abort.signal })
+    void fetch(publicAssetPath('data/simulation_walking_routes.geojson'), { signal: abort.signal })
       .then(response => { if (!response.ok) throw Error('Walking routes unavailable'); return response.json() })
       .then((collection: FeatureCollection) => setWalkingRoutes(indexWalkingRoutes(collection)))
       .catch(() => { /* Retain direct estimated connectors when reviewed geometry is unavailable. */ })
@@ -398,94 +399,92 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             setSelectedStop(null)
             setIsDevMinimized(false)
           }}
+          activeToolPanel={activeTool && !hideAllPopups ? (
+            <>
+              {activeTool === 'compare' && (
+                <CaseCompare
+                  comparison={comparison}
+                  selectedDemandCase={activeDemandCase}
+                  onDemandCaseChange={(dc) => {
+                    handleScenarioChange({
+                      ...comparison.scenario,
+                      demand_case: dc,
+                    })
+                  }}
+                  isMinimized={isToolMinimized}
+                  onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                  onClose={() => setActiveTool(null)}
+                />
+              )}
+              {activeTool === 'replay' && (
+                <ReplaySpine
+                  replay={comparison.replay}
+                  stops={stops}
+                  isMinimized={isToolMinimized}
+                  onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                  onClose={() => setActiveTool(null)}
+                  onSelectStop={(id) => {
+                    const s = stops.find((st) => st.stop_id === id)
+                    if (s) {
+                      setSelectedStop(s)
+                      setSelectedDev(null)
+                    }
+                  }}
+                />
+              )}
+              {activeTool === 'scenario' && (
+                <ScenarioEditor
+                  scenario={comparison.scenario}
+                  assumptions={comparison.assumptions}
+                  onScenarioChange={handleScenarioChange}
+                  isMinimized={isToolMinimized}
+                  onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                  onClose={() => setActiveTool(null)}
+                />
+              )}
+              {activeTool === 'packages' && (
+                <PackageTable
+                  comparison={comparison}
+                  selectedDemandCase={activeDemandCase}
+                  isMinimized={isToolMinimized}
+                  onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                  onClose={() => setActiveTool(null)}
+                />
+              )}
+              {activeTool === 'sensitivity' && (
+                <Sensitivity
+                  comparison={comparison}
+                  isMinimized={isToolMinimized}
+                  onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                  onClose={() => setActiveTool(null)}
+                  onSelectStop={(id) => {
+                    const s = stops.find((st) => st.stop_id === id)
+                    if (s) {
+                      setSelectedStop(s)
+                      setSelectedDev(null)
+                    }
+                  }}
+                />
+              )}
+              {activeTool === 'evidence' && (
+                <Evidence
+                  comparison={comparison}
+                  isMinimized={isToolMinimized}
+                  onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                  onClose={() => setActiveTool(null)}
+                />
+              )}
+              {activeTool === 'ask' && (
+                <AskBox
+                  scenario={comparison.scenario}
+                  isMinimized={isToolMinimized}
+                  onToggleMinimize={() => setIsToolMinimized((p) => !p)}
+                  onClose={() => setActiveTool(null)}
+                />
+              )}
+            </>
+          ) : null}
         />
-
-        {/* Lane D Active Tool Panel (Top Left, Floating Non-overlapping) */}
-        {activeTool && !hideAllPopups && (
-          <div className="!absolute top-24 left-6 z-30 max-w-[calc(100vw-3rem)]">
-            {activeTool === 'compare' && (
-              <CaseCompare
-                comparison={comparison}
-                selectedDemandCase={activeDemandCase}
-                onDemandCaseChange={(dc) => {
-                  handleScenarioChange({
-                    ...comparison.scenario,
-                    demand_case: dc,
-                  })
-                }}
-                isMinimized={isToolMinimized}
-                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
-                onClose={() => setActiveTool(null)}
-              />
-            )}
-            {activeTool === 'replay' && (
-              <ReplaySpine
-                replay={comparison.replay}
-                stops={stops}
-                isMinimized={isToolMinimized}
-                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
-                onClose={() => setActiveTool(null)}
-                onSelectStop={(id) => {
-                  const s = stops.find((st) => st.stop_id === id)
-                  if (s) {
-                    setSelectedStop(s)
-                    setSelectedDev(null)
-                  }
-                }}
-              />
-            )}
-            {activeTool === 'scenario' && (
-              <ScenarioEditor
-                scenario={comparison.scenario}
-                assumptions={comparison.assumptions}
-                onScenarioChange={handleScenarioChange}
-                isMinimized={isToolMinimized}
-                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
-                onClose={() => setActiveTool(null)}
-              />
-            )}
-            {activeTool === 'packages' && (
-              <PackageTable
-                comparison={comparison}
-                selectedDemandCase={activeDemandCase}
-                isMinimized={isToolMinimized}
-                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
-                onClose={() => setActiveTool(null)}
-              />
-            )}
-            {activeTool === 'sensitivity' && (
-              <Sensitivity
-                comparison={comparison}
-                isMinimized={isToolMinimized}
-                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
-                onClose={() => setActiveTool(null)}
-                onSelectStop={(id) => {
-                  const s = stops.find((st) => st.stop_id === id)
-                  if (s) {
-                    setSelectedStop(s)
-                    setSelectedDev(null)
-                  }
-                }}
-              />
-            )}
-            {activeTool === 'evidence' && (
-              <Evidence
-                comparison={comparison}
-                isMinimized={isToolMinimized}
-                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
-                onClose={() => setActiveTool(null)}
-              />
-            )}
-            {activeTool === 'ask' && (
-              <AskBox
-                scenario={comparison.scenario}
-                isMinimized={isToolMinimized}
-                onToggleMinimize={() => setIsToolMinimized((p) => !p)}
-                onClose={() => setActiveTool(null)}
-              />
-            )}
-          </div>
-        )}
 
         {/* Selected Development Panel (Lane D4 - Top Right) */}
         {selectedDev && !hideAllPopups && (
