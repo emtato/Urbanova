@@ -99,3 +99,17 @@ test('revision conflicts preserve earlier human notes instead of overwriting the
   await assert.rejects(()=>repo.save(old,old.revision),/changed/);
   assert.equal((await service.get(a.id)).notes[0].id,'TEST-new');
 });
+test('private Papiers bodies stay off public reads, exports and mutation responses',async()=>{
+  const library:KnowledgeLibrary={mode:'papiers_live',readOnly:true,
+    async read(){return {receipt:{document_id:'nte_TEST',retrieved_at:new Date().toISOString()},notes:[{id:'nte_TEST',title:'TEST title',author:'TEST',text:'TEST_PRIVATE_EXCERPT',knob:'incoming_load',mode:'papiers_live',retrieved_at:new Date().toISOString(),signal:'human_judgment'}]};},
+    async write(){throw Error('Read-only library must never be written');}};
+  const {app,service,repo}=setup(library);const a=await service.start({seeds:[1,2,3]});await service.tick();
+  assert.equal((await repo.get(a.id))!.notes[0].text,'TEST_PRIVATE_EXCERPT');
+  for(const suffix of ['', '/brief','/replay']){const result=await request(app).get(`/api/investigations/${a.id}${suffix}`).expect(200);assert.ok(!JSON.stringify(result.body).includes('TEST_PRIVATE_EXCERPT'));}
+  const noted=await request(app).post(`/api/investigations/${a.id}/notes`).send({id:'TEST-manual',title:'TEST manual',author:'TEST',text:'TEST public team context',knob:'incoming_load'}).expect(200);
+  assert.ok(!JSON.stringify(noted.body).includes('TEST_PRIVATE_EXCERPT'));
+  const redirected=await request(app).post(`/api/investigations/${a.id}/redirect`).send({author:'TEST',note:'TEST current headway only',no_extra_vehicles:true}).expect(202);
+  assert.ok(!JSON.stringify(redirected.body).includes('TEST_PRIVATE_EXCERPT'));
+  await service.tick();const done=await service.get(a.id);assert.equal(done.writeback.status,'unsupported_read_only');assert.equal(done.status,'completed');
+  assert.ok(done.events.some(e=>e.type==='human_constraint_effect'));
+});

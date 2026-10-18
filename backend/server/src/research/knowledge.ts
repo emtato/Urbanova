@@ -4,6 +4,7 @@ import { type KnowledgeNote,type Knob,type Investigation } from './contracts.js'
 // There is deliberately no invented Papiers REST URL or success response.
 export interface KnowledgeLibrary {
   mode:'unconnected'|'papiers_live';
+  readOnly?:boolean;
   read(knob:Knob):Promise<{notes:KnowledgeNote[];receipt?:{document_id:string;retrieved_at:string}}>;
   write(a:Investigation):Promise<{receipt:string}>;
 }

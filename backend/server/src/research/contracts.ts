@@ -10,7 +10,7 @@ import { ROOT } from '../config.js';
 export const auditVersion='assumption-auditor-v1';
 // Independent auditor versioning leaves existing B11 package caches intact.
 const modulePath=fileURLToPath(import.meta.url);
-export const auditorDigest=hash(['contracts','analysis','service','knowledge','repository','worker'].map(name=>readFileSync(resolve(dirname(modulePath),name+extname(modulePath)),'utf8')).concat(readFileSync(resolve(ROOT,'backend/integration/assumption_audit.py'),'utf8')).map(source=>source.replace(/\r\n/g,'\n')));
+export const auditorDigest=hash(['contracts','analysis','service','knowledge','papiers','repository','worker','../ai/gemini'].map(name=>readFileSync(resolve(dirname(modulePath),name+extname(modulePath)),'utf8')).concat(readFileSync(resolve(ROOT,'backend/integration/assumption_audit.py'),'utf8')).map(source=>source.replace(/\r\n/g,'\n')));
 export const knobs=['incoming_load','demand_case','service_frequency'] as const;
 export type Knob=typeof knobs[number];
 const capacity=reviewed.inputs.streetcar_capacity as number;
@@ -30,6 +30,7 @@ export const Redirect=z.strictObject({
 });
 export const Note=z.strictObject({id:z.string().min(1).max(200),title:z.string().min(1).max(300),author:z.string().min(1).max(100),
   text:z.string().min(1).max(12000),knob:z.enum(knobs),
+  signal:z.enum(['human_judgment','curation']).default('human_judgment'),
   source_url:z.string().url().optional(),locator:z.string().max(300).optional(),
   // Explicit human-reviewed bounds; never extract and silently apply paper numbers.
   incoming_load_range:Incoming.optional(),demand_case:z.enum(['low','central','high']).optional(),
@@ -48,7 +49,7 @@ export type Investigation={id:string;revision:number;status:'queued'|'running'|'
   experiments:Experiment[];selection?:{knob:Knob;reason:string;scores:unknown};
   redirect?:z.infer<typeof Redirect>;notes:KnowledgeNote[];finding?:any;error?:string;
   provenance:{data_version:string;model_version:string;auditor_version:string;auditor_digest:string;source_ids:string[];input_hash:string};
-  writeback:{status:'pending_connection'|'written';receipt?:string};lease_token?:string;
+  writeback:{status:'pending_connection'|'unsupported_read_only'|'written';receipt?:string};lease_token?:string;
 };
 export function append(a:Investigation,type:string,payload:unknown,actor:Entry['actor']='agent'){
   a.events.push({sequence:a.events.length+1,at:new Date().toISOString(),type,actor,payload});

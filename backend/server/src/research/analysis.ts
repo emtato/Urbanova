@@ -54,7 +54,7 @@ export function selectNext(a:Investigation){
     const result=paired(p.ids.map(id=>values(e[id],a.stop_id!)),v=>v[1]-v[0]);
     // Notes are human judgments, not observed corridor baselines. Mere presence
     // reduces the priority slightly; it never turns an assumption into fact.
-    const weakness=a.notes.some(n=>n.knob===p.knob)?.75:1;
+    const weakness=a.notes.some(n=>n.knob===p.knob&&n.signal!=='curation')?.75:1;
     return {knob:p.knob,sensitivity:result.mean===null?null:Math.abs(result.mean),evidence_weakness:weakness,
       score:result.mean===null?null:Math.abs(result.mean)*weakness,variation:result};
   }).sort((x,y)=>(y.score??-1)-(x.score??-1));
