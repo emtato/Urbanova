@@ -49,7 +49,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const [activePhase] = useState<number>(2)
   const [shadowsEnabled, setShadowsEnabled] = useState(true)
   const [hideAllPopups] = useState(false)
-  const [isStopMinimized, setIsStopMinimized] = useState(false)
+  const [isStopMinimized, setIsStopMinimized] = useState(true)
   const [isDevMinimized, setIsDevMinimized] = useState(false)
   const [activeTool, setActiveTool] = useState<ActiveTool>(null)
   const [isToolMinimized, setIsToolMinimized] = useState(false)
