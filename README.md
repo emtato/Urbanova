@@ -62,6 +62,21 @@ Urbanova is an exploratory prototype. Its results describe what could happen und
 
 The 3D buildings are simplified representations, and the shadow comparison models sunlight on flat ground. It does not predict temperature or thermal comfort. The experience above describes the intended product workflow; integration and completion details are tracked in the project documentation.
 
+## Team contributions
+
+### Emilia
+
+- Developed the core transit simulation, modelling passenger demand, streetcar frequency, delays and crowding, with passenger destinations informed by Toronto's workplace distribution.
+- Designed the passenger, streetcar, input and event-log models, and helped align how the backend and frontend interpret simulation data.
+- Built the full 3D simulation replay, including streetcar movement, passengers walking to stops, clickable passenger counts and colour-coded crowding indicators, all driven by recorded simulation events.
+- Helped the frontend team resolve UI issues and improve presentation so the connection between housing growth and transit demand is clearer.
+
+### Zain
+
+### Una
+
+### Matt
+
 ## Running and exploring the project
 
 The interface uses React and TypeScript, with a Python transit simulator and an Express API backed by PostgreSQL.
