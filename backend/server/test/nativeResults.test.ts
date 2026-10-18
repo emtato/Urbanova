@@ -117,7 +117,7 @@ function recordingStore(failReplay = false) {
       saved.set(values[0], { payload: structuredClone(values[1]), name: values[4] });
       return { rows: [], rowCount: 1 };
     }
-    if (sql.startsWith('SELECT payload,name FROM c_simulations')) {
+    if (/^SELECT\s+.*\s+FROM c_simulations\b/.test(sql)) {
       return { rows: [...saved.values()].filter(s => s.payload && s.payload.overall_results).map(s => ({ payload: structuredClone(s.payload), name: s.name })) };
     }
     if (sql.startsWith('UPDATE c_simulations SET name')) {

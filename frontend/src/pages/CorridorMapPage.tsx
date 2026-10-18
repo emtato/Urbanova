@@ -479,6 +479,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               )}
               {activeTool === 'ask' && (
                 <AskBox
+                  stopId={selectedStop?.stop_id}
                   scenario={comparison.scenario}
                   isMinimized={isToolMinimized}
                   onToggleMinimize={() => setIsToolMinimized((p) => !p)}

@@ -15,6 +15,7 @@ import { jobsRouter } from './routes/jobs.js';
 import { resultsRouter } from './routes/results.js';
 import { replayRouter } from './routes/replay.js';
 import { simulationsRouter } from './routes/simulations.js';
+import { chatRouter } from './routes/chat.js';
 import { investigationsRouter } from './routes/investigations.js';
 import type { InvestigationService } from './research/service.js';
 export function createApp(store:Store,generate:Generate=gemini(store),investigations?:InvestigationService){
@@ -26,6 +27,7 @@ export function createApp(store:Store,generate:Generate=gemini(store),investigat
   app.get(['/health','/api/health','/api/health/db'],async(_q,s)=>{try{await store.ping();s.json({status:'ok',database:'ok',model_version:settings.modelVersion,simulation_model_version:simulationModelVersion,data_version:dataVersion});}catch{s.status(503).json({status:'unavailable',database:'unavailable'});}});
   app.get('/api/fixtures/sample-comparison',(_q,s)=>{s.set('X-FutureProof-Fixture','true');s.json(ComparisonSchema.parse(fixture));});
   app.use('/api',simulationsRouter(store));
+  app.use('/api/chat',chatRouter(generate));
   if(investigations)app.use('/api/investigations',investigationsRouter(investigations));
   app.use('/api/corridor',corridorRouter());app.use('/api/scenarios',scenariosRouter(store,generate));
   app.use('/api/jobs',jobsRouter(store));app.use('/api/results',resultsRouter(store,generate));app.use('/api/replay',replayRouter(store));

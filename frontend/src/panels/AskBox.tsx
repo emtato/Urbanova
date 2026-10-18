@@ -1,16 +1,11 @@
-import { useState, type FC } from 'react'
+import { useEffect, useRef, useState, type FC } from 'react'
+import { askCopilot, interpretedFields as proposalFields, runCopilotExperiment, investigateFromChat, type ChatInvestigation, type InterpretedField } from '../lib/copilot'
+import { API_BASE_URL } from '../lib/api'
+export type { InterpretedField } from '../lib/copilot'
 import type { Scenario } from '../lib/types'
 
-export interface InterpretedField {
-  key: string
-  label: string
-  originalValue: string | number
-  interpretedValue: string | number
-  unit: string
-  description: string
-}
-
 export interface AskBoxProps {
+  stopId?: string
   scenario?: Scenario
   onApplyChanges?: (fields: InterpretedField[]) => void
   onClose?: () => void
@@ -20,163 +15,74 @@ export interface AskBoxProps {
 }
 
 const PRESET_QUERIES = [
-  {
-    label: 'Double Streetcar Frequency',
-    prompt: 'What happens if we double streetcar service frequency to 3.0 minute headway during morning peak?',
-    fields: [
-      {
-        key: 'headway_s',
-        label: 'Peak Scheduled Headway',
-        originalValue: 360,
-        interpretedValue: 180,
-        unit: 'seconds (3.0 min)',
-        description: 'Doubles transit capacity across Broadview to TMU corridor.',
-      },
-      {
-        key: 'extra_vehicles',
-        label: 'Fleet Requirement',
-        originalValue: 1,
-        interpretedValue: 3,
-        unit: 'streetcars',
-        description: 'Requires 2 additional streetcars allocated to Route 505.',
-      },
-    ],
-  },
-  {
-    label: 'Higher Phase 1 Occupancy',
-    prompt: 'Simulate high density scenario: Phase 1 reaches 85% occupancy with central transit share.',
-    fields: [
-      {
-        key: 'occupied_share',
-        label: 'Phase 1 Occupied Share',
-        originalValue: 0.5,
-        interpretedValue: 0.85,
-        unit: 'share (85%)',
-        description: 'Accelerates resident move-in rate by 2028.',
-      },
-      {
-        key: 'demand_case',
-        label: 'Demand Factor',
-        originalValue: 'central',
-        interpretedValue: 'high',
-        unit: 'case',
-        description: 'Elevates new morning commuter trips across all corridor stops.',
-      },
-    ],
-  },
-  {
-    label: 'Budget Austerity Cap',
-    prompt: 'What if City Council caps our annual operating mitigation budget at $800k/yr?',
-    fields: [
-      {
-        key: 'annual_operating_budget_cad',
-        label: 'Operating Budget Cap',
-        originalValue: 1200000,
-        interpretedValue: 800000,
-        unit: 'CAD/year',
-        description: 'Stricter operating ceiling test for package feasibility.',
-      },
-    ],
-  },
+  {label:'Double Streetcar Frequency',prompt:'Double the streetcar frequency from the reviewed baseline headway.'},
+  {label:'Higher Travel Demand',prompt:'Set trips per resident in the peak window to 0.6.'},
+  {label:'Explain Current Inputs',prompt:'What headway and streetcar capacity does the model currently use?'},
+  {label:'Investigate My Stop',prompt:'Why does my stop get worse?'},
 ]
 
 export const AskBox: FC<AskBoxProps> = ({
-  scenario,
-  onApplyChanges,
-  onClose,
-  isMinimized = false,
-  onToggleMinimize,
-  className = '',
+  stopId,onApplyChanges, onClose, isMinimized=false, onToggleMinimize, className='',
 }) => {
-  const [query, setQuery] = useState('')
-  const [interpretedFields, setInterpretedFields] = useState<InterpretedField[]>([])
-  const [isParsing, setIsParsing] = useState(false)
-  const [isExecuting, setIsExecuting] = useState(false)
-  const [isStale, setIsStale] = useState(false)
-  const [executionMessage, setExecutionMessage] = useState<string | null>(null)
+  const [query,setQuery]=useState('')
+  const [interpretedFields,setInterpretedFields]=useState<InterpretedField[]>([])
+  const [isParsing,setIsParsing]=useState(false)
+  const [isExecuting,setIsExecuting]=useState(false)
+  const [isStale,setIsStale]=useState(false)
+  const [executionMessage,setExecutionMessage]=useState<string|null>(null)
+  const [error,setError]=useState<string|null>(null)
+  const [usedFallback,setUsedFallback]=useState(false)
+  const [offerInvestigation,setOfferInvestigation]=useState(false)
+  const [investigation,setInvestigation]=useState<ChatInvestigation|null>(null)
+  const pending=useRef<AbortController|null>(null)
+  useEffect(()=>()=>pending.current?.abort(),[])
 
-  const handleSelectPreset = (preset: typeof PRESET_QUERIES[0]) => {
-    setQuery(preset.prompt)
-    setInterpretedFields(preset.fields)
-    setIsStale(true)
-    setExecutionMessage(null)
+  const handleParseQuery=async (text=query)=>{
+    if(!text.trim()||isExecuting)return
+    pending.current?.abort()
+    const request=new AbortController();pending.current=request
+    setQuery(text);setIsParsing(true);setError(null);setExecutionMessage(null)
+    setInterpretedFields([]);setIsStale(false)
+    setOfferInvestigation(false)
+    try{
+      const reply=await askCopilot(text,request.signal)
+      if(request.signal.aborted)return
+      const fields=proposalFields(reply)
+      setInterpretedFields(fields);setUsedFallback(reply.fallback)
+      setOfferInvestigation(Boolean(reply.investigate))
+      setExecutionMessage(reply.answer);setIsStale(fields.length>0)
+    }catch(e){if(!request.signal.aborted)setError(e instanceof Error?e.message:'Could not reach the chat backend.')}
+    finally{if(!request.signal.aborted)setIsParsing(false)}
   }
-
-  const handleParseQuery = () => {
-    if (!query.trim()) return
-    setIsParsing(true)
-    setExecutionMessage(null)
-
-    // Simulate deterministic NLP parameter extraction
-    setTimeout(() => {
-      const lower = query.toLowerCase()
-      const fields: InterpretedField[] = []
-
-      if (lower.includes('headway') || lower.includes('frequency') || lower.includes('double') || lower.includes('minute')) {
-        fields.push({
-          key: 'headway_s',
-          label: 'Peak Scheduled Headway',
-          originalValue: 360,
-          interpretedValue: 180,
-          unit: 'seconds (~3.0m)',
-          description: 'Interpreted from prompt: increase headway frequency.',
-        })
-      }
-
-      if (lower.includes('occupan') || lower.includes('unit') || lower.includes('growth')) {
-        fields.push({
-          key: 'occupied_share',
-          label: 'Occupied Share Target',
-          originalValue: 0.5,
-          interpretedValue: 0.8,
-          unit: 'share (80%)',
-          description: 'Interpreted from prompt: accelerate residential occupation.',
-        })
-      }
-
-      if (lower.includes('budget') || lower.includes('cost') || lower.includes('cap')) {
-        fields.push({
-          key: 'annual_operating_budget_cad',
-          label: 'Annual Operating Budget',
-          originalValue: scenario?.annual_operating_budget_cad ?? 1200000,
-          interpretedValue: 900000,
-          unit: 'CAD/year',
-          description: 'Interpreted from prompt: adjust annual budget constraint.',
-        })
-      }
-
-      if (fields.length === 0) {
-        fields.push({
-          key: 'demand_case',
-          label: 'Simulated Demand Cohort',
-          originalValue: scenario?.demand_case ?? 'central',
-          interpretedValue: 'high',
-          unit: 'demand tier',
-          description: 'Parsed general inquiry as high stress demand test.',
-        })
-      }
-
-      setInterpretedFields(fields)
-      setIsParsing(false)
-      setIsStale(true)
-    }, 300)
+  const handleSelectPreset=(preset:typeof PRESET_QUERIES[number])=>{void handleParseQuery(preset.prompt)}
+  const handleFieldChange=(index:number,value:string)=>{
+    setInterpretedFields(previous=>previous.map((field,i)=>i===index?{...field,interpretedValue:value}:field))
+    setIsStale(true);setError(null)
   }
-
-  const handleFieldChange = (index: number, newValue: string) => {
-    setInterpretedFields((prev) =>
-      prev.map((f, i) => (i === index ? { ...f, interpretedValue: newValue } : f))
-    )
-    setIsStale(true)
+  const handleRunExperiment=async()=>{
+    if(isExecuting||isParsing)return
+    pending.current?.abort()
+    const request=new AbortController();pending.current=request
+    setIsExecuting(true);setError(null);setExecutionMessage('Running the actual B11 simulation and saving its result...')
+    try{
+      const result=await runCopilotExperiment(interpretedFields,request.signal)
+      if(request.signal.aborted)return
+      setIsStale(false);setExecutionMessage(`Simulation saved (${result.id}). It is now selected in map simulation history.`)
+      onApplyChanges?.(interpretedFields)
+    }catch(e){if(!request.signal.aborted){setExecutionMessage(null);setError(e instanceof Error?e.message:'Simulation failed. No successful result was returned.')}}
+    finally{if(!request.signal.aborted)setIsExecuting(false)}
   }
-
-  const handleRunExperiment = () => {
-    setIsExecuting(true)
-    setTimeout(() => {
-      setIsExecuting(false)
-      setIsStale(false)
-      setExecutionMessage('Experiment simulated successfully. Corridor metrics updated.')
-      if (onApplyChanges) onApplyChanges(interpretedFields)
-    }, 400)
+  const handleInvestigation=async(continueExisting=false)=>{
+    if(isExecuting||isParsing)return
+    const request=new AbortController();pending.current?.abort();pending.current=request
+    setIsExecuting(true);setError(null);setExecutionMessage('Running matched-seed experiments and reading research context…')
+    try{
+      const result=await investigateFromChat({...(continueExisting&&investigation?{id:investigation.id}:{}),stopId,signal:request.signal,onProgress:setInvestigation})
+      if(request.signal.aborted)return
+      setInvestigation(result);setOfferInvestigation(false)
+      setExecutionMessage(result.finding?.resident_answer??`${result.finding?.premise??''} Prediction: ${result.finding?.classification??'not yet evaluated'}. ${result.status==='awaiting_human'?'Review the evidence and supply a service constraint below.':''}`)
+    }catch(e){if(!request.signal.aborted){setExecutionMessage(null);setError(e instanceof Error?e.message:'Could not complete the investigation.')}}
+    finally{if(!request.signal.aborted)setIsExecuting(false)}
   }
 
   if (isMinimized) {
@@ -233,10 +139,10 @@ export const AskBox: FC<AskBoxProps> = ({
       <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/30">
         <div className="flex items-center gap-2">
           <span className="status-chip status-chip-user font-mono text-[10px]">
-            LANE D13 GEMINI COPILOT
+            GEMINI COPILOT
           </span>
           <span className="status-chip status-chip-assumed font-mono text-[10px]">
-            TRANSPARENT NLP
+            LIVE BACKEND
           </span>
         </div>
 
@@ -277,7 +183,7 @@ export const AskBox: FC<AskBoxProps> = ({
           Ask Gemini: Scenario Question Copilot
         </h2>
         <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-          Ask questions in plain English. Interpreted parameters are shown and editable before running. Nothing changes without you seeing what changed.
+          Ask about reviewed baseline inputs or propose a new simulation. Saved map runs are not the chat baseline. Review changes before running.
         </p>
       </div>
 
@@ -300,13 +206,21 @@ export const AskBox: FC<AskBoxProps> = ({
       )}
 
       {/* Execution Feedback Message */}
+      {error && <div role="alert" className="rounded-xl border border-red-400/40 bg-red-500/10 p-3 text-xs text-red-200">{error}</div>}
+      {usedFallback && executionMessage && <p className="text-xs text-amber-200">Provider unavailable or response rejected; using a labelled server fallback.</p>}
       {executionMessage && (
         <div className="bg-emerald-500/10 border border-emerald-500/40 rounded-xl p-3 text-xs text-emerald-300 font-mono">
-          ✓ {executionMessage}
+          {executionMessage}
         </div>
       )}
 
       {/* Query Input Box */}
+      {offerInvestigation && <button type="button" disabled={isExecuting||isParsing} onClick={()=>void handleInvestigation()} className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">Start measured investigation</button>}
+      {investigation && <div className="rounded-xl border border-border/40 p-3 text-xs" aria-live="polite">
+        <p>Investigation: {investigation.status}</p>
+        <a href={`${API_BASE_URL}/investigations/${encodeURIComponent(investigation.id)}/replay`} target="_blank" rel="noreferrer" className="text-cyan-300 underline">Open saved evidence and research replay</a>
+        {investigation.status==='awaiting_human' && <button type="button" disabled={isExecuting||isParsing} onClick={()=>void handleInvestigation(true)} className="mt-3 block rounded-lg bg-cyan-500 px-3 py-2 font-semibold text-slate-950 disabled:opacity-50">Keep current service; no extra vehicles. Continue.</button>}
+      </div>}
       <div className="flex flex-col gap-2">
         <label htmlFor="gemini-query-input" className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
           YOUR PLANNING QUESTION
@@ -318,17 +232,18 @@ export const AskBox: FC<AskBoxProps> = ({
             data-testid="gemini-query-input"
             placeholder="e.g. What if we double streetcar frequency to 3 min headway?"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            disabled={isExecuting || isParsing}
+            onChange={(e) => {pending.current?.abort();setIsParsing(false);setQuery(e.target.value);setInterpretedFields([]);setIsStale(false);setExecutionMessage(null);setError(null);setOfferInvestigation(false)}}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleParseQuery()
+              if (e.key === 'Enter' && !isParsing && !isExecuting) {e.preventDefault();void handleParseQuery()}
             }}
             className="flex-1 bg-black/30 border border-border/40 rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-400 font-mono"
           />
           <button
             type="button"
             data-testid="parse-query-btn"
-            onClick={handleParseQuery}
-            disabled={isParsing || !query.trim()}
+            onClick={() => void handleParseQuery()}
+            disabled={isParsing || isExecuting || !query.trim()}
             className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-semibold text-xs transition-colors shrink-0 cursor-pointer"
           >
             {isParsing ? 'Parsing...' : 'Interpret'}
@@ -348,6 +263,7 @@ export const AskBox: FC<AskBoxProps> = ({
               type="button"
               data-testid={`preset-prompt-${i}`}
               onClick={() => handleSelectPreset(p)}
+              disabled={isParsing || isExecuting}
               className="text-[11px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground border border-white/10 transition-colors font-mono cursor-pointer"
             >
               {p.label}
@@ -393,6 +309,7 @@ export const AskBox: FC<AskBoxProps> = ({
                     <input
                       type="text"
                       data-testid={`edit-field-input-${field.key}`}
+                      disabled={isExecuting || isParsing}
                       value={String(field.interpretedValue)}
                       onChange={(e) => handleFieldChange(idx, e.target.value)}
                       className="w-full bg-transparent font-semibold text-cyan-300 text-xs focus:outline-none mt-0.5"
@@ -412,7 +329,7 @@ export const AskBox: FC<AskBoxProps> = ({
             type="button"
             data-testid="run-experiment-btn"
             onClick={handleRunExperiment}
-            disabled={isExecuting}
+            disabled={isExecuting || isParsing}
             className="w-full mt-2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-bold text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <span>{isExecuting ? 'Simulating Corridor...' : '⚡ Run Experiment (Apply Changes)'}</span>
