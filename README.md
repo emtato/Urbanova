@@ -82,8 +82,8 @@ The 3D buildings are simplified representations, and the shadow comparison model
 
 - Co-wrote the project design document and the backend stack decision, and researched corridor feasibility before moving the study area to the westbound 505 Dundas corridor.
 - Built the 3D massing and sunlight data, covering 2,444 corridor buildings, simplified models of the three proposals, and ground shadows with and without the proposals across different seasons and times of day.
-- Moved the simulation's key assumptions out of the code into validated inputs with sources, and built a costed catalogue of service improvements like more frequent streetcars and streetcar priority.
-- Added the headway selector, cost card and before/after impact card to the Run simulation page, fixed the transit metrics in the station panel, and polished the overall map experience.
+- Moved the simulation's key assumptions into validated inputs with sources, and built a costed catalogue of service improvements like more frequent streetcars and streetcar priority.
+- Added the headway selector, cost card, panels and before/after impact card to the Run simulation page, fixed the transit metrics in the station panel, and polished the overall map experience.
 
 ### Matt
 
