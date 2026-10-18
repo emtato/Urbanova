@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { configurationSummary, type SavedSimulation } from '../lib/simulationHistory'
 import { deleteSimulation, renameSimulation } from '../lib/api'
+import { ConfirmDialog } from './ConfirmDialog'
 import './SimulationPicker.css'
 
 export function SimulationPicker({ label, history, onSelect, disabled = false, reason, onToday, loading = false, error = '' }: {
@@ -16,6 +17,7 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
   const [renameError, setRenameError] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [actionError, setActionError] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<SavedSimulation | null>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const popup = useRef<HTMLDivElement>(null)
   const id = useId()
@@ -23,10 +25,6 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
 
   const handleDelete = async (simulation: SavedSimulation) => {
     if (deletingId) return
-    const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
-      ? window.confirm(`Delete simulation "${simulation.name}"? This cannot be undone.`)
-      : true
-    if (!confirmed) return
     setDeletingId(simulation.id)
     setActionError('')
     try {
@@ -36,6 +34,7 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
       setActionError(err instanceof Error ? err.message : 'Could not delete simulation.')
     } finally {
       setDeletingId(null)
+      setPendingDelete(null)
     }
   }
 
@@ -51,6 +50,7 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
     const outside = (event: PointerEvent) => {
       const target = event.target as Node | null
       if (!target || !target.isConnected) return
+      if (target instanceof Element && target.closest('[data-confirm-dialog]')) return
       if (!popup.current?.contains(target) && !trigger.current?.contains(target)) setOpen(false)
     }
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { event.preventDefault(); close() } }
@@ -101,7 +101,7 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
                   type="button"
                   disabled={deletingId === simulation.id}
                   aria-label={`Delete ${simulation.name}`}
-                  onClick={() => void handleDelete(simulation)}
+                  onClick={() => { setActionError(''); setPendingDelete(simulation) }}
                 >
                   {deletingId === simulation.id ? 'Deleting…' : 'Delete'}
                 </button>
@@ -112,5 +112,15 @@ export function SimulationPicker({ label, history, onSelect, disabled = false, r
       </ul>}
       <p className="simulation-picker-storage">Saved in this browser &amp; synced with database. All times: Toronto.</p>
     </div>, document.body)}
+    <ConfirmDialog
+      open={!!pendingDelete}
+      title="Delete simulation?"
+      message={pendingDelete ? `"${pendingDelete.name}" will be permanently deleted. This cannot be undone.` : ''}
+      confirmLabel={deletingId ? 'Deleting…' : 'Delete'}
+      danger
+      busy={!!deletingId}
+      onConfirm={() => { if (pendingDelete) void handleDelete(pendingDelete) }}
+      onCancel={() => setPendingDelete(null)}
+    />
   </>
 }

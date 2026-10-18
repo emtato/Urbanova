@@ -7,6 +7,7 @@ import type { NativeBatch, NativeReplay } from '../lib/liveTypes'
 import { setActiveSimulation } from '../lib/simulationHistory'
 import { NativeReplayPanel } from '../panels/NativeReplayPanel'
 import { HeadwaySelector } from '../panels/HeadwaySelector'
+import { ConfirmDialog } from '../panels/ConfirmDialog'
 import { ServiceCostCard } from '../panels/ServiceCostCard'
 import { HeadwayImpactCard, type ImpactPair } from '../panels/HeadwayImpactCard'
 import { BASELINE_HEADWAY_S, DEFAULT_HEADWAY_S, isBaseline } from '../lib/serviceOptions'
@@ -55,6 +56,8 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   const [endHours, setEndHours] = useState('9')
   const [rushHours, setRushHours] = useState('2')
   const [simulations, setSimulations] = useState<NativeBatch[]>([])
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
   const [selectedRunIndex, setSelectedRunIndex] = useState(0)
   const controller = useRef<AbortController | null>(null)
@@ -146,10 +149,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   }
 
   async function handleDelete(id: string) {
-    const confirmed = typeof window !== 'undefined' && typeof window.confirm === 'function'
-      ? window.confirm('Delete this simulation? This cannot be undone.')
-      : true
-    if (!confirmed) return
+    setDeleting(true)
     setError('')
     try {
       await deleteSimulation(id)
@@ -160,6 +160,9 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
       }
     } catch (reason) {
       setError(message(reason))
+    } finally {
+      setDeleting(false)
+      setPendingDeleteId(null)
     }
   }
 
@@ -277,7 +280,7 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
                         {isSelected ? 'Viewing' : 'View'}
                       </button>{' '}
                       <button type="button" onClick={() => void handleRename(batch.id, batch.name || '')}>Rename</button>{' '}
-                      <button type="button" onClick={() => void handleDelete(batch.id)}>Delete</button>
+                      <button type="button" onClick={() => setPendingDeleteId(batch.id)}>Delete</button>
                     </td>
                   </tr>
                 )
@@ -355,5 +358,18 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
       </>
     )}
     </div>
+    <ConfirmDialog
+      open={!!pendingDeleteId}
+      title="Delete simulation?"
+      message={(() => {
+        const target = simulations.find(item => item.id === pendingDeleteId)
+        return `${target?.name ? `"${target.name}"` : 'This simulation'} will be permanently deleted. This cannot be undone.`
+      })()}
+      confirmLabel={deleting ? 'Deleting…' : 'Delete'}
+      danger
+      busy={deleting}
+      onConfirm={() => { if (pendingDeleteId) void handleDelete(pendingDeleteId) }}
+      onCancel={() => setPendingDeleteId(null)}
+    />
   </main>
 }
