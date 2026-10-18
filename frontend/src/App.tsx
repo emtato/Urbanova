@@ -5,30 +5,43 @@ import { sampleComparison } from './lib/sampleComparison'
 const CorridorMapPage = lazy(() => import('./pages/CorridorMapPage'))
 const ListView = lazy(() => import('./views/ListView'))
 const AnalysisPage = lazy(() => import('./pages/AnalysisPage').then(module => ({ default: module.AnalysisPage })))
-const route = (path: string) => path.startsWith('/analysis') ? '/analysis' : path.startsWith('/map') ? '/map' : path.startsWith('/list') ? '/list' : '/'
+const route = (raw: string) => {
+  const path = raw.replace(/^#\/?/, '/')
+  if (path.includes('/analysis')) return '/analysis'
+  if (path.includes('/map')) return '/map'
+  if (path.includes('/list')) return '/list'
+  return '/'
+}
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window !== 'undefined') {
+      if (window.location.hash) return route(window.location.hash)
       return route(window.location.pathname)
     }
     return '/'
   })
 
   useEffect(() => {
-    const handlePopState = () => {
+    const handleNavigation = () => {
       if (typeof window !== 'undefined') {
-        setCurrentPath(route(window.location.pathname))
+        const next = window.location.hash ? route(window.location.hash) : route(window.location.pathname)
+        setCurrentPath(next)
       }
     }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
+    window.addEventListener('popstate', handleNavigation)
+    window.addEventListener('hashchange', handleNavigation)
+    return () => {
+      window.removeEventListener('popstate', handleNavigation)
+      window.removeEventListener('hashchange', handleNavigation)
+    }
   }, [])
 
   const navigate = (toPath: string) => {
     if (typeof window !== 'undefined') {
-      window.history.pushState({}, '', toPath)
-      setCurrentPath(route(toPath))
+      const normalized = toPath.startsWith('/') ? toPath : `/${toPath}`
+      window.location.hash = `#${normalized}`
+      setCurrentPath(route(normalized))
     }
   }
 
