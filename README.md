@@ -87,11 +87,14 @@ The 3D buildings are simplified representations, and the shadow comparison model
 
 ### Matt
 
-- Set up the development foundation and the shared comparison contract that the simulation, backend and frontend all follow.
-- Supplied the reviewed data and assumptions behind the simulation inputs, including the building unit inventory and the 505 Dundas route data.
-- Built the Express API and background workers, connected them to the real simulation, and integrated Gemini with a research-based assumption auditor.
-- Set up the database, deployed the backend on Railway, and tested the full deployed app end to end.
-
+- Implemented the Express/TypeScript API with Zod validation, PostgreSQL persistence on Tiger Data, versioned result caching and Railway deployment.
+- Integrated the Python simulator through background workers, preserving native outputs, seed IDs, replay events and simulation metrics.
+- Built service-package feasibility checks, capital and operating budget constraints, matched-seed comparisons and demand sensitivity analysis.
+- Developed the reviewed corridor data pipeline, including housing-unit inventories, source provenance, labelled estimates and walking-access inputs.
+- Integrated Gemini structured outputs for validated scenario patches, grounded explanations and chat-triggered simulations.
+- Implemented an assumption-auditing research loop with Papiers CLI reads, hypothesis evaluation, bounded Gemini experiment selection, human redirects and persisted investigation history.
+- Added API, database, simulation-integration and AI validation tests, plus deployment checks and reproducible setup scripts.
+  
 ## Running and exploring the project
 
 The interface uses React and TypeScript, with a Python transit simulator and an Express API backed by PostgreSQL.
