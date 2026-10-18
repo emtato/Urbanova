@@ -244,7 +244,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             className="text-4xl text-foreground mb-2"
             style={{ fontFamily: "'Instrument Serif', serif" }}
           >
-            Urbanova<sup className="text-xs">®</sup>
+            Urbanova
           </div>
           <div className="text-sm font-body text-muted-foreground">
             Loading corridor simulation workspace...
@@ -297,7 +297,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               className="text-2xl md:text-3xl tracking-tight text-foreground select-none cursor-pointer"
               style={{ fontFamily: "'Instrument Serif', serif" }}
             >
-              Urbanova<sup className="text-xs">®</sup>
+              Urbanova
             </span>
             {usingFixture && (
               <span
