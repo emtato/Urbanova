@@ -1,0 +1,60 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -79.364051,
+              43.660211
+            ],
+            [
+              -79.363946,
+              43.659968
+            ],
+            [
+              -79.364171,
+              43.659917
+            ],
+            [
+              -79.364182,
+              43.659944
+            ],
+            [
+              -79.364275,
+              43.659923
+            ],
+            [
+              -79.364347,
+              43.660091
+            ],
+            [
+              -79.364218,
+              43.66012
+            ],
+            [
+              -79.364239,
+              43.660169
+            ],
+            [
+              -79.364051,
+              43.660211
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "building_id": "osm-way-195214196",
+        "on_proposal_site": "toronto-app-26-122451-ste-13-oz",
+        "source_ids": [
+          "osm-housing",
+          "toronto-3d-massing-2025"
+        ],
+        "source_url": "https://www.openstreetmap.org/way/195214196"
+      }
+    }
+  ]
+}

@@ -98,7 +98,7 @@ describe('D4: DevelopmentPanel Component Tests', () => {
       />
     )
 
-    expect(raw).toContain('View building in 3D')
+    expect(raw).toContain('View building in street view')
     expect(raw).not.toContain('google.com/maps')
     expect(raw).toContain('map-glass-panel')
     expect(raw).toContain('target="_blank"')
