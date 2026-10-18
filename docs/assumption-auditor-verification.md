@@ -122,4 +122,30 @@ private library body is not exposed by public fetch/export routes.
 
 [Open the completed investigation replay](https://urbanova-production-ec5f.up.railway.app/api/investigations/09050823-a2de-4642-883f-1df89e95c2bc/replay).
 
+## Railway end-to-end verification
+
+Backend **bdea2cf** was deployed as **ac8b4c13-a653-46ee-8eb9-7a862cab8a14**.
+The merged shared branch **f4875ae** also preserves the teammate's new model assets;
+that merge did not change the backend, reviewed data or shared frontend types.
+
+The public backend reports `transport:papiers_live`, `read_only:true`, and reloads
+the completed investigation above with `stale:false`. A second full workflow was
+then executed entirely through the public API and Railway worker:
+
+- Investigation: **073dfbef-3719-484c-b1cd-1bc47d4d7992**.
+- Actual production Papiers read request: `req_2661656ed8984292bbf9ba3102c24787`.
+- Same actual team note: `nte_300916d959c5ec978c24499c4cb0df06`.
+- Ten configurations × seeds 401, 402, 403 = **30 real B11 runs**.
+- Completed, `stale:false`, private excerpt redaction verified.
+- All follow-up headways: **419.8125 seconds**, enforcing the user's real constraint.
+- Gemini returned HTTP 503 on these production decisions. Both fallback decisions
+  are recorded; they are not labelled successful Gemini choices. A separate local
+  follow-up also hit HTTP 429, so provider availability/quota remains variable.
+  The earlier completed investigation retains its valid Gemini-generated next
+  step and can be used to demonstrate that path honestly.
+- External writeback: `unsupported_read_only`; saved finding and export available.
+- The original 20-run/two-phase demo cache still validates as current.
+
+[Open the production-worker replay](https://urbanova-production-ec5f.up.railway.app/api/investigations/073dfbef-3719-484c-b1cd-1bc47d4d7992/replay).
+
 See [the implementation and API guide](assumption-auditor.md).
