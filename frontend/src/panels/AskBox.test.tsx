@@ -88,4 +88,35 @@ describe('D13: AskBox Component Tests', () => {
     expect(html).toContain('PAPIERS EVIDENCE')
     expect(html).toContain('DATA PRESERVED')
   })
+
+  it('generates customized dynamic analysis for ANY arbitrary prompt', async () => {
+    const { generateResearchAnalysis } = await import('./AskBox')
+    
+    // Custom prompt 1: Snow / Winter
+    const snowResult = generateResearchAnalysis(
+      'What happens if severe winter snow blocks the tracks?',
+      comparison.scenario
+    )
+    expect(snowResult.headline.toLowerCase()).toContain('weather')
+    expect(snowResult.explanation.toLowerCase()).toContain('snow')
+    expect(snowResult.papiersCitation.title).toBe('505 Dundas service constraint')
+
+    // Custom prompt 2: Express streetcar
+    const expressResult = generateResearchAnalysis(
+      'Can we run an express streetcar skipping minor stops?',
+      comparison.scenario
+    )
+    expect(expressResult.headline.toLowerCase()).toContain('express')
+    expect(expressResult.explanation.toLowerCase()).toContain('express')
+    expect(expressResult.papiersCitation.title).toBe('505 Dundas service constraint')
+
+    // Custom prompt 3: Completely unique query
+    const uniqueResult = generateResearchAnalysis(
+      'Will nighttime construction noise affect morning passenger boardings?',
+      comparison.scenario
+    )
+    expect(uniqueResult.headline).toContain('Operational Synthesis')
+    expect(uniqueResult.papiersCitation.title).toBe('505 Dundas service constraint')
+    expect(uniqueResult.keyObservations.length).toBeGreaterThan(0)
+  })
 })

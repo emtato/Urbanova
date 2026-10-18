@@ -10,6 +10,14 @@ export function investigationsRouter(service:InvestigationService){
   // citation IDs/receipts and findings, not another person's reading history.
   const publicView=(a:Investigation)=>({...a,notes:a.notes.map(note=>note.mode==='papiers_live'?{...note,text:'[Private Papiers excerpt; open the item in your library to review.]'}:note)});
   r.get('/integration',(_q,s)=>s.json(service.integrationStatus()));
+  r.post('/ask', async (q, s) => {
+    const { question, scenario } = q.body ?? {};
+    if (!question || typeof question !== 'string') {
+      return s.status(400).json({ error: 'Question is required' });
+    }
+    const result = await service.askResearch(question, scenario);
+    s.json(result);
+  });
   r.post('/',async(q,s)=>s.status(202).json(await service.start(q.body)));
   r.get('/:id',async(q,s)=>{const a=await service.get(id(q.params.id));s.json({...publicView(a),stale:stale(a)});});
   r.get('/:id/replay',async(q,s)=>{const a=await service.get(id(q.params.id));s.json({investigation_id:a.id,status:a.status,stale:stale(a),provenance:a.provenance,events:a.events,finding:a.finding??null,writeback:a.writeback});});
