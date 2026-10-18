@@ -5,7 +5,7 @@ import { runMetrics } from '../packages/runMetrics.js';
 export function brief(c:Comparison,delayed:Comparison|null=null){
   const decision=compare(c);
   return [
-    'FutureProof planning brief',c.fixture?'FIXTURE — not a simulation of the requested scenario.':'Scenario experiment',
+    'FutureProof planning brief',c.fixture?'FIXTURE - not a simulation of the requested scenario.':'Scenario experiment',
     `Scenario: ${c.scenario.scenario_id}; version: ${c.scenario.version}`,
     `Decision: ${decision.preferred_package_id??'No tested package meets all selected cases'}; ${decision.wording}.`,
     `Cost ordering: ${decision.cost_order}.`,

@@ -34,7 +34,7 @@ GTFS provides schedules, not observed running times, passenger counts or dwell m
 | 5 | 2131 | Dundas St East at Sherbourne St |
 | 6 | 2119 | Dundas St East at Jarvis St |
 | 7 | 2117 | Dundas St East at Church St |
-| 8 | 2136 | Dundas St East at Yonge St — TMU Station |
+| 8 | 2136 | Dundas St East at Yonge St - TMU Station |
 
 Westbound stops are on the opposite side of the street from the eastbound ones, so their GTFS IDs differ (for example, Jarvis is 2119 westbound and 2118 eastbound).
 TTC currently calls stop 2136 [TMU Station](https://www.ttc.ca/routes-and-schedules/505/1/2136). The dated GTFS still names it Dundas Station; raw names are preserved and the stop ID anchors the transfer.

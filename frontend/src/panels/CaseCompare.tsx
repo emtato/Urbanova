@@ -12,7 +12,7 @@ export interface CaseCompareProps {
 }
 
 function formatWait(seconds: number | null | undefined): string {
-  if (seconds == null) return '—'
+  if (seconds == null) return 'N/A'
   if (seconds < 60) return `${Math.round(seconds)}s`
   return `${(seconds / 60).toFixed(1)}m`
 }

@@ -56,7 +56,7 @@ Keep Today first and give each custom simulation a consistent visual identity ac
 - Require a compatible corridor, direction, modeled window, metric definitions, and model/data versions for a direct comparison. Explain incompatibility instead of silently placing unrelated results together.
 - **Average wait to board** means time from arriving at the stop until boarding. Riders still waiting at cutoff have an unfinished wait and are reported separately. Do not silently mix legacy completed-trip waits with native boarded-rider waits.
 - **Still waiting** means the physical queue at simulation end. It is not a live queue and is not interchangeable with the native metric for riders still stranded after a capacity denial. Keep onboard/in-progress riders separate as defined by the API.
-- Preserve the API's denied-boarding denominator. Missing metrics show **— / Not available**, not zero.
+- Preserve the API's denied-boarding denominator. Missing metrics show **- / Not available**, not zero.
 - Keep the shared custom spacing-score formula documented in `frontend/src/panels/transitMetrics.ts`; all compared runs use the same formula. It measures spacing consistency, not frequency or an official TTC service grade.
 
 ## Implementation notes

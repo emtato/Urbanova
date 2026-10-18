@@ -11,7 +11,7 @@ export interface ImpactPair {
 }
 
 const change = (before: number | null | undefined, after: number | null | undefined, metric: AnalysisMetric) => {
-  if (before == null || after == null) return { text: '—', tone: '' }
+  if (before == null || after == null) return { text: 'N/A', tone: '' }
   const diff = after - before
   if (Math.abs(diff) < 1e-9) return { text: 'no change', tone: '' }
   const sign = diff > 0 ? '+' : '−'

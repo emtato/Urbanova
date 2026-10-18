@@ -14,7 +14,7 @@ it('shows current occupancy and capacity as the replay changes, including empty 
 })
 
 it('distinguishes missing history and inactive cars from empty streetcars', () => {
-  expect(render({ load: null, capacity: 130 })).toContain('— / 130')
+  expect(render({ load: null, capacity: 130 })).toContain('N/A / 130')
   expect(render({ load: null, capacity: 130 })).toContain('Passenger history unavailable')
   expect(render()).toContain('Streetcar is not active at this replay time')
   expect(render()).toContain('Close streetcar details')

@@ -85,7 +85,7 @@ All hands
 
    Ten lines: what FutureProof is, how to run the backend, worker and frontend. Expand at the end.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 All four people have `uvicorn backend.main:app --reload`, `npm run dev` and `SELECT postgis_version();` working locally, and a first commit is pushed.
 
@@ -205,7 +205,7 @@ Each object below is composed by the next. Build them in this order and the last
 
     One fully populated `Comparison` plus a short replay stream (two buses, every stop), written by hand. Set `"fixture": true` and show a FIXTURE banner whenever it is on, so made-up numbers never reach a judge.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 The corridor is chosen from real files, the tiny case matches the hand calculation, `sample_comparison.json` validates against the pydantic models and the TypeScript types compile against it. Then split up.
 
@@ -533,7 +533,7 @@ Build the whole interface against `sample_comparison.json` from the first hour. 
 
     Keyboard for every control, visible focus, text alternatives for charts, a pause for motion, advanced assumptions in an expandable panel.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 Each lane works alone: the bundle is in Tiger Data; the simulator passes B10 and returns paired baseline results; packages are ranked against the stub; the interface plays the fixture with moving buses and queues. Four working parts, not yet connected.
 
@@ -585,7 +585,7 @@ Sequenced · not parallel
 
    Required for prize eligibility: name, thirty-second pitch, School of Cities as lead, team, repo link, one screenshot. It stays editable until the final deadline.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 A user can load the corridor, change a housing phase, compare resource-feasible packages, inspect consistent stop-level results and uncertainty, and export a reproducible brief. An infeasible budget and an unresolved queue are reported correctly. **This is the MVP.** Tag the commit.
 

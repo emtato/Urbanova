@@ -119,7 +119,7 @@ export const DevelopmentPanel: FC<DevelopmentPanelProps> = ({
 
       <section className="transit-section" aria-label="Proposal overview"><h3>Proposal overview</h3><div className="building-stat-grid">
         <div className="transit-metric inspector-stat-card"><span>Homes in model</span><strong data-testid="dev-units">{development.units.toLocaleString()}</strong><small>Housing configuration</small></div>
-        <div className="transit-metric inspector-stat-card"><span>Planning status</span><strong style={{ fontFamily: 'inherit', fontSize: 16 }}>{development.stage || '—'}</strong><small>Completion date not confirmed</small></div>
+        <div className="transit-metric inspector-stat-card"><span>Planning status</span><strong style={{ fontFamily: 'inherit', fontSize: 16 }}>{development.stage || 'N/A'}</strong><small>Completion date not confirmed</small></div>
       </div><p>Building massing is illustrative. Showing a proposal on the map does not change a saved simulation’s settings.</p></section>
 
       <section className="transit-section" aria-label="Walking access"><h3>Walking access to stops</h3><div data-testid="access-stops-list" className="transit-development-list">

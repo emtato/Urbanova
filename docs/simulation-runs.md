@@ -139,23 +139,23 @@ consumes more memory as run counts increase.
 
 ## Lane B Deliverable Decisions & Status
 
-- **B2 — Matched Randomness via Entity-Keyed Streams (Implemented)**:
+- **B2 - Matched Randomness via Entity-Keyed Streams (Implemented)**:
   - *Implementation*: Deterministic entity-keyed RNG streams (`f"{seed}:link_noise:{car_id}:{prev}:{next}"`, `f"{seed}:dwell:{car_id}:{stop}"`, `f"{seed}:incoming:{car_id}"`, `f"{seed}:entry:{entry_idx}"`) isolate random draws per entity and link segment. Variations in event order or the addition of extra service vehicles cannot shift unrelated vehicle or link travel draws across packages.
-- **B3 — Pedestrian Walking Stop Assignment (Ignored / Descheduled)**:
+- **B3 - Pedestrian Walking Stop Assignment (Ignored / Descheduled)**:
   - *Decision*: Detailed pedestrian network graph generation (originally waiting on A7) is ignored. Stop assignment uses reviewed OSM network-walking `accessible_stop_ids` (<= 500 m) for housing clusters and developments with straight-line distance and a 1.2 detour factor as implemented in `backend/simulation/commute.py`.
-- **B5 — Berth and No-Overtaking Rules (Implemented)**:
+- **B5 - Berth and No-Overtaking Rules (Implemented)**:
   - *Berth rule*: Each stop has 1 berth (unless corridor configuration specifies otherwise). Only one streetcar can occupy and serve a stop's berth at a time. Arriving streetcars queue in FIFO order if the berth is occupied and only enter service when the preceding vehicle departs.
   - *No-overtaking rule*: Streetcars run on rails along the corridor and cannot overtake each other. A trailing streetcar's expected arrival time at a downstream stop is constrained to be no earlier than any preceding streetcar travelling towards that stop, preserving physical vehicle order along links and at stops.
-- **B6 — Passenger-Dependent Dwell (Descheduled / Ignored)**:
+- **B6 - Passenger-Dependent Dwell (Descheduled / Ignored)**:
   - *Decision*: Dwell calculation based on door opening time plus passenger boarding/alighting counts is intentionally ignored for the hackathon deliverable. Dwell duration is sampled uniformly from `stop_dwell_range_s` (15–30 seconds), keeping the dwell model predictable and avoiding compounding feedback instability.
-- **B7 — Shared Corridor Delay (Implemented)**:
+- **B7 - Shared Corridor Delay (Implemented)**:
   - *Implementation*: Shared road traffic delay up to `max_corridor_delay_s` (e.g., 60 seconds across the corridor) is sampled from a deterministic corridor RNG stream (`f"{seed}:shared_corridor_delay"`) and distributed evenly across links as `corridor_delay_s / len(links)`, reflecting general shared road congestion without massive instability.
-- **B8 — Timetable-Based GTFS Dispatch (Descheduled / Ignored)**:
+- **B8 - Timetable-Based GTFS Dispatch (Descheduled / Ignored)**:
   - *Decision*: Strict on-the-dot timetable departure dispatch from static GTFS is intentionally ignored in favor of frequency-based stochastic dispatch using `headway_s` and `headway_randomness_s`. This provides realistic vehicle headway variation and bunching without forcing rigid schedule arrivals.
-- **B9 — Observation Window & Warm-up (Implemented)**:
+- **B9 - Observation Window & Warm-up (Implemented)**:
   - *Implementation*: Supports optional warm-up before 7:00 AM (`warmup_duration_s`, e.g. 1800s for a 6:30 AM warm-up start). The simulator clock advances streetcars during warm-up so active vehicles are distributed along the corridor when the 7:00 AM window opens, mitigating cold-start downstream queue delays. Events before $t=0$ are filtered out from `sim_log` so event logs strictly preserve `time_s >= 0` contract compliance.
-- **B10 — Invariants and Hand-Worked Validation (Implemented)**:
+- **B10 - Invariants and Hand-Worked Validation (Implemented)**:
   - *Implementation*: Full suite of invariant tests in `backend/tests/test_invariants.py` covering passenger status conservation, vehicle capacity limits, single-counted persistent denied riders, monotonic event ordering, hand-worked arithmetic verification, queue accumulation under overload, and reproducibility.
-- **B13 — Schedule Consistency and Calibration (Implemented)**:
+- **B13 - Schedule Consistency and Calibration (Implemented)**:
   - *Implementation*: `backend/simulation/consistency.py` and `backend/tests/test_consistency.py` generate residual reports comparing baseline link travel times against the GTFS schedule, headways against scheduled departures, and demand against 2022 TTS AM estimates, while strictly enforcing the invariant: never tune the growth case.
 

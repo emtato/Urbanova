@@ -41,7 +41,7 @@ Lane C's package screen compares four packages: existing, streetcar priority (ca
 | `price_year` | Year of the CAD figures | 2026, after CPI adjustment | derived |
 | `earliest_phase` | First phase an upgrade can be in place | `phase-1`, the only phase Lane C defines today | user_selected |
 | `availability` | Optional per-option phase | Omitted unless the team sets different dates for lane and extra service | user_selected |
-| `source_ids`, `assumption_label` | Provenance and one-sentence caveat | Collected from the rows above | — |
+| `source_ids`, `assumption_label` | Provenance and one-sentence caveat | Collected from the rows above | - |
 
 ## How the values were chosen
 All figures below are quoted, with page numbers, in `data/sources/intervention_evidence.json`. Costs are in 2026 CAD, converted with Statistics Canada's CPI: 2015 = 126.6, 2017 = 130.4, 2019 = 136.0, 2024 = 160.9, 2025 = 164.2, and 2026 = 168.1. The 2026 index is the January–August 2026 monthly CPI mean (Table 18-10-0004-01, vector v41690973), because the year is incomplete; it matches Lane C's fixed budget price year. King Street's priority section (Bathurst → Jarvis) is about 2.5 km (2,473–2,578 m by direction in the GTFS), almost the same as our 2,513 m segment, so no length scaling is applied (ratio 0.995).

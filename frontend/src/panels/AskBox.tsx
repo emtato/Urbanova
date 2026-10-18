@@ -196,7 +196,7 @@ export const AskBox: FC<AskBoxProps> = ({
           <span className="text-amber-400 text-sm">⚠️</span>
           <div>
             <div className="font-semibold text-amber-300">
-              STALE RESULTS — PARAMETERS ALTERED
+              STALE RESULTS - PARAMETERS ALTERED
             </div>
             <div className="text-[11px] text-amber-200/90 mt-0.5 font-mono">
               Interpreted scenario inputs differ from the current simulation. Click &ldquo;Run Experiment&rdquo; below to simulate and update results.

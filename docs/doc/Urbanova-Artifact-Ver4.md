@@ -88,7 +88,7 @@ All hands
 
    Ten lines: what Urbanova is (helping Toronto residents picture how proposed housing affects the buildings they see, the sunlight in places they use, and the transit they depend on), and how to run the backend, worker and frontend. Expand at the end.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 All four people have the Express backend (`npm run dev` in `backend/`), the frontend (`npm run dev` in `frontend/`) and `SELECT postgis_version();` working locally, and a first commit is pushed.
 
@@ -208,7 +208,7 @@ Each object below is composed by the next. Build them in this order and the last
 
     One fully populated `Comparison` plus a short replay stream (two streetcars, every stop), written by hand. Set `"fixture": true` and show a FIXTURE banner whenever it is on, so made-up numbers never reach a judge.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 The corridor is chosen from real files, the tiny case matches the hand calculation, `sample_comparison.json` validates against the Pydantic models and the TypeScript types compile against it. Then split up.
 
@@ -385,7 +385,7 @@ Lane C · Owner 4
 
 The model computes; Gemini translates and explains. Every number on screen comes from Lane B's runs or Lane A's sources.
 
-**Owner decision, 2026-10-17 — live B → C handoff:** C must accept the simulator owner's native dictionaries. `backend/simulation/paired_runs.py` returns `{overall_results, individual_results}`; `individual_results` is an ordered array of unchanged `{inputs, streetcars, passengers, sim_log, summary}` run dictionaries. Named paired comparisons wrap those batches under `cases` with `improvements`, seed IDs and runtime. See [simulation-runs.md](../simulation-runs.md). C owns the Python bridge, validation, storage and presentation mapping. This decision supersedes the earlier Phase 1 `Comparison` / `ReplayStream` template requirements for live simulation output; the checked-in fixture retains its historical format and labels.
+**Owner decision, 2026-10-17 - live B → C handoff:** C must accept the simulator owner's native dictionaries. `backend/simulation/paired_runs.py` returns `{overall_results, individual_results}`; `individual_results` is an ordered array of unchanged `{inputs, streetcars, passengers, sim_log, summary}` run dictionaries. Named paired comparisons wrap those batches under `cases` with `improvements`, seed IDs and runtime. See [simulation-runs.md](../simulation-runs.md). C owns the Python bridge, validation, storage and presentation mapping. This decision supersedes the earlier Phase 1 `Comparison` / `ReplayStream` template requirements for live simulation output; the checked-in fixture retains its historical format and labels.
 
 The simulator's metric definitions are authoritative: onboard riders and riders awaiting their first car at cutoff remain **in progress**, excluded from unresolved counts; unresolved counts riders still waiting after a capacity denial. Denied share uses corridor riders who encountered a streetcar, counting each denied rider once. C must preserve these meanings in validation, criteria, storage, briefs and AI explanations. Remove any projection that replaces B's results with all-waiting-plus-onboard unresolved counts or an all-arrivals denied-share denominator. Replay comes from a selected run's `sim_log`, including passenger arrivals during the run and incoming vehicle loads.
 
@@ -544,7 +544,7 @@ Build the whole interface against `sample_comparison.json`, `buildings_3d.geojso
 
     Keyboard for every control, visible focus, text alternatives for 3D/shadow views and charts, a pause for motion, advanced assumptions in an expandable panel.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 Each lane works alone: the 505 Dundas bundle (with 3D massing and shadows) is in Tiger Data and local cache; the simulator passes B10 and returns paired baseline results; packages are ranked against the stub; the interface renders the 3D proposals, shadow comparisons and fixture replay with moving streetcars and queues. Four working parts, not yet connected.
 
@@ -596,7 +596,7 @@ Sequenced · not parallel
 
    Required for prize eligibility: name (**Urbanova**), thirty-second resident-centred pitch, School of Cities as lead, team, repo link, one screenshot. It stays editable until the final deadline.
 
-Gate — do not proceed until
+Gate - do not proceed until
 
 A resident or planner can load the 505 Dundas neighbourhood, toggle proposals in 3D, compare seasonal shadows, change a housing phase, compare resource-feasible transit packages, inspect consistent stop-level commute results and uncertainty, and export a reproducible comparison brief. An infeasible budget and an unresolved queue are reported correctly. **This is the MVP.** Tag the commit.
 
@@ -669,7 +669,7 @@ A free-roam 3D street you can walk anywhere along the 505 corridor, plus photo v
 
    data/photos/ · src/street/FuturePhoto.tsxNot Google
 
-   Before/after slider at 3–5 points on the corridor. Use photos the team takes on the street or Mapillary images under their licence with attribution, not Google Street View, whose terms restrict altering its imagery. Render the proposed massing from a camera matched to each photo (position, heading, field of view) and overlay it. An AI step may blend lighting only, and every image is stamped "Illustration — not an approved design".
+   Before/after slider at 3–5 points on the corridor. Use photos the team takes on the street or Mapillary images under their licence with attribution, not Google Street View, whose terms restrict altering its imagery. Render the proposed massing from a camera matched to each photo (position, heading, field of view) and overlay it. An AI step may blend lighting only, and every image is stamped "Illustration - not an approved design".
 6. [ ] 4.10
 
    performance check · Sun 02:00

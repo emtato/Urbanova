@@ -1,4 +1,4 @@
-# Verification record — 2026-10-17
+# Verification record - 2026-10-17
 
 Pulled `origin/main` through `d3cb110`, including the teammate frontend/3D changes explicitly approved by the user. Resolved the initial six overlaps and the later naming/provenance schema conflict, retaining both features. The simulation owner's tick engine and configured-simulation API are preserved. The pre-pull work is also preserved in a local Git stash. Teammate frontend/3D files match upstream without additional implementation edits.
 

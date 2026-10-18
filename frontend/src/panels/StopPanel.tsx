@@ -22,10 +22,10 @@ export interface StopPanelProps {
   onToggleMinimize?: () => void
   className?: string
 }
-const count = (value: number | null | undefined) => value == null ? '—' : value.toLocaleString(undefined, { maximumFractionDigits: 1 })
-const wait = (value: number | null | undefined) => value == null ? '—' : value < 60 ? `${Math.round(value)}s` : `${(value / 60).toFixed(1)} min`
-const percent = (value: number | null | undefined) => value == null ? '—' : `${Math.round(value * 100)}%`
-const deltaWait = (value: number | null | undefined, base: number | null | undefined) => value == null || base == null ? '—' : `${value > base ? '+' : value < base ? '−' : ''}${wait(Math.abs(value - base))}`
+const count = (value: number | null | undefined) => value == null ? 'N/A' : value.toLocaleString(undefined, { maximumFractionDigits: 1 })
+const wait = (value: number | null | undefined) => value == null ? 'N/A' : value < 60 ? `${Math.round(value)}s` : `${(value / 60).toFixed(1)} min`
+const percent = (value: number | null | undefined) => value == null ? 'N/A' : `${Math.round(value * 100)}%`
+const deltaWait = (value: number | null | undefined, base: number | null | undefined) => value == null || base == null ? 'N/A' : `${value > base ? '+' : value < base ? '−' : ''}${wait(Math.abs(value - base))}`
 const clock = (seconds: number) => `${String(Math.floor(seconds / 3600) % 24).padStart(2, '0')}:${String(Math.floor(seconds % 3600 / 60)).padStart(2, '0')}`
 interface Column { id: string; name: string; batch: NativeBatch; metrics: TransitMetrics; comparable: boolean }
 
@@ -34,7 +34,7 @@ function MetricTable({ columns, rows }: { columns: Column[]; rows: { label: stri
     {columns.map((column, index) => <section key={column.id} aria-label={column.name} className={`transit-comparison-column transit-run-${index}`}>
       <h4 title={column.name}>{column.name}</h4>
       <div className="transit-run-metrics">{rows.map(row => <div key={row.label} className="transit-metric inspector-stat-card">
-        <span>{row.label}</span><strong>{column.comparable ? row.render(column) : '—'}</strong>
+        <span>{row.label}</span><strong>{column.comparable ? row.render(column) : 'N/A'}</strong>
       </div>)}</div>
     </section>)}
   </div>
@@ -81,7 +81,7 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
     </div>{controls}</header>
     <div role="tabpanel" id={`${tabId}-content`} aria-labelledby={`${tabId}-${scope}`} className="transit-inspector-content">
       <div className="transit-identity"><span className="transit-eyebrow">{station ? `TTC STOP #${stop.gtfs_stop_id}` : 'MODELED CORRIDOR'}</span><h2 data-testid="stop-name">{title}</h2>
-        <div className="transit-stop-summary-row"><div className="transit-stop-summary-text"><p>{station ? `Sequence ${stop.seq + 1} of ${stops.length || '—'} · Westbound` : 'Westbound · Broadview to Yonge / TMU'}</p><p>{windowLabel} · {todayDate}</p></div>
+        <div className="transit-stop-summary-row"><div className="transit-stop-summary-text"><p>{station ? `Sequence ${stop.seq + 1} of ${stops.length || 'N/A'} · Westbound` : 'Westbound · Broadview to Yonge / TMU'}</p><p>{windowLabel} · {todayDate}</p></div>
           {station && onViewPlatform && <button type="button" onClick={onViewPlatform} className="transit-platform-button">📍 View station in street view</button>}
         </div>
       </div>
@@ -118,12 +118,12 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
           { label: 'Average wait for all riders', render: value => wait(value.metrics.wait) },
           { label: 'Change in all-rider wait', render: value => value.id === 'today' ? 'Reference' : deltaWait(value.metrics.wait, reference?.wait) },
         ]} />
-        <p>Wait changes reflect all settings changed in a configuration, including service—not housing alone.</p>
+        <p>Wait changes reflect all settings changed in a configuration, including service, not housing alone.</p>
       </section>
 
       {station ? <section className="transit-section" aria-label="Service reliability"><h3>Service reliability</h3>
         <MetricTable columns={columns} rows={[
-          { label: 'Spacing score / 10', render: value => { const score = spacingScore(value.metrics.cv); return score == null ? '—' : score.toFixed(1) } },
+          { label: 'Spacing score / 10', render: value => { const score = spacingScore(value.metrics.cv); return score == null ? 'N/A' : score.toFixed(1) } },
           { label: 'Average gap between cars', render: value => wait(value.metrics.gap) },
         ]} />
         <details className="transit-method"><summary>How the score works</summary><p>Equal gaps score 10; variation of 25% scores 8, 50% scores 5, and 100% scores 2. Custom formula: 10 / (1 + (CV / 0.5)²). CV is the standard deviation divided by the average gap. Higher means more consistent spacing, not more frequent service. This is not a TTC rating.</p></details>
@@ -141,13 +141,13 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
           { label: 'Average wait for all riders', render: value => wait(value.metrics.wait) },
           { label: 'Change from Today', render: value => value.id === 'today' ? 'Reference' : deltaWait(value.metrics.wait, reference?.wait) },
           { label: 'Denied boarding', render: value => percent(value.metrics.denied) },
-          { label: 'Change in denied share', render: value => value.id === 'today' ? 'Reference' : value.metrics.denied == null || reference?.denied == null ? '—' : `${value.metrics.denied - reference.denied > 0 ? '+' : ''}${((value.metrics.denied - reference.denied) * 100).toFixed(1)} pp` },
+          { label: 'Change in denied share', render: value => value.id === 'today' ? 'Reference' : value.metrics.denied == null || reference?.denied == null ? 'N/A' : `${value.metrics.denied - reference.denied > 0 ? '+' : ''}${((value.metrics.denied - reference.denied) * 100).toFixed(1)} pp` },
           { label: 'Still waiting at cutoff', render: value => count(value.metrics.waiting) },
         ]} />
         <details className="transit-method"><summary>What these results mean</summary><div className="transit-footnotes">
           <p>Denied boarding counts riders unable to board a full car at least once, among riders who encountered a car.</p>
           <p>Still waiting means the physical queue at simulation end, not a live count or just riders stranded after denial.</p>
-          <p>Waits include riders who boarded; unfinished waits are reported separately. Counts and metrics are averages across trials, not pooled passenger percentiles. — means unavailable or no qualifying riders.</p>
+          <p>Waits include riders who boarded; unfinished waits are reported separately. Counts and metrics are averages across trials, not pooled passenger percentiles. N/A means unavailable or no qualifying riders.</p>
           <p>Today is a modeled reference, not observed live ridership. Matching settings can produce different results with different seeds. Baseline seeds: {todayBaseline.overall_results.seeds.join(', ')}.</p>
           {selected.map(value => <p key={value.id}>{value.name}: seeds {value.batch.overall_results.seeds.join(', ')}. {JSON.stringify(value.batch.overall_results.seeds) !== JSON.stringify(todayBaseline.overall_results.seeds) ? 'Seeds differ from Today; variation may also reflect random draws.' : 'Seeds match Today.'}</p>)}
           <p>The current saved-batch API does not provide model/data version identifiers; historical version compatibility cannot yet be verified.</p>

@@ -40,7 +40,7 @@ Urbanova connects real housing proposals, building and walking maps, and TTC sch
 
 Testing different demand levels and repeating simulations helps explore how results change when uncertain inputs change. Housing stays the same across transit options, making it easier to understand what each service improvement contributes.
 
-The planned Gemini/Papiers research partner extends this comparison with questions such as, “Why does my stop get worse when the new building is farther away?” Its intended role is to propose an explanation, test it through the simulator and explain what the results support. Residents can add context or constraints to guide the next investigation.
+The Gemini/Papiers research partner extends this comparison with questions such as, “Why does my stop get worse when the new building is farther away?” It proposes an explanation, tests it through the simulator and explains what the results support. Residents can add context or constraints to guide the next investigation.
 
 ## A typical visit
 

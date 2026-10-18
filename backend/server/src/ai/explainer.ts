@@ -11,7 +11,7 @@ export function grounded(answer:{text:string;source_ids:string[]},c:Comparison,p
 }
 export function template(c:Comparison){
   const result=compare(c);
-  return `${c.fixture?'FIXTURE — illustrative contract example. ':''}${result.preferred_package_id?`Preferred tested package: ${result.preferred_package_id}.`:'No tested package meets the criterion across every selected case.'} This is best among the tested packages under these assumptions. ${c.warnings.join(' ')}`;
+  return `${c.fixture?'FIXTURE - illustrative contract example. ':''}${result.preferred_package_id?`Preferred tested package: ${result.preferred_package_id}.`:'No tested package meets the criterion across every selected case.'} This is best among the tested packages under these assumptions. ${c.warnings.join(' ')}`;
 }
 export async function explain(c:Comparison,generate:Generate){
   // Native batches archive full replay/passenger histories. Explanations need

@@ -37,7 +37,7 @@ describe('saved-configuration inspector', () => {
   })
   it('preserves missing stop metrics instead of inventing zeros', () => {
     const html = clean(renderToString(<StopPanel stop={{ id: 'missing', name: 'Missing stop' }} />))
-    expect(html).toContain('—')
+    expect(html).toContain('N/A')
     expect(html).not.toContain('<strong>0%</strong>')
   })
   it('retains in-map view and minimizes without exposing external navigation', () => {
