@@ -147,6 +147,18 @@
 .analysis-saved-measures dd, .analysis-run-measures dd { margin: 5px 0 0; font-size: 14px; font-variant-numeric: tabular-nums; }
 .analysis-saved-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid #d7e6f51a; }
 .analysis-saved-actions button[aria-pressed='true'] { background: #67e8f91a; border-color: #80d7df80; color: #b2e8ee; }
+.analysis-saved-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 4px; }
+.analysis-saved-header h2 { margin: 0 0 4px !important; }
+.analysis-saved-header .analysis-help { margin: 0; }
+.analysis-saved-header-actions { display: flex; align-items: center; gap: 8px; }
+.analysis-delete-button { color: #f87171 !important; border-color: rgba(248, 113, 113, 0.3) !important; }
+.analysis-delete-button:hover:not(:disabled) { color: #fca5a5 !important; border-color: rgba(248, 113, 113, 0.6) !important; background: rgba(239, 68, 68, 0.1) !important; }
+.analysis-delete-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.analysis-delete-action-wrapper { position: relative; display: inline-flex; align-items: center; }
+.analysis-saved-checkbox-wrapper { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; margin-left: 10px; cursor: pointer; z-index: 2; }
+.analysis-saved-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #f87171; border-radius: 4px; margin: 0; }
+.analysis-saved-item.is-batch-mode { cursor: pointer; }
+.analysis-saved-item.is-batch-selected { border-color: rgba(248, 113, 113, 0.5) !important; background: rgba(248, 113, 113, 0.08) !important; }
 .analysis-studio .analysis-run-select { max-width: 420px; }
 .analysis-run-select select { display: block; width: 100%; margin: 9px 0 18px; padding: 12px; border: 1px solid #d7e6f533; border-radius: 9px; background: #142b3b; color: #edf3f8; font: inherit; color-scheme: dark; }
 .analysis-run-select select:focus-visible { outline: 2px solid #67e8f9; outline-offset: 4px; }

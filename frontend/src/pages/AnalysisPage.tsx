@@ -4,7 +4,7 @@ import { simulationTimes } from '../lib/analysisParameters'
 import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, renameSimulation, runSimulation, setUseFixture } from '../lib/api'
 import type { Scenario } from '../lib/types'
 import type { NativeBatch, NativeReplay } from '../lib/liveTypes'
-import { formatSimulationTimestamp, setActiveSimulation } from '../lib/simulationHistory'
+import { formatSimulationTimestamp, setActiveSimulation, useSimulationHistory } from '../lib/simulationHistory'
 import { NativeReplayPanel } from '../panels/NativeReplayPanel'
 import { HeadwaySelector } from '../panels/HeadwaySelector'
 import { ConfirmDialog } from '../panels/ConfirmDialog'
@@ -36,7 +36,13 @@ function toReplay(batch: NativeBatch, runIndex: number): NativeReplay | null {
   }
 }
 
-export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => void }) {
+export function AnalysisPage({ onNavigate, initialSimulations, initialBatchMode = false, initialSelectedIds }: {
+  onNavigate: (path: string) => void
+  initialSimulations?: NativeBatch[]
+  initialBatchMode?: boolean
+  initialSelectedIds?: string[]
+}) {
+  const saved = useSimulationHistory()
   const [defaults, setDefaults] = useState<Scenario | null>(null)
   const [health, setHealth] = useState('Checking API and database…')
   const [error, setError] = useState('')
@@ -54,11 +60,14 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
   const [startHours, setStartHours] = useState('7')
   const [endHours, setEndHours] = useState('9')
   const [rushHours, setRushHours] = useState('2')
-  const [simulations, setSimulations] = useState<NativeBatch[]>([])
+  const [simulations, setSimulations] = useState<NativeBatch[]>(() => initialSimulations ?? [])
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(() => initialSimulations?.[0]?.id ?? null)
   const [selectedRunIndex, setSelectedRunIndex] = useState(0)
+  const [isBatchMode, setIsBatchMode] = useState(initialBatchMode)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(initialSelectedIds ?? []))
+  const [isDeletingBatch, setIsDeletingBatch] = useState(false)
   const controller = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -70,14 +79,27 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
       setDefaults(value)
       setIncludedDevs(Object.fromEntries(value.developments.map(d => [d.id, false])))
     }).catch(reason => { if (!abort.signal.aborted) setError(message(reason)) })
-    void getSimulations(abort.signal).then(list => {
-      if (!abort.signal.aborted) {
-        setSimulations(list)
-        if (list.length > 0) setSelectedBatchId(current => current ?? list[0].id)
-      }
-    }).catch(() => {})
-    return () => { abort.abort(); controller.current?.abort() }
-  }, [])
+    let listAbort = new AbortController()
+    const refresh = () => {
+      listAbort.abort()
+      listAbort = new AbortController()
+      const signal = listAbort.signal
+      void getSimulations(signal).catch(reason => { if (!signal.aborted) setError(message(reason)) })
+    }
+    refresh()
+    window.addEventListener('focus', refresh)
+    return () => { abort.abort(); listAbort.abort(); controller.current?.abort(); window.removeEventListener('focus', refresh) }
+  }, [initialSimulations])
+
+  useEffect(() => {
+    if (initialSimulations || saved.loading || saved.error) return
+    const list = saved.history.map(item => item.batch)
+    setSimulations(list)
+    if (!list.some(batch => batch.id === selectedBatchId)) {
+      setSelectedBatchId(list[0]?.id ?? null)
+      setSelectedRunIndex(0)
+    }
+  }, [saved.history, saved.loading, saved.error, initialSimulations, selectedBatchId])
 
   const inputsKey = JSON.stringify([includedDevs, runCount, seed, headwayS, headwayRandomnessS, linkVariationShare, startHours, endHours, rushHours])
   const times = simulationTimes(startHours, endHours, rushHours)
@@ -176,6 +198,59 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
     }
   }
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const handleBatchDelete = async () => {
+    if (isDeletingBatch || selectedIds.size === 0) return
+    setIsDeletingBatch(true)
+    setError('')
+    try {
+      const idsToDelete = Array.from(selectedIds)
+      const results = await Promise.allSettled(idsToDelete.map(id => deleteSimulation(id)))
+      const rejected = results.filter(r => r.status === 'rejected')
+      if (rejected.length > 0) {
+        setError(`Could not delete ${rejected.length} of ${idsToDelete.length} simulations.`)
+      }
+      const succeededIds = new Set(
+        idsToDelete.filter((_, index) => results[index].status === 'fulfilled')
+      )
+      setSimulations(prev => {
+        const remaining = prev.filter(item => !succeededIds.has(item.id))
+        if (selectedBatchId && succeededIds.has(selectedBatchId)) {
+          setSelectedBatchId(remaining[0]?.id ?? null)
+          setSelectedRunIndex(0)
+        }
+        return remaining
+      })
+      setSelectedIds(new Set())
+      setIsBatchMode(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete simulations.')
+    } finally {
+      setIsDeletingBatch(false)
+    }
+  }
+
+  const handleBatchDeleteClick = () => {
+    if (!isBatchMode) {
+      setIsBatchMode(true)
+      setSelectedIds(new Set())
+      return
+    }
+    if (selectedIds.size > 0) {
+      void handleBatchDelete()
+    } else {
+      setIsBatchMode(false)
+    }
+  }
+
   return <main className="contract-review analysis-workspace analysis-studio">
     <div className="analysis-shell">
     <nav className="analysis-nav" aria-label="Simulation navigation">
@@ -251,18 +326,49 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
 
     {simulations.length > 0 && (
       <section className="analysis-results-card" aria-labelledby="saved-simulations-title">
-        <h2 id="saved-simulations-title">Saved simulations ({simulations.length})</h2>
-        <p className="analysis-help">Choose a simulation to see its results and replay.</p>
+        <div className="analysis-saved-header">
+          <div>
+            <h2 id="saved-simulations-title">Saved simulations ({simulations.length})</h2>
+            <p className="analysis-help">Choose a simulation to see its results and replay.</p>
+          </div>
+          <div className="analysis-saved-header-actions">
+            {isBatchMode && (
+              <button
+                type="button"
+                onClick={() => { setIsBatchMode(false); setSelectedIds(new Set()) }}
+              >
+                Cancel
+              </button>
+            )}
+            <button
+              type="button"
+              className="analysis-delete-button"
+              disabled={isDeletingBatch}
+              onClick={handleBatchDeleteClick}
+            >
+              {selectedIds.size > 0 ? (isDeletingBatch ? 'Deleting…' : 'confirm delete') : 'Batch delete'}
+            </button>
+          </div>
+        </div>
         <div className="analysis-saved-list">
           {simulations.map(batch => {
             const inputs = batch.individual_results[0]?.inputs
             const devs = inputs?.developments ?? []
             const metrics = batch.overall_results.metrics
             const isSelected = currentBatch?.id === batch.id
+            const isBatchSelected = selectedIds.has(batch.id)
             const displayName = batch.name || formatSimulationTimestamp(
               batch.provenance?.recorded_at ? new Date(batch.provenance.recorded_at) : undefined
             )
-            return <article key={batch.id} className={`analysis-saved-item${isSelected ? ' is-selected' : ''}`}>
+            return <article
+              key={batch.id}
+              className={`analysis-saved-item${isSelected ? ' is-selected' : ''}${isBatchMode ? ' is-batch-mode' : ''}${isBatchSelected ? ' is-batch-selected' : ''}`}
+              onClick={e => {
+                if (isBatchMode && !(e.target as HTMLElement).closest('button, input, a')) {
+                  toggleSelect(batch.id)
+                }
+              }}
+            >
               <div className="analysis-saved-heading"><h3>{displayName}</h3><span className="analysis-result-badge">{batch.overall_results.run_count} {batch.overall_results.run_count === 1 ? 'run' : 'runs'}</span></div>
               <p className="analysis-help">{devs.length ? devs.map(d => d.name).join(' · ') : 'Existing homes only'}</p>
               <dl className="analysis-saved-measures">
@@ -273,7 +379,30 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
               <div className="analysis-saved-actions">
                 <button type="button" aria-pressed={isSelected} onClick={() => { setSelectedBatchId(batch.id); setSelectedRunIndex(0) }}>{isSelected ? 'Viewing results' : 'View results'}</button>
                 <button type="button" onClick={() => void handleRename(batch.id, displayName)}>Rename</button>
-                <button type="button" onClick={() => setPendingDeleteId(batch.id)}>Delete</button>
+                <div className="analysis-delete-action-wrapper">
+                  <button
+                    type="button"
+                    className="analysis-delete-button"
+                    disabled={(deleting && pendingDeleteId === batch.id) || isDeletingBatch}
+                    onClick={() => setPendingDeleteId(batch.id)}
+                  >
+                    {deleting && pendingDeleteId === batch.id ? 'Deleting…' : 'Delete'}
+                  </button>
+                  {isBatchMode && (
+                    <label
+                      className="analysis-saved-checkbox-wrapper"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        className="analysis-saved-checkbox"
+                        checked={selectedIds.has(batch.id)}
+                        onChange={() => toggleSelect(batch.id)}
+                        aria-label={`Select ${displayName} for deletion`}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             </article>
           })}

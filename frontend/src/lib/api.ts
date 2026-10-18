@@ -1,4 +1,4 @@
-import { rememberSimulation, forgetSimulation, setActiveSimulation, updateLocalSimulationName } from './simulationHistory'
+import { rememberSimulation, forgetSimulation, setActiveSimulation, updateLocalSimulationName, syncSimulationHistory, beginSimulationRefresh, failSimulationRefresh, currentSimulations } from './simulationHistory'
 import { sampleComparison } from './sampleComparison'
 import type { Comparison, Corridor, ReplayEvent, Scenario } from './types'
 import type { NativeBatch, NativeMetrics, NativeReplay, PackagePolicy, RunSimulationRequest, ScenarioPatch, AnalysisSummary } from './liveTypes'
@@ -6,6 +6,7 @@ import type { NativeBatch, NativeMetrics, NativeReplay, PackagePolicy, RunSimula
 let runtimeUseFixture = import.meta.env.VITE_USE_FIXTURE !== 'false'
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 const LATEST_COMPARISON_KEY = 'urbanova.latestComparisonId'
+let simulationListRevision = 0
 // Remembered across reloads so opening the map reuses the last result instead of starting a new job.
 let latestComparisonId: string | undefined = readStoredComparisonId()
 export const isUsingFixture = () => runtimeUseFixture
@@ -53,50 +54,47 @@ function nativeBatchResponse(batch: NativeBatch): NativeBatch {
 
 export async function runSimulation(input: RunSimulationRequest = {}, signal?: AbortSignal): Promise<NativeBatch> {
   const batch = nativeBatchResponse(await apiRequest<NativeBatch>('/run/simulation', input, signal))
+  simulationListRevision++
   await rememberSimulation(batch)
   setActiveSimulation(batch.id)
   return batch
 }
 
 export async function getSimulations(signal?: AbortSignal): Promise<NativeBatch[]> {
-  const list = await apiRequest<NativeBatch[]>('/sim/fetch', undefined, signal)
-  if (!Array.isArray(list)) throw Error('Invalid simulations list response')
-  const batches = list.map(nativeBatchResponse)
-  await Promise.all(batches.map(batch => rememberSimulation(batch, null)))
-  return batches
+  const revision = ++simulationListRevision
+  beginSimulationRefresh()
+  try {
+    const list = await apiRequest<NativeBatch[]>('/sim/fetch', undefined, signal)
+    if (!Array.isArray(list)) throw Error('Invalid simulations list response')
+    const batches = list.map(nativeBatchResponse)
+    if (revision !== simulationListRevision) return currentSimulations()
+    await syncSimulationHistory(batches)
+    return currentSimulations()
+  } catch (error) {
+    if (revision === simulationListRevision) failSimulationRefresh(error)
+    throw error
+  }
 }
 
 export async function renameSimulation(id: string, name: string, signal?: AbortSignal): Promise<{ id: string; name: string; renamed: boolean }> {
   if (!id || typeof id !== 'string') throw Error('Simulation ID is required')
   const trimmed = name.trim()
   if (!trimmed || trimmed.length > 80) throw Error('Use a name between 1 and 80 characters.')
-  let result = { id, name: trimmed, renamed: true }
-  try {
-    result = await apiRequest<{ id: string; name: string; renamed: boolean }>('/sim/rename', { id, name: trimmed }, signal)
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('HTTP 404')) {
-      result = { id, name: trimmed, renamed: true }
-    } else {
-      throw error
-    }
+  const result = await apiRequest<{ id: string; name: string; renamed: boolean }>('/sim/rename', { id, name: trimmed }, signal)
+  if (result.renamed) {
+    simulationListRevision++
+    await updateLocalSimulationName(id, result.name)
   }
-  await updateLocalSimulationName(id, trimmed)
   return result
 }
 
 export async function deleteSimulation(id: string, signal?: AbortSignal): Promise<{ id: string; deleted: boolean }> {
   if (!id || typeof id !== 'string') throw Error('Simulation ID is required')
-  let result = { id, deleted: true }
-  try {
-    result = await apiRequest<{ id: string; deleted: boolean }>('/sim/delete', { id }, signal)
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('HTTP 404')) {
-      result = { id, deleted: true }
-    } else {
-      throw error
-    }
+  const result = await apiRequest<{ id: string; deleted: boolean }>('/sim/delete', { id }, signal)
+  if (result.deleted) {
+    simulationListRevision++
+    await forgetSimulation(id)
   }
-  if (result.deleted) await forgetSimulation(id)
   return result
 }
 

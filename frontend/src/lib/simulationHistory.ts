@@ -13,6 +13,43 @@ export const todayBaseline = baselineData.batch as unknown as NativeBatch
 export const todayDate = baselineData.serviceDate
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach(listener => listener())
+// Only database responses and acknowledged mutations populate the visible list.
+// IndexedDB is a cache, never an additional source of saved simulations.
+let history: SavedSimulation[] = []
+let loading = true
+let error = ''
+export const currentSimulations = () => history.map(item => item.batch)
+export function beginSimulationRefresh() { loading = true; error = ''; notify() }
+export function failSimulationRefresh(reason: unknown) {
+  loading = false
+  error = reason instanceof Error ? reason.message : 'Saved simulations unavailable.'
+  notify()
+}
+function historyRecord(batch: NativeBatch, createdAt: string | null = batch.provenance?.recorded_at ?? null): SavedSimulation {
+  return { id: batch.id, name: batch.name || formatSimulationTimestamp(createdAt ? new Date(createdAt) : new Date()), createdAt, batch }
+}
+function compactRecord(record: SavedSimulation): SavedSimulation {
+  return { ...record, batch: { ...record.batch, individual_results: record.batch.individual_results.map(run => ({ ...run, streetcars: [], passengers: [], sim_log: [] })) } }
+}
+async function cacheWrite<T>(action: (store: IDBObjectStore) => IDBRequest<T>) {
+  if (typeof indexedDB === 'undefined') return
+  try { await transaction('readwrite', action) } catch { /* Database-backed views remain usable if browser storage fails. */ }
+}
+export async function syncSimulationHistory(batches: NativeBatch[]) {
+  history = batches.map(batch => historyRecord(batch))
+  loading = false
+  error = ''
+  const activeId = activeSimulationId()
+  if (activeId && !batches.some(batch => batch.id === activeId)) setActiveSimulation(null)
+  else notify()
+  const records = history.map(compactRecord)
+  // Replace atomically, including an empty response, to evict stale cached IDs.
+  await cacheWrite(store => {
+    const clear = store.clear()
+    for (const record of records) store.put(record)
+    return clear
+  })
+}
 let database: Promise<IDBDatabase> | undefined
 function db() {
   database ??= new Promise<IDBDatabase>((resolve, reject) => {
@@ -61,38 +98,33 @@ export function configurationSummary(batch: NativeBatch) {
   return `${inputs?.developments?.length ?? 0} developments · ${typeof inputs?.headway_s === 'number' ? (inputs.headway_s / 60).toFixed(1) + '-minute service' : 'frequency unknown'} · ${inputs?.headway_randomness_s ?? 0}s arrival variation`
 }
 export async function rememberSimulation(batch: NativeBatch, createdAt: string | null = new Date().toISOString()) {
-  if (typeof indexedDB === 'undefined') return
-  const existing = await transaction<SavedSimulation | undefined>('readonly', store => store.get(batch.id))
-  const resolvedName = batch.name || (existing ? existing.name : formatSimulationTimestamp(createdAt ? new Date(createdAt) : new Date()))
-  if (existing) {
-    if (batch.name && existing.name !== batch.name) {
-      await transaction('readwrite', store => store.put({ ...existing, name: batch.name, batch: { ...existing.batch, name: batch.name } }))
-      notify()
-    }
-    return
-  }
-  // Keep native inputs and summaries. Full replay logs remain stored by the API.
-  const compact = { ...batch, name: resolvedName, individual_results: batch.individual_results.map(run => ({ ...run, streetcars: [], passengers: [], sim_log: [] })) }
-  await transaction('readwrite', store => store.put({ id: batch.id, name: resolvedName, createdAt, batch: compact } satisfies SavedSimulation))
+  const record = historyRecord(batch, batch.provenance?.recorded_at ?? createdAt)
+  history = [record, ...history.filter(item => item.id !== batch.id)]
+  loading = false
+  error = ''
   notify()
+  await cacheWrite(store => store.put(compactRecord(record)))
 }
 export async function updateLocalSimulationName(id: string, name: string) {
-  if (typeof indexedDB === 'undefined') return
-  const value = await transaction<SavedSimulation | undefined>('readonly', store => store.get(id))
-  if (!value) throw new Error('This saved simulation is no longer available.')
   const trimmed = name.trim()
   if (!trimmed || trimmed.length > 80) throw new Error('Use a name between 1 and 80 characters.')
-  await transaction('readwrite', store => store.put({ ...value, name: trimmed, batch: { ...value.batch, name: trimmed } }))
+  history = history.map(value => value.id === id ? { ...value, name: trimmed, batch: { ...value.batch, name: trimmed } } : value)
+  loading = false
+  error = ''
   notify()
+  const record = history.find(value => value.id === id)
+  if (record) await cacheWrite(store => store.put(compactRecord(record)))
 }
 export async function renameSimulation(id: string, name: string) {
   await updateLocalSimulationName(id, name)
 }
 export async function forgetSimulation(id: string) {
-  if (typeof indexedDB === 'undefined') return
-  await transaction('readwrite', store => store.delete(id))
+  history = history.filter(value => value.id !== id)
+  loading = false
+  error = ''
   if (activeSimulationId() === id) setActiveSimulation(null)
-  notify()
+  else notify()
+  await cacheWrite(store => store.delete(id))
 }
 export function activeSimulationId() { return typeof window === 'undefined' ? null : window.localStorage.getItem('urbanova-active-simulation') }
 export function setActiveSimulation(id: string | null) {
@@ -102,23 +134,22 @@ export function setActiveSimulation(id: string | null) {
   notify()
 }
 export function useSimulationHistory() {
-  const [history, setHistory] = useState<SavedSimulation[]>([])
+  const [savedHistory, setHistory] = useState(history)
   const [activeId, setActiveId] = useState<string | null>(activeSimulationId)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [savedError, setError] = useState(error)
+  const [savedLoading, setLoading] = useState(loading)
   useEffect(() => {
-    let disposed = false
     const refresh = () => {
       setActiveId(activeSimulationId())
-      void readHistory().then(value => { if (!disposed) { setHistory(value); setError('') } })
-        .catch(reason => { if (!disposed) setError(reason instanceof Error ? reason.message : 'Saved simulations unavailable.') })
-        .finally(() => { if (!disposed) setLoading(false) })
+      setHistory(history)
+      setError(error)
+      setLoading(loading)
     }
     listeners.add(refresh)
     refresh()
-    return () => { disposed = true; listeners.delete(refresh) }
+    return () => { listeners.delete(refresh) }
   }, [])
-  return { history, activeId, error, loading }
+  return { history: savedHistory, activeId, error: savedError, loading: savedLoading }
 }
 export function batchCase(batch: NativeBatch): NativeCaseResult {
   return { ...batch, case_id: batch.id, kind: 'current', package_id: 'saved-configuration', phase_id: 'saved-configuration', demand_case: 'central', stops: [],

@@ -5,7 +5,6 @@ import { publicAssetPath } from '../lib/publicAssetPath'
 import { SimulationPicker } from '../panels/SimulationPicker'
 import { MapReplayControls } from '../replay/MapReplayControls'
 import type { Comparison, Scenario } from '../lib/types'
-import type { NativeBatch } from '../lib/liveTypes'
 import type { FeatureCollection } from 'geojson'
 import { indexWalkingRoutes, preparePassengerReplay, type WalkingRoutes } from '../map/passengerReplay'
 import {
@@ -91,7 +90,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     }, 4000)
   }
 
-  const [batches, setBatches] = useState<NativeBatch[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
   const [simTime, setSimTime] = useState(0)
   const [playbackSpeed, setPlaybackSpeed] = useState(15)
@@ -109,17 +107,22 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   }, [])
 
   useEffect(() => {
-    void getSimulations().then(list => setBatches(list)).catch(() => {})
+    let abort = new AbortController()
+    const refresh = () => {
+      abort.abort()
+      abort = new AbortController()
+      void getSimulations(abort.signal).catch(() => { /* The shared history exposes the database error. */ })
+    }
+    refresh()
+    window.addEventListener('focus', refresh)
+    return () => { abort.abort(); window.removeEventListener('focus', refresh) }
   }, [])
 
   const selectedSim = useMemo(
     () => saved.history.find(value => value.id === saved.activeId) ?? null,
     [saved.history, saved.activeId]
   )
-  const activeBatch = useMemo(
-    () => batches.find(b => b.id === saved.activeId) ?? selectedSim?.batch ?? todayBaseline,
-    [batches, saved.activeId, selectedSim]
-  )
+  const activeBatch = selectedSim?.batch ?? todayBaseline
   const pickerLabel = selectedSim ? selectedSim.name : 'Past sims'
   const passengerReplay = useMemo(() => preparePassengerReplay(activeBatch, walkingRoutes), [activeBatch, walkingRoutes])
   const passengerFrame = useMemo(() => passengerReplay(simTime), [passengerReplay, simTime])
@@ -346,7 +349,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             <button
               type="button"
               onClick={() => onNavigate?.('/analysis')}
-              className="liquid-glass rounded-full px-3.5 py-1.5 text-xs text-foreground/90 hover:text-foreground flex items-center gap-1.5 hover:scale-[1.02] transition-all cursor-pointer shadow-sm"
+              className="simulation-picker-trigger justify-center"
             >
               <span>Run simulation</span>
             </button>
