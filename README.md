@@ -1,19 +1,71 @@
-# FutureProof
-Live frontend: open `/analysis` to configure and run B11 package comparisons, inspect native cutoff metrics and scrub a selected replay. See [the live analysis guide](docs/live-analysis.md).
-Lane C Express API: [run, endpoint contracts, worker/storage and B11 integration](docs/lane-c.md). Install Python bridge dependencies with `python -m pip install -r backend/integration/requirements.txt`. Start it with `npm ci --prefix backend/server`, `npm run db:init --prefix backend/server`, then `npm start --prefix backend/server`. The root Railway config now targets Express.
-FutureProof compares housing and transit scenarios on the westbound 505, Broadview at Dundas to TMU/Yonge. Outputs are scenario experiments.
-Prerequisites: Python 3.11, Node 24 LTS, and a Tiger Data Shared (free) PostgreSQL service.
-Run the following commands from the repository root unless a command explicitly changes directories.
-Config: copy `backend/.env.example` to the root `.env` and set `DATABASE_URL` to your Tiger Data PostgreSQL URL with `sslmode=require`; keep credentials backend-only.
-Setup: `bash backend/scripts/setup.sh` (macOS/Linux/Git Bash), or `powershell -ExecutionPolicy Bypass -File backend/scripts/setup.ps1` (Windows).
-Activate: `source .venv/bin/activate` (Unix), `source .venv/Scripts/activate` (Git Bash), or `.venv\Scripts\activate.bat` (Command Prompt).
-Legacy Python foundation API: `python -m uvicorn backend.main:app --reload --reload-dir backend --port 8010` → http://localhost:8010/docs; health at `/api/health` and `/api/health/db`.
-Worker: Express starts its worker_threads scheduler automatically; frontend in another terminal: `cd frontend` then `npm run dev` → http://localhost:5173.
-Database: `python -m backend.scripts.check_db --init` initializes Tiger Data PostgreSQL and runs `SELECT postgis_version();`; every laptop uses `DATABASE_URL`.
-Checks: `python -m pytest backend/tests` and `python -m backend.scripts.check_contract`; in `frontend/`, run `npm run check:contract` and `npm run build`.
-Layout: backend code, setup scripts, SQL, and dependency pins live in `backend/`; the app lives in `frontend/`; documentation lives in `docs/`. Root `requirements.txt` forwards to `backend/requirements.txt`; `.python-version`, `railway.json`, and `.gitattributes` stay at the root for tooling discovery.
-Precompute: `npm run pipeline --prefix backend/server -- --scenario demo --runs 20` saves two phases, low/central/high demand, four packages, and an upgrade-delay comparison. Repeat it to confirm a cache hit; selected replay and `data/cache/demo/brief.txt` are retained.
-Demo: `powershell -ExecutionPolicy Bypass -File backend/scripts/run_demo.ps1` or `bash backend/scripts/run_demo.sh`; add `-CheckOnly` / `--check-only` to verify prerequisites. Tiger Data and network are required; no local database fallback is configured.
-Data: `npm run seed:data --prefix backend/server` loads the versioned spatial bundle; `python -m backend.scripts.check_consistency` reports baseline schedule residuals. Walking alternatives require manual sign-off in `data/reviewed/walking_review.csv`.
-Read [architecture](docs/architecture.md), [assumptions](docs/assumptions.md), [demo script](docs/demo_script.md), [Q&A](docs/qa_card.md) and [remaining checks](docs/completion.md). The frontend retains a labelled fixture option; live results use contract 3.0.0.
-Gate: each teammate still confirms their own laptop using [the checklist](docs/foundation.md). Hosting: [Railway](docs/railway.md); [505 feasibility](docs/feasibility.md), [contracts](docs/contract.md), [data loading](docs/simulation-data.md).
+# Urbanova
+
+**See what new housing could change in your neighbourhood.**
+
+Urbanova is a neighbourhood exploration and transit simulation prototype that helps Toronto residents understand how proposed buildings could affect the places they use every day: the view from their street, sunlight in a nearby park, and the streetcar they take to work or school.
+
+It brings these questions together around a real development proposal, helping people picture the change, explore possible impacts and compare transit improvements that could support new homes.
+
+## Why we built it
+
+Hearing that a new building will have 30 storeys and hundreds of homes does not make it easy to imagine living beside it. Planning documents and architectural drawings can be difficult to connect to familiar surroundings.
+
+Residents have practical questions: How will the skyline look from my street? Will a building block afternoon sunlight at the park? Will my usual streetcar become more crowded? What would help transit keep up as people move in?
+
+These questions are connected. New housing changes both the shape of a neighbourhood and the number of people sharing its services. Urbanova aims to make those changes understandable so residents can take part in community discussions with clearer questions and evidence. It also makes room for benefits, including more homes, useful summer shade and improvements to transit.
+
+## Who it is for
+
+Urbanova is designed primarily for existing residents. Community groups, prospective residents, journalists and planners can also use it to explore proposals, question assumptions and discuss what a growing neighbourhood needs.
+
+## What you can explore
+
+### Buildings and the skyline
+
+Explore a 3D neighbourhood from street level or above. Toggle proposed buildings to see their height, scale and relationship to existing surroundings. Proposals appear as simplified building shapes so residents can distinguish them from the existing neighbourhood.
+
+### Sunlight and shadows
+
+Compare shadows with and without a proposal at different dates and times. Explore where a new building could block direct sunlight or provide shade, and how that changes across seasons.
+
+### Your streetcar commute
+
+Transit simulation is the core of Urbanova. Explore how new residents could affect queues, waiting times, streetcar crowding and the chance of being unable to board a full vehicle. A building farther up the route can affect your stop if more people board before the streetcar reaches you.
+
+Compare growth with unchanged service against more frequent streetcars, a transit priority lane, or both. The comparison considers costs, available vehicles and when improvements could be ready, alongside their potential benefits for riders.
+
+## How it works
+
+Urbanova connects real housing proposals, building and walking maps, and TTC schedules with explicit assumptions about occupancy and travel demand. The transit model follows passengers and streetcars along the corridor, including people left waiting when a vehicle fills up.
+
+Testing different demand levels and repeating simulations helps explore how results change when uncertain inputs change. Housing stays the same across transit options, making it easier to understand what each service improvement contributes.
+
+The planned Gemini/Papiers research partner extends this comparison with questions such as, “Why does my stop get worse when the new building is farther away?” Its intended role is to propose an explanation, test it through the simulator and explain what the results support. Residents can add context or constraints to guide the next investigation.
+
+## A typical visit
+
+1. **Find a familiar place.** Select a proposal near home, a park or your usual stop.
+2. **Picture the change.** Toggle the proposed buildings and compare sunlight at a date and time you care about.
+3. **Explore your commute.** Inspect how housing growth could change waiting and crowding at your stop.
+4. **Compare improvements.** Test transit options and review their benefits, costs and assumptions.
+5. **Bring evidence into the discussion.** Save a comparison brief with results, sources and uncertainties.
+
+## Our starting neighbourhood
+
+The initial study area follows the **westbound TTC 505 Dundas corridor from Broadview Avenue to TMU Station at Yonge and Dundas**. It covers nine stops and three selected proposals: **239, 500 and 761 Dundas Street East**.
+
+This focused area lets us connect specific housing proposals to nearby places and a shared transit route. Urbanova was developed for **Hack the Valley 11**.
+
+## Understanding the results
+
+Urbanova is an exploratory prototype. Its results describe what could happen under selected assumptions. Observed stop-level passenger demand is incomplete, and occupancy, travel behaviour and service improvements contain uncertain inputs. The model does not establish a calibrated TTC forecast.
+
+The 3D buildings are simplified representations, and the shadow comparison models sunlight on flat ground. It does not predict temperature or thermal comfort. The experience above describes the intended product workflow; integration and completion details are tracked in the project documentation.
+
+## Running and exploring the project
+
+The interface uses React and TypeScript, with a Python transit simulator and an Express API backed by PostgreSQL.
+
+- [Run the backend](docs/lane-c.md#run) and follow the [frontend setup](frontend/README.md).
+- Open `/analysis` in the frontend to run comparisons; see the [live analysis guide](docs/live-analysis.md).
+- Read the [data sources and assumptions](docs/simulation-data.md), [completion checklist](docs/completion.md), or the full [Project Plan v2](docs/doc/Urbanova_Project_Plan_Ver2.pdf).

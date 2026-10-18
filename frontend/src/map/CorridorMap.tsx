@@ -790,10 +790,10 @@ export const CorridorMap: FC<CorridorMapProps> = ({
             <div className="liquid-glass rounded-full px-4 py-1.5 flex items-center gap-2.5 text-xs shadow-xl border border-amber-500/40 animate-fade-rise self-start pointer-events-auto select-none">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="font-medium text-foreground">
-                ☀️ {currentSlot.seasonName} · {currentSlot.timeLabel}
+                ☀️ {currentSlot.seasonName}
               </span>
               <span className="text-[11px] font-mono text-cyan-300 font-semibold">
-                {currentSlot.clockTime}
+                · {currentSlot.timeLabel}
               </span>
               <div className="flex items-center gap-1 border-l border-border/40 pl-2">
                 <button
@@ -862,9 +862,8 @@ export const CorridorMap: FC<CorridorMapProps> = ({
               <div className="flex flex-col gap-2 bg-black/25 p-2.5 rounded-xl border border-white/5">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">Time of Day</span>
-                  <span className="text-cyan-300 font-mono font-medium text-xs flex items-center gap-1.5">
-                    <span>{currentSlot.clockTime}</span>
-                    <span className="text-[10px] text-muted-foreground font-sans">({currentSlot.timeLabel})</span>
+                  <span className="text-cyan-300 font-mono font-medium text-xs">
+                    {currentSlot.timeLabel}
                   </span>
                 </div>
 

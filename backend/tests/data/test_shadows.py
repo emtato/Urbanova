@@ -40,7 +40,7 @@ def test_committed_shadows_have_three_layers_for_every_sunlit_time():
     collection = json.loads((REVIEWED / "shadows.geojson").read_text())
     times = collection["metadata"]["times"]
     sunlit = [t["local_time"] for t in times if t["sun_up"]]
-    assert len(times) == 12 and len(sunlit) == 11
+    assert len(times) == 20 and len(sunlit) == 18
     for time in sunlit:
         layers = {f["properties"]["layer"] for f in collection["features"] if f["properties"]["local_time"] == time}
         assert "today" in layers and layers <= {"today", "added", "removed"}

@@ -19,18 +19,25 @@ describe('shadow_metadata (Contract 1.0.0 / Sunlight & Shadows)', () => {
     expect(fall?.date).toBe('Sep 22')
   })
 
-  it('defines the 4 slider steps: morning, noon, afternoon, night', () => {
+  it('defines the 4 slider steps with words only and no clock times', () => {
     const stepIds = TIME_STEPS.map((t) => t.id)
     expect(stepIds).toEqual(['morning', 'noon', 'afternoon', 'night'])
+    for (const step of TIME_STEPS) {
+      expect(step.clockTime).toBe(step.label)
+      expect(step.clockTime).not.toMatch(/\d+:\d+/)
+      expect(step.clockTime).not.toMatch(/(AM|PM)/)
+    }
   })
 
-  it('fixes winter afternoon to daylight preset so it does not look like night/sunset prematurely', () => {
-    const winterAfternoon = getShadowSlot('winter_solstice', 'afternoon')
-    expect(winterAfternoon).toBeDefined()
-    expect(winterAfternoon?.timeId).toBe('afternoon')
-    expect(winterAfternoon?.lightPreset).toBe('day')
-    expect(winterAfternoon?.sun_up).toBe(true)
-    expect(winterAfternoon?.sun_altitude_deg).toBeGreaterThan(0)
+  it('configures afternoon to sunset/dusk preset across seasons', () => {
+    for (const season of SEASONS) {
+      const afternoon = getShadowSlot(season.id, 'afternoon')
+      expect(afternoon).toBeDefined()
+      expect(afternoon?.timeId).toBe('afternoon')
+      expect(afternoon?.lightPreset).toBe('dusk')
+      expect(afternoon?.sun_up).toBe(true)
+      expect(afternoon?.sun_altitude_deg).toBeGreaterThan(0)
+    }
   })
 
   it('fixes winter night to dark night preset rather than falling back to bright daylight', () => {
@@ -58,7 +65,7 @@ describe('shadow_metadata (Contract 1.0.0 / Sunlight & Shadows)', () => {
     expect(fallNoon?.sun_up).toBe(true)
 
     expect(fallAfternoon).toBeDefined()
-    expect(fallAfternoon?.lightPreset).toBe('day')
+    expect(fallAfternoon?.lightPreset).toBe('dusk')
     expect(fallAfternoon?.sun_up).toBe(true)
 
     expect(fallNight).toBeDefined()
@@ -70,6 +77,8 @@ describe('shadow_metadata (Contract 1.0.0 / Sunlight & Shadows)', () => {
     expect(getShadowSlot('summer_solstice', '09:00')?.timeId).toBe('morning')
     expect(getShadowSlot('summer_solstice', '12:00')?.timeId).toBe('noon')
     expect(getShadowSlot('summer_solstice', '15:00')?.timeId).toBe('afternoon')
-    expect(getShadowSlot('summer_solstice', '18:00')?.timeId).toBe('night')
+    expect(getShadowSlot('summer_solstice', '17:40')?.timeId).toBe('afternoon')
+    expect(getShadowSlot('summer_solstice', '18:00')?.timeId).toBe('afternoon')
+    expect(getShadowSlot('summer_solstice', '22:00')?.timeId).toBe('night')
   })
 })
