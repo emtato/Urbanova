@@ -168,5 +168,7 @@ Final local checks: 31 Node tests, 129 Python tests, frozen-contract validation,
 `/api/investigations` runs a bounded matched-seed B11 investigation and pauses for
 an actual human redirect. `GET /api/investigations/integration` reports connection
 status. See `docs/assumption-auditor.md` for requests, metric definitions and the
-UI replay handoff. Papiers is unconnected until a sponsor transport proves a real
-read; manual notes are explicitly labelled and external writeback stays pending.
+UI replay handoff. The pinned official Papiers CLI searches and reads the library
+when PAPIERS_TOKEN is configured. Actual reads require receipts; manual notes
+stay labelled. The published CLI is read-only, so findings have a manual export
+rather than a fabricated external write-back.

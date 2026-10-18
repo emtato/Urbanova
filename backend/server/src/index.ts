@@ -5,10 +5,11 @@ import { startScheduler } from './worker/scheduler.js';
 import { PgAuditRepository } from './research/repository.js';
 import { InvestigationService } from './research/service.js';
 import { gemini } from './ai/gemini.js';
+import { configuredKnowledgeLibrary } from './research/papiers.js';
 const store=new PgStore();
 try{
   await store.init();
-  const investigations=new InvestigationService(new PgAuditRepository(store.pool),undefined,undefined,process.env.RESEARCH_GEMINI_ENABLED==='true'?gemini(store):undefined);
+  const investigations=new InvestigationService(new PgAuditRepository(store.pool),undefined,configuredKnowledgeLibrary(),process.env.RESEARCH_GEMINI_ENABLED==='true'?gemini(store):undefined);
   const stopResearch=investigations.startScheduler();
   const stop=startScheduler(store),server=createApp(store,undefined,investigations).listen(settings.port,'0.0.0.0',()=>console.log(`FutureProof Express listening on ${settings.port}; default evaluator=B11; fixture mode requires an explicit request`));
   let closing=false;

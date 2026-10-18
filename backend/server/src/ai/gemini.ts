@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI,ThinkingLevel } from '@google/genai';
 import * as z from 'zod';
 import { randomUUID } from 'node:crypto';
 import { settings } from '../config.js';
@@ -17,6 +17,9 @@ export function gemini(store:Store):Generate {
       const ai=new GoogleGenAI({apiKey:settings.geminiKey});
       const response=await ai.models.generateContent({model:settings.model,contents:prompt,config:{
         responseMimeType:'application/json',responseSchema:googleSchema(schema),
+        // Bounded research choices need little deliberation. Gemini 3 supports
+        // LOW; leave existing parser/explainer generation settings unchanged.
+        ...(purpose.startsWith('research_')&&/^gemini-3\./.test(settings.model)?{thinkingConfig:{thinkingLevel:ThinkingLevel.LOW}}:{}),
         httpOptions:{timeout:25000},abortSignal:AbortSignal.timeout(30000),
       }});
       const result=schema.safeParse(normalizeOptionalNulls(JSON.parse(response.text??''),schema));

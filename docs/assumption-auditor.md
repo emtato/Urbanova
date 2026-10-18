@@ -38,8 +38,9 @@ The contrast is conditional on its two different incoming regimes and the centra
 housing case, not a full factorial attribution or a statement about real causes.
 
 The next knob maximizes absolute paired mean change × evidence weakness. Weakness
-is an explicit heuristic: 1 without a relevant team note, 0.75 with one. A note is
-not an observation or proof. Ties prioritize incoming load, then demand, then
+is an explicit heuristic: 1 without relevant human judgment, 0.75 with a team
+note/highlight/conversation. A saved paper alone remains curation with weakness 1.
+A note is not an observation or proof. Ties prioritize incoming load, then demand, then
 service. Gemini receives measured scores and the permitted maximizers, and can
 choose a knob and cite existing relevant note IDs. Invalid/failed AI choices fall
 back to that policy, with the decision mode recorded. AI never computes metrics,
@@ -49,6 +50,9 @@ availability flag and note IDs/knobs/modes. It does not send note bodies or huma
 names to Gemini. This new decision call is opt-in with
 `RESEARCH_GEMINI_ENABLED=true`; the default is the local policy. Setting
 `GEMINI_ENABLED=false` also disables it. The existing scenario parser is unchanged.
+Bounded research choices use low thinking on the configured Gemini 3 model to
+avoid spending the request deadline on a small enum choice. Earlier timed-out
+calls retain their fallback traces; a live low-thinking decision was verified.
 
 The next step reads the knowledge-library port. Missing knowledge or a failed
 read leads to **awaiting_human**, not invented evidence. Even with notes, the human
@@ -59,21 +63,50 @@ bounds require a human redirect before use. Follow-up low/high cases test the
 selected remaining knob, with housing unchanged. Findings retain exact recipes;
 they claim no untested incoming-load threshold or real-world baseline.
 
-## Papiers connection status — not live yet
+## Real Papiers CLI integration
 
-No Papiers connector was found in the available plugin search, and no authorized
-sponsor API guide/connection was supplied. `KnowledgeLibrary` is the transport
-port, not a working Papiers API implementation. The production default is
-`unconnected`; the API never guesses a Papiers endpoint. A sponsor adapter must
-prove an actual read and return its document ID and retrieval time. A write must
-return a receipt. Mock receipts are used in tests only and are not a live demo.
+The user-supplied challenge brief makes Papiers optional. This project nevertheless
+integrates the actual **papiers 0.1.5** CLI, pinned in the backend dependencies.
+The [official agent guide](https://wiki.papiers.ai/docs/agents) documents search,
+reading, `PAPIERS_TOKEN`, and the CLI's current **read-only** limitation. The brief
+mentions write-back, but the published CLI cannot import, edit or publish. The
+integration does not invent a write command or claim a successful external write.
 
-Manual notes are supported for development and recorded as **manual_copy**.
-Findings are saved in Tiger Data and exported as JSON; their external writeback
-stays **pending_connection** until a real adapter confirms it. Do not present this
-as a completed Papiers challenge integration. Ask the sponsor for the guide,
-authentication method, library/document IDs, permitted read/write tools and a
-test document. Keep credentials on the backend and out of chat/git.
+Create a token in Papiers Settings → API tokens. Save `PAPIERS_TOKEN` in your root
+`.env` for local execution, and in Railway's backend variables for production.
+Add at least one relevant transit/service note or paper to that account's library.
+For the team's supplied constraint, the prepared text is in
+`docs/research/505-dundas-service-constraint.md`. Saving that note in the actual
+Papiers account is a human action because the current official CLI is read-only.
+Run:
+
+```powershell
+npm run papiers:check --prefix backend/server
+```
+
+This runs the official CLI search followed by a bounded plain-text read, validates
+the returned IDs/content, and saves a real read receipt in ignored
+`data/cache/papiers-read-proof.json`. The token stays in the child environment,
+never in command arguments, the response, logs, saved results or Git. Without a
+token the backend remains `unconnected`; a configured token alone is not proof
+of a successful read. Empty/failed/metadata-only reads do not get a verified
+receipt. Tests use labelled mock responses and do not count as live integration.
+
+During investigations, the chosen knob determines a relevant library search.
+Up to four matching items are read, prioritizing notes/highlights/conversations
+(human judgment) over saved documents/passages (curation). The actual item IDs,
+request receipt, retrieval time and truncation status are recorded. Full private
+excerpts stay in backend storage; public API responses expose citation metadata
+and findings rather than the excerpt body. Paper numbers never become numerical
+inputs without a human's explicit reviewed bounds.
+
+Findings are saved in Tiger Data and exported through the brief endpoint. With
+this CLI, external writeback is **unsupported_read_only**, and the replay offers
+a JSON export for manual saving. Manual notes are separately labelled
+**manual_copy**. If the sponsor provides an actual write-capable API, implement
+it behind `KnowledgeLibrary.write` and require an external write receipt before
+claiming write-back. Read-only Papiers integration still contributes the team's
+reading and judgment to the challenge workflow.
 
 ## API handoff for the resident/research UI
 
@@ -134,5 +167,6 @@ npm run investigate --prefix backend/server -- redirect INVESTIGATION_UUID redir
 Start and redirect compute locally using the shared Tiger Data queue. The running
 API worker may claim the same queued work first; the CLI then polls it. Save
 actual human text in `redirect.json`. Do not manufacture a completed human loop
-using the example above. A completed sponsor demo still needs a genuine human
-redirect and a verified real Papiers read/write.
+using the example above. A completed Papiers integration demo needs a verified
+real library read. The user has now provided a real no-extra-vehicles redirect;
+see the verification record. No unsupported write-back is required or claimed.

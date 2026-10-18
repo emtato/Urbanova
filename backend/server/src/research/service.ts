@@ -46,7 +46,7 @@ export class InvestigationService{
     await this.repo.create(a);return a;
   }
   async get(id:string){const a=await this.repo.get(id);if(!a)throw new ApiError(404,'Investigation not found.');return a;}
-  integrationStatus(){return {transport:this.library.mode,verified_read_required:true,manual_notes_label:'manual_copy',setup:this.library.mode==='unconnected'?'Sponsor integration guide and authorized library connection required. No live read or write is claimed.':'Transport configured; inspect each investigation for a read receipt and write receipt.'};}
+  integrationStatus(){return {transport:this.library.mode,read_only:this.library.readOnly??false,verified_read_required:true,manual_notes_label:'manual_copy',setup:this.library.mode==='unconnected'?'Set PAPIERS_TOKEN on the backend to enable the official CLI reader. No live read is claimed.':'Official CLI configured; inspect each investigation for an actual read receipt. Findings are saved locally; the CLI cannot write to Papiers.'};}
   async addNote(id:string,input:unknown){const a=await this.get(id);assertCurrent(a);if(a.status!=='awaiting_human')throw new ApiError(409,'Add research notes while awaiting human review.');
     const note={...parse(Note,input),mode:'manual_copy' as const,retrieved_at:new Date().toISOString()};
     if(a.notes.some(n=>n.id===note.id))throw new ApiError(409,'Note ID already exists; use a new revision ID.');
@@ -55,7 +55,9 @@ export class InvestigationService{
   async redirect(id:string,input:unknown){const a=await this.get(id);assertCurrent(a);if(a.status!=='awaiting_human')throw new ApiError(409,'Investigation is not awaiting a human redirect.');
     const redirect=parse(Redirect,input);
     if(redirect.no_extra_vehicles&&redirect.headway_s!==undefined&&redirect.headway_s!==reviewed.inputs.headway_s)throw new ApiError(422,'No extra vehicles requires the current headway. Remove the shorter headway.');
+    const previous=a.selection?.knob;
     a.redirect=redirect;append(a,'human_redirect',redirect,'human');await this.choose(a);append(a,'next_experiment_reselected',a.selection);
+    append(a,'human_constraint_effect',{previous_next_knob:previous,next_knob:a.selection!.knob,excluded_knobs:redirect.no_extra_vehicles?['service_frequency']:[],headway_locked_s:redirect.no_extra_vehicles?reviewed.inputs.headway_s:null});
     a.status='queued';a.stage='followup';append(a,'followup_prediction_registered',{recipes:recipes(a),condition:'Housing is held constant; only the selected knob and explicit human settings change.'});await this.repo.save(a,a.revision);return a;
   }
   async tick(){const a=await this.repo.claim();if(!a)return false;
@@ -71,7 +73,7 @@ export class InvestigationService{
         try{
           const read=await this.library.read(a.selection!.knob);
           const verified=this.library.mode==='papiers_live'&&Boolean(read.receipt?.document_id&&read.receipt?.retrieved_at);
-          if(this.library.mode==='papiers_live'&&!verified)throw Error('Missing read receipt');
+          if(this.library.mode==='papiers_live'&&!verified)throw Error('No readable matching library item or missing receipt');
           for(const raw of read.notes){const {mode:_mode,retrieved_at:_time,...fields}=raw;const note=Note.parse(fields);a.notes.push({...note,mode:verified?'papiers_live':'manual_copy',retrieved_at:new Date().toISOString()});}
           append(a,'knowledge_read',{mode:verified?'papiers_live':'unconnected',receipt:verified?read.receipt:null,note_ids:read.notes.map(n=>n.id),knob:a.selection!.knob});
         }catch{append(a,'knowledge_read_failed',{mode:this.library.mode,reason:'No verified read; human knowledge is required.'});}
@@ -80,9 +82,10 @@ export class InvestigationService{
         const e=Object.fromEntries(experiments.map(e=>[e.recipe.id,e]));
         const variation=paired(['followup_high','followup_low'].map(id=>values(e[id],a.stop_id!)),v=>v[0]-v[1]);
         a.finding={...a.finding,followup:{knob:a.selection!.knob,variation,recipes:plan,human_constraint:a.redirect},
-          resident_answer:`This is a model investigation at ${a.stop_id}. ${a.finding.premise} The initial incoming-load prediction was ${a.finding.classification}. The research team's constraint changed the follow-up experiment. Read the paired effects and tested conditions below; no observed stop baseline or untested threshold is claimed.`};
+          resident_answer:`This is a model investigation at ${a.stop_id}. ${a.finding.premise} The initial incoming-load prediction was ${a.finding.classification}. ${a.redirect?.no_extra_vehicles?'The research team excluded extra vehicles and kept current service frequency in the follow-up.':'The research team supplied the follow-up settings.'} Read the paired effects and tested conditions below; no observed stop baseline or untested threshold is claimed.`};
         append(a,'finding_written_locally',a.finding);a.status='completed';
-        try{if(this.library.mode==='papiers_live'&&a.events.some(e=>e.type==='knowledge_read'&&(e.payload as any).mode==='papiers_live')){const result=await this.library.write(a);if(!result.receipt)throw Error('Missing write receipt');a.writeback={status:'written',receipt:result.receipt};append(a,'papiers_write_confirmed',result);}}
+        if(this.library.readOnly){a.writeback={status:'unsupported_read_only'};append(a,'papiers_export_ready',{reason:'The official Papiers CLI cannot write. Download the finding brief for manual saving; no external write was performed.'});}
+        try{if(!this.library.readOnly&&this.library.mode==='papiers_live'&&a.events.some(e=>e.type==='knowledge_read'&&(e.payload as any).mode==='papiers_live')){const result=await this.library.write(a);if(!result.receipt)throw Error('Missing write receipt');a.writeback={status:'written',receipt:result.receipt};append(a,'papiers_write_confirmed',result);}}
         catch{append(a,'papiers_write_pending',{reason:'Write failed; finding remains saved locally for retry or manual export.'});}
       }
       await this.repo.save(a,revision);

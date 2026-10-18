@@ -5,12 +5,13 @@ import { InvestigationService } from '../research/service.js';
 import { gemini } from '../ai/gemini.js';
 import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
+import { configuredKnowledgeLibrary } from '../research/papiers.js';
 
 // JSON files preserve actual newlines and keep credentials out of shell history.
 const [command,idOrFile,file]=process.argv.slice(2),store=new PgStore();
 const jsonFile=(path:string)=>JSON.parse(readFileSync(resolve(ROOT,path),'utf8').replace(/^\uFEFF/,''));
 try{
-  await store.init();const service=new InvestigationService(new PgAuditRepository(store.pool),undefined,undefined,process.env.RESEARCH_GEMINI_ENABLED==='true'?gemini(store):undefined);
+  await store.init();const service=new InvestigationService(new PgAuditRepository(store.pool),undefined,configuredKnowledgeLibrary(),process.env.RESEARCH_GEMINI_ENABLED==='true'?gemini(store):undefined);
   let a;
   if(command==='start')a=await service.start(idOrFile?jsonFile(idOrFile):{});
   else if(command==='show')a=await service.get(idOrFile);
