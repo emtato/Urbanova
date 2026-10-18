@@ -24,9 +24,9 @@ export const COST_PER_HOUR: Range = {
   high: extraService.cost_per_hour_cad.high,
 }
 export const DEFAULT_HEADWAY_S = extraService.default_headway_s
-// Custom headways stay between 3 minutes and today's service; cuts would need a savings view.
-export const CUSTOM_MIN_S = 180
-export const CUSTOM_MAX_S = Math.floor(BASELINE_HEADWAY_S)
+// Custom headways range from 1 minute (60 s) to 20 minutes (1200 s).
+export const CUSTOM_MIN_S = 60
+export const CUSTOM_MAX_S = 1200
 
 export interface HeadwayPreset {
   headway_s: number
@@ -72,7 +72,7 @@ export function serviceCost(headway_s: number): ServiceCost {
   const hours = extra * PEAK_HOURS * SERVICE_DAYS
   return {
     headway_s,
-    vehicles: Math.max(vehicles, BASELINE_VEHICLES),
+    vehicles,
     extra_vehicles: extra,
     extra_vehicle_hours_per_year: hours,
     annual_operating_cad: {

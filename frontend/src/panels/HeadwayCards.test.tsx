@@ -25,8 +25,8 @@ describe('headway selector', () => {
   it('offers a bounded slider and an always-visible custom seconds field', () => {
     const out = html(<HeadwaySelector value={300} onChange={() => {}} />)
     expect(out).toContain('type="range"')
-    expect(out).toContain('min="180"')
-    expect(out).toContain('max="420"')
+    expect(out).toContain('min="60"')
+    expect(out).toContain('max="1200"')
     expect(out).toContain('Custom headway (s)')
     expect(out).toContain('value="300"')
     expect(out).toContain('Use today’s service')
@@ -51,6 +51,10 @@ describe('service cost card', () => {
 
   it('shows no extra cost for today', () => {
     expect(html(<ServiceCostCard headway_s={BASELINE_HEADWAY_S} />)).toContain('no extra cost')
+  })
+
+  it('shows reduced service note for headways longer than today', () => {
+    expect(html(<ServiceCostCard headway_s={600} />)).toContain('Reduced service: 14 streetcars needed')
   })
 })
 

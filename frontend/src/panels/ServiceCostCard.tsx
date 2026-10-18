@@ -8,7 +8,9 @@ export function ServiceCostCard({ headway_s }: { headway_s: number }) {
     <h2 id="service-cost-title">Cost of this service level</h2>
     {baseline
       ? <p>Today's service: {BASELINE_VEHICLES} streetcars, no extra cost. Pick a shorter headway to see what extra service would cost.</p>
-      : <>
+      : cost.extra_vehicles === 0
+        ? <p>Reduced service: {cost.vehicles} streetcars needed (today {BASELINE_VEHICLES}). No extra vehicles or operating budget required.</p>
+        : <>
         <dl className="service-stats">
           <div><dt>Streetcars needed</dt><dd>{cost.vehicles} <span className="service-sub">today {BASELINE_VEHICLES}</span></dd></div>
           <div><dt>Extra streetcars</dt><dd>+{cost.extra_vehicles}</dd></div>

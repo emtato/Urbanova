@@ -32,12 +32,17 @@ describe('extra-service headway options (A10)', () => {
     expect(isBaseline(300)).toBe(false)
   })
 
-  it('bounds custom headways between 3 minutes and today', () => {
+  it('bounds custom headways between 1 minute and 20 minutes', () => {
+    expect(validateCustomHeadway(60)).toBeNull()
+    expect(validateCustomHeadway(1200)).toBeNull()
     expect(validateCustomHeadway(270)).toBeNull()
     expect(validateCustomHeadway(CUSTOM_MIN_S - 1)).toMatch(/between/)
     expect(validateCustomHeadway(CUSTOM_MAX_S + 1)).toMatch(/between/)
     expect(validateCustomHeadway(Number.NaN)).toMatch(/Enter/)
     expect(() => serviceCost(0)).toThrow()
+    const reduced = serviceCost(1200)
+    expect(reduced.vehicles).toBe(7)
+    expect(reduced.extra_vehicles).toBe(0)
   })
 
   it('formats dollars compactly', () => {
