@@ -69,6 +69,9 @@ export interface CorridorMapProps {
     load?: number | null
     capacity?: number
   }>
+  isCopilotActive?: boolean
+  onToggleCopilot?: () => void
+  onOpenList?: () => void
 }
 
 const MAPBOX_STANDARD_STYLE = 'mapbox://styles/mapbox/standard'
@@ -92,6 +95,9 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   className = '',
   simVehicles,
   passengerFrame,
+  isCopilotActive,
+  onToggleCopilot,
+  onOpenList,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapboxMap | null>(null)
@@ -731,6 +737,40 @@ export const CorridorMap: FC<CorridorMapProps> = ({
           >
             Fit Corridor
           </button>
+          {onToggleCopilot && (
+            <>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                data-testid="tool-btn-ask"
+                onClick={onToggleCopilot}
+                className={`px-2.5 py-1 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+                  isCopilotActive
+                    ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 font-semibold'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title="Toggle Scenario Copilot"
+              >
+                <span>🤖</span>
+                <span>Copilot</span>
+              </button>
+            </>
+          )}
+          {onOpenList && (
+            <>
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                data-testid="tool-btn-list"
+                onClick={onOpenList}
+                className="px-2.5 py-1 rounded-full text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 cursor-pointer"
+                title="Switch to accessible 2D List view alternative"
+              >
+                <span>📋</span>
+                <span>2D List</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Interactive Sunlight & Shadows Panel */}

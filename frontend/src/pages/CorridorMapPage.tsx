@@ -382,6 +382,12 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           shadowsEnabled={shadowsEnabled}
           onToggleShadows={setShadowsEnabled}
           hideAllPopups={hideAllPopups}
+          isCopilotActive={activeTool === 'ask'}
+          onToggleCopilot={() => {
+            setActiveTool(current => (current === 'ask' ? null : 'ask'))
+            setIsToolMinimized(false)
+          }}
+          onOpenList={() => (onNavigate ? onNavigate('/list') : (window.location.pathname = '/list'))}
           onSelectVehicle={id => {
             setSelectedVehicleId(id)
             setSelectedStop(null)
@@ -407,7 +413,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
 
         {/* Lane D Active Tool Panel (Top Left, Floating Non-overlapping) */}
         {activeTool && !hideAllPopups && (
-          <div className="!absolute top-6 left-6 z-30 max-w-[calc(100vw-3rem)]">
+          <div className="!absolute top-24 left-6 z-30 max-w-[calc(100vw-3rem)]">
             {activeTool === 'compare' && (
               <CaseCompare
                 comparison={comparison}
@@ -551,144 +557,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               }}
             />
           </div>
-        )}
-
-        {/* Lane D Integrated Tools Dock (Bottom Center) */}
-        {!hideAllPopups && (
-          <nav
-            aria-label="Corridor Workspace Tools"
-            className="!absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 liquid-glass rounded-full px-3 py-1.5 shadow-2xl border border-border/40 backdrop-blur-md"
-          >
-            <button
-              type="button"
-              data-testid="tool-btn-compare"
-              onClick={() => {
-                setActiveTool(activeTool === 'compare' ? null : 'compare')
-                setIsToolMinimized(false)
-              }}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTool === 'compare'
-                  ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 font-semibold'
-                  : 'text-foreground/90 hover:bg-white/10'
-              }`}
-            >
-              <span>📊</span>
-              <span className="hidden sm:inline">Compare</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="tool-btn-replay"
-              onClick={() => {
-                setActiveTool(activeTool === 'replay' ? null : 'replay')
-                setIsToolMinimized(false)
-              }}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTool === 'replay'
-                  ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 font-semibold'
-                  : 'text-foreground/90 hover:bg-white/10'
-              }`}
-            >
-              <span>⏱️</span>
-              <span className="hidden sm:inline">Replay</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="tool-btn-scenario"
-              onClick={() => {
-                setActiveTool(activeTool === 'scenario' ? null : 'scenario')
-                setIsToolMinimized(false)
-              }}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTool === 'scenario'
-                  ? 'bg-purple-500/30 text-purple-200 border border-purple-400/60 font-semibold'
-                  : 'text-foreground/90 hover:bg-white/10'
-              }`}
-            >
-              <span>⚙️</span>
-              <span className="hidden sm:inline">Scenario</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="tool-btn-packages"
-              onClick={() => {
-                setActiveTool(activeTool === 'packages' ? null : 'packages')
-                setIsToolMinimized(false)
-              }}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTool === 'packages'
-                  ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/60 font-semibold'
-                  : 'text-foreground/90 hover:bg-white/10'
-              }`}
-            >
-              <span>📦</span>
-              <span className="hidden sm:inline">Packages</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="tool-btn-sensitivity"
-              onClick={() => {
-                setActiveTool(activeTool === 'sensitivity' ? null : 'sensitivity')
-                setIsToolMinimized(false)
-              }}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTool === 'sensitivity'
-                  ? 'bg-amber-500/30 text-amber-200 border border-amber-400/60 font-semibold'
-                  : 'text-foreground/90 hover:bg-white/10'
-              }`}
-            >
-              <span>📈</span>
-              <span className="hidden sm:inline">Sensitivity</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="tool-btn-evidence"
-              onClick={() => {
-                setActiveTool(activeTool === 'evidence' ? null : 'evidence')
-                setIsToolMinimized(false)
-              }}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTool === 'evidence'
-                  ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/60 font-semibold'
-                  : 'text-foreground/90 hover:bg-white/10'
-              }`}
-            >
-              <span>🏛️</span>
-              <span className="hidden sm:inline">Evidence</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="tool-btn-ask"
-              onClick={() => {
-                setActiveTool(activeTool === 'ask' ? null : 'ask')
-                setIsToolMinimized(false)
-              }}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTool === 'ask'
-                  ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 font-semibold'
-                  : 'text-foreground/90 hover:bg-white/10'
-              }`}
-            >
-              <span>🤖</span>
-              <span className="hidden sm:inline">Copilot</span>
-            </button>
-
-            <button
-              type="button"
-              data-testid="tool-btn-list"
-              onClick={() => (onNavigate ? onNavigate('/list') : (window.location.pathname = '/list'))}
-              className="px-2.5 py-1 rounded-full text-xs font-medium text-foreground/90 hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer border-l border-border/40 pl-2.5"
-              title="Switch to accessible 2D List view alternative"
-            >
-              <span>📋</span>
-              <span className="hidden sm:inline">2D List</span>
-            </button>
-          </nav>
         )}
       </main>
     </div>
