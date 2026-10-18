@@ -26,6 +26,15 @@ computed results, test fixtures, and integration work that still needs access.
   These tests are not an actual teammate redirect or a live Papiers read.
 - Existing 20-run demo cache **bf004a78-1bf5-46b2-927e-ceda484fdfca** remains current;
   its two phases and stored upgrade-delay comparison passed `check-demo`.
+- Backend commit **3f92ccc** was pushed and deployed to Railway as
+  **469d2683-7b35-4840-9f7b-5aafbfdf8760**. Public API/database health passed;
+  the real local checkpoint reloaded with `stale:false` on Linux.
+- The deployed Railway worker independently computed another seven configurations
+  × seeds 201, 202, 203 (**21 real B11 runs**) for investigation
+  **e690d21b-acc4-4321-95ac-4d2a8d9f76a8**. It reached `awaiting_human` with
+  `stale:false`, no error, nine ordered events, and `chosen_by:bounded_policy`.
+  [Open its live research replay](https://urbanova-production-ec5f.up.railway.app/api/investigations/e690d21b-acc4-4321-95ac-4d2a8d9f76a8/replay).
+  The public integration endpoint correctly reports `transport:unconnected`.
 - Teammate UI commits through **928e2f0** were fast-forwarded; this feature adds
   backend research endpoints and a UI handoff, not the resident research drawer.
 
