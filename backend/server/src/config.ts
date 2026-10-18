@@ -5,6 +5,7 @@ import * as z from 'zod';
 
 export const ROOT = resolve(process.cwd(), existsSync('data/contracts') ? '.' : existsSync('../../data/contracts') ? '../..' : '..');
 config({ path: resolve(ROOT, '.env'), quiet: true });
+config({ path: resolve(ROOT, 'backend/server/.env'), quiet: true });
 export function parseSettings(env:NodeJS.ProcessEnv){
   let origins:unknown=['http://localhost:5173','http://127.0.0.1:5173'];
   try{if(env.CORS_ORIGINS)origins=JSON.parse(env.CORS_ORIGINS);}catch{throw Error('Invalid configuration: CORS_ORIGINS must be a JSON array of origins.');}

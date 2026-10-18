@@ -23,6 +23,9 @@ import {
   LAYER_STREETCAR_MODEL,
   MODEL_STREETCAR_ID,
   LAYER_VEHICLES,
+  LAYER_SHADOWS_TODAY,
+  LAYER_SHADOWS_ADDED,
+  updateShadowTimeAndVisibility,
 } from './MassingLayer'
 import sampleComparison from '../data/sample_comparison.json'
 import type { Comparison } from '../lib/types'
@@ -339,5 +342,79 @@ describe('MassingLayer GeoJSON Generators (Contract 1.0.0)', () => {
     expect(addedLayer.type).toBe('model')
     expect(addedLayer.source).toBe('source-vehicles')
     expect(addedLayer.layout?.['model-id']).toBe(MODEL_STREETCAR_ID)
+  })
+
+  it('synchronizes added tower shadows with proposed building visibility', () => {
+    const layoutProps: Record<string, Record<string, any>> = {}
+    const filters: Record<string, any> = {}
+
+    const mockMap = {
+      getLayer: (id: string) => id === LAYER_SHADOWS_TODAY || id === LAYER_SHADOWS_ADDED || id === 'layer-developments-extrusion' || id === 'layer-walk-links',
+      setFilter: (id: string, filter: any) => {
+        filters[id] = filter
+      },
+      setLayoutProperty: (layerId: string, name: string, value: any) => {
+        if (!layoutProps[layerId]) layoutProps[layerId] = {}
+        layoutProps[layerId][name] = value
+      },
+      setPaintProperty: () => {},
+    } as any
+
+    // Initially setup solar time with no proposals visible
+    updateShadowTimeAndVisibility(mockMap, {
+      enabled: true,
+      localTime: '2026-06-21T12:00',
+      visibleDevIds: [],
+    })
+
+    // Today shadows are shown
+    expect(layoutProps[LAYER_SHADOWS_TODAY]?.visibility).toBe('visible')
+    expect(filters[LAYER_SHADOWS_TODAY]).toEqual([
+      'all',
+      ['==', ['get', 'local_time'], '2026-06-21T12:00'],
+      ['==', ['get', 'layer'], 'today'],
+    ])
+    // Added tower shadow is hidden because no proposals are visible
+    expect(layoutProps[LAYER_SHADOWS_ADDED]?.visibility).toBe('none')
+
+    // User toggles to show 239 Dundas proposal
+    updateDevelopmentsVisibility(mockMap, ['toronto-app-22-124214-ste-13-oz'])
+
+    // Added tower shadow automatically appears and matches active solar time
+    expect(layoutProps[LAYER_SHADOWS_ADDED]?.visibility).toBe('visible')
+    expect(filters[LAYER_SHADOWS_ADDED]).toEqual([
+      'all',
+      ['==', ['get', 'local_time'], '2026-06-21T12:00'],
+      ['==', ['get', 'layer'], 'added'],
+    ])
+
+    // Changing solar time updates both today and added tower shadow filters
+    updateShadowTimeAndVisibility(mockMap, {
+      enabled: true,
+      localTime: '2026-06-21T15:00',
+    })
+    expect(filters[LAYER_SHADOWS_TODAY]).toEqual([
+      'all',
+      ['==', ['get', 'local_time'], '2026-06-21T15:00'],
+      ['==', ['get', 'layer'], 'today'],
+    ])
+    expect(filters[LAYER_SHADOWS_ADDED]).toEqual([
+      'all',
+      ['==', ['get', 'local_time'], '2026-06-21T15:00'],
+      ['==', ['get', 'layer'], 'added'],
+    ])
+
+    // User toggles off proposed building: added shadow disappears
+    updateDevelopmentsVisibility(mockMap, [])
+    expect(layoutProps[LAYER_SHADOWS_ADDED]?.visibility).toBe('none')
+    // Today shadows remain visible
+    expect(layoutProps[LAYER_SHADOWS_TODAY]?.visibility).toBe('visible')
+
+    // When solar is disabled (e.g. night time or toggled off), both are hidden
+    updateShadowTimeAndVisibility(mockMap, {
+      enabled: false,
+    })
+    expect(layoutProps[LAYER_SHADOWS_TODAY]?.visibility).toBe('none')
+    expect(layoutProps[LAYER_SHADOWS_ADDED]?.visibility).toBe('none')
   })
 })

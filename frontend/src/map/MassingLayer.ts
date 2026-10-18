@@ -726,8 +726,10 @@ export function setupCorridorMapLayers(
       type: 'geojson',
       data: publicAssetPath('data/shadows.geojson'),
     })
+  }
 
-    // Layer 1: Today - Baseline shaded open ground (Deep slate/grey)
+  // Layer 1: Today - Baseline shaded open ground (Deep slate/grey)
+  if (!map.getLayer(LAYER_SHADOWS_TODAY)) {
     map.addLayer({
       id: LAYER_SHADOWS_TODAY,
       type: 'fill',
@@ -744,6 +746,30 @@ export function setupCorridorMapLayers(
       paint: {
         'fill-color': '#0f172a',
         'fill-opacity': 0.38,
+      },
+    } as AnyLayer)
+  }
+
+  // Layer 2: Added - New shadow cast by proposed towers on open ground
+  // Automatically appears in sync with proposed building visibility
+  if (!map.getLayer(LAYER_SHADOWS_ADDED)) {
+    map.addLayer({
+      id: LAYER_SHADOWS_ADDED,
+      type: 'fill',
+      source: SOURCE_SHADOWS,
+      slot: 'middle',
+      filter: [
+        'all',
+        ['==', ['get', 'local_time'], '2026-06-21T12:00'],
+        ['==', ['get', 'layer'], 'added'],
+      ],
+      layout: {
+        visibility: 'none',
+      },
+      paint: {
+        'fill-color': '#090d16',
+        'fill-opacity': 0.52,
+        'fill-outline-color': '#020617',
       },
     } as AnyLayer)
   }
@@ -1023,11 +1049,18 @@ export function updateDevelopmentsPhase(map: MapboxMap, activePhase: number): vo
       map.setFilter(LAYER_WALK_LINKS, ['<=', ['get', 'phase'], activePhase])
     }
   }
+
+  // 3. Ground shadows track planning phase (no proposals in Phase 0 / Today)
+  const shadowState = getShadowState(map)
+  shadowState.phase = activePhase
+  syncShadowLayers(map)
 }
 
 /**
  * Toggles individual development visibility based on active development IDs.
  * Powers the top-left toolbar pill buttons.
+ * When proposed buildings are toggled, the new shadow cast by the towers
+ * automatically appears or disappears in sync.
  */
 export function updateDevelopmentsVisibility(
   map: MapboxMap,
@@ -1065,6 +1098,11 @@ export function updateDevelopmentsVisibility(
       ])
     }
   }
+
+  // 3. New shadow cast by proposed towers automatically follows visible developments
+  const shadowState = getShadowState(map)
+  shadowState.visibleDevIds = [...visibleDevIds]
+  syncShadowLayers(map)
 }
 
 /**
@@ -1191,9 +1229,89 @@ export function updateVehiclePositions(
   source.setData({ type: 'FeatureCollection', features })
 }
 
+interface ShadowLayerState {
+  enabled: boolean
+  localTime: string
+  phase: number
+  visibleDevIds: string[]
+}
+
+const shadowStates = new WeakMap<MapboxMap, ShadowLayerState>()
+
+export function getShadowState(map: MapboxMap): ShadowLayerState {
+  let state = shadowStates.get(map)
+  if (!state) {
+    state = { enabled: true, localTime: '2026-06-21T12:00', phase: 2, visibleDevIds: [] }
+    shadowStates.set(map, state)
+  }
+  return state
+}
+
 /**
- * Toggles visibility and updates solar time filter for ground shadow layers.
- * Sunlight and shadows are cast at all times.
+ * Synchronizes visibility and solar time filters across baseline today shadows
+ * and proposed tower added shadows.
+ * - Today shadows appear whenever shadows are enabled.
+ * - Added shadows appear automatically whenever proposed buildings are shown.
+ */
+export function syncShadowLayers(map: MapboxMap): void {
+  const state = getShadowState(map)
+  const isLayerReady = (id: string) => {
+    try {
+      return Boolean(map.getLayer && map.getLayer(id))
+    } catch {
+      return false
+    }
+  }
+
+  // 1. Baseline today shadows from existing buildings
+  if (isLayerReady(LAYER_SHADOWS_TODAY)) {
+    if (!state.enabled) {
+      if (typeof map.setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'none')
+      }
+    } else {
+      if (typeof map.setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'visible')
+      }
+      if (typeof map.setFilter === 'function') {
+        map.setFilter(LAYER_SHADOWS_TODAY, [
+          'all',
+          ['==', ['get', 'local_time'], state.localTime],
+          ['==', ['get', 'layer'], 'today'],
+        ])
+      }
+    }
+  }
+
+  // 2. Added shadow cast by proposed towers
+  // Automatically appears in sync with visible proposed buildings
+  if (isLayerReady(LAYER_SHADOWS_ADDED)) {
+    const hasVisibleProposals = state.phase > 0 && state.visibleDevIds.length > 0
+    const showAdded = state.enabled && hasVisibleProposals
+
+    if (!showAdded) {
+      if (typeof map.setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'none')
+      }
+    } else {
+      if (typeof map.setLayoutProperty === 'function') {
+        map.setLayoutProperty(LAYER_SHADOWS_ADDED, 'visibility', 'visible')
+      }
+      if (typeof map.setFilter === 'function') {
+        map.setFilter(LAYER_SHADOWS_ADDED, [
+          'all',
+          ['==', ['get', 'local_time'], state.localTime],
+          ['==', ['get', 'layer'], 'added'],
+        ])
+      }
+    }
+  }
+}
+
+/**
+ * Updates solar time filter and visibility for ground shadow layers.
+ * Retains proposed building visibility context so the added tower shadow
+ * maintains the active solar angle.
  */
 export function updateShadowTimeAndVisibility(
   map: MapboxMap,
@@ -1201,26 +1319,23 @@ export function updateShadowTimeAndVisibility(
     enabled?: boolean
     localTime?: string
     activePhase?: number
-  }
+    visibleDevIds?: string[]
+  } = {}
 ): void {
-  const { enabled = true, localTime = '2026-06-21T12:00' } = options
-
-  const isLayerReady = (id: string) => !!map.getLayer(id)
-
-  if (!isLayerReady(LAYER_SHADOWS_TODAY)) return
-
-  if (!enabled) {
-    map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'none')
-    return
+  const state = getShadowState(map)
+  if (typeof options.enabled === 'boolean') {
+    state.enabled = options.enabled
   }
-
-  // When enabled, update filter and show baseline today shadows
-  map.setLayoutProperty(LAYER_SHADOWS_TODAY, 'visibility', 'visible')
-  map.setFilter(LAYER_SHADOWS_TODAY, [
-    'all',
-    ['==', ['get', 'local_time'], localTime],
-    ['==', ['get', 'layer'], 'today'],
-  ])
+  if (options.localTime) {
+    state.localTime = options.localTime
+  }
+  if (typeof options.activePhase === 'number') {
+    state.phase = options.activePhase
+  }
+  if (options.visibleDevIds) {
+    state.visibleDevIds = [...options.visibleDevIds]
+  }
+  syncShadowLayers(map)
 }
 
 
