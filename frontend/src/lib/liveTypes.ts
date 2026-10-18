@@ -21,6 +21,15 @@ export interface NativeOverview {
 export interface NativeBatch {
   id: string
   name?: string
+  provenance?: {
+    format_version: string
+    configuration_id: string
+    model_version: string
+    data_version: string
+    orchestrator_version?: string
+    source_ids?: string[]
+    recorded_at?: string
+  }
   overall_results: {
     run_count: number; seeds: number[]; metrics: Record<string, RunStatistics>
     all_runs_conservation_valid: boolean; invalid_run_indices: number[]

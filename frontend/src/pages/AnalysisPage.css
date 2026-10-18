@@ -97,6 +97,9 @@
 .analysis-studio .is-active-row > th { color: #98e1e8; }
 .analysis-studio td button { padding: 6px 10px; font-size: 10px; margin-bottom: 4px; }
 .analysis-studio .analysis-id { color: #a7bdcc; font-size: 10px; }
+.analysis-col-simulation { min-width: 175px; white-space: nowrap; }
+.analysis-simulation-name { color: #edf3f8; font-weight: 600; letter-spacing: -.01em; }
+.analysis-col-denied { width: 95px; max-width: 105px; white-space: nowrap; padding-left: 8px !important; padding-right: 8px !important; }
 .analysis-studio section[aria-label='B11 replay'] > p { font-size: 12px; color: #a7bdcc; line-height: 1.7; }
 @media (max-width: 850px) {
   .analysis-shell { padding: 0 24px 40px; }

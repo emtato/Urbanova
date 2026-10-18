@@ -1,8 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { addComparison, todayBaseline, batchCase, comparisonProblem, configurationName, effectiveConfiguration, mapComparison, readHistory } from './simulationHistory'
+import { addComparison, todayBaseline, batchCase, comparisonProblem, configurationName, effectiveConfiguration, formatSimulationTimestamp, mapComparison, readHistory } from './simulationHistory'
 import { transitMetrics } from '../panels/transitMetrics'
 
 describe('saved simulation identity and bundled baseline', () => {
+  it('formats simulation timestamp to date and minute (YYYY-MM-DD HH:mm)', () => {
+    const testDate = new Date(2026, 9, 18, 4, 15)
+    expect(formatSimulationTimestamp(testDate)).toBe('2026-10-18 04:15')
+    const paddedDate = new Date(2026, 0, 5, 9, 7)
+    expect(formatSimulationTimestamp(paddedDate)).toBe('2026-01-05 09:07')
+  })
   it('bundles real conservation-valid native runs without adding history entries', async () => {
     expect(todayBaseline.overall_results.all_runs_conservation_valid).toBe(true)
     expect(todayBaseline.overall_results.run_count).toBe(3)

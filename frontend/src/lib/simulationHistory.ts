@@ -42,6 +42,10 @@ export async function readHistory(): Promise<SavedSimulation[]> {
     return []
   }
 }
+export function formatSimulationTimestamp(date: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
 export function effectiveConfiguration(batch: NativeBatch): string {
   // Seeds and mutable queues are outcomes/repetition controls, not a housing/service configuration.
   const ignored = new Set(['seed', 'waiting_passenger_ids', 'serving_streetcar_id'])
@@ -59,7 +63,7 @@ export function configurationSummary(batch: NativeBatch) {
 export async function rememberSimulation(batch: NativeBatch, createdAt: string | null = new Date().toISOString()) {
   if (typeof indexedDB === 'undefined') return
   const existing = await transaction<SavedSimulation | undefined>('readonly', store => store.get(batch.id))
-  const resolvedName = batch.name || (existing ? existing.name : configurationName(batch))
+  const resolvedName = batch.name || (existing ? existing.name : formatSimulationTimestamp(createdAt ? new Date(createdAt) : new Date()))
   if (existing) {
     if (batch.name && existing.name !== batch.name) {
       await transaction('readwrite', store => store.put({ ...existing, name: batch.name, batch: { ...existing.batch, name: batch.name } }))
@@ -68,7 +72,7 @@ export async function rememberSimulation(batch: NativeBatch, createdAt: string |
     return
   }
   // Keep native inputs and summaries. Full replay logs remain stored by the API.
-  const compact = { ...batch, individual_results: batch.individual_results.map(run => ({ ...run, streetcars: [], passengers: [], sim_log: [] })) }
+  const compact = { ...batch, name: resolvedName, individual_results: batch.individual_results.map(run => ({ ...run, streetcars: [], passengers: [], sim_log: [] })) }
   await transaction('readwrite', store => store.put({ id: batch.id, name: resolvedName, createdAt, batch: compact } satisfies SavedSimulation))
   notify()
 }

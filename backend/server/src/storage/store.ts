@@ -12,6 +12,10 @@ import { ApiError } from '../core/errors.js';
 import { checkedComparison } from '../services/comparisonIntegrity.js';
 import { checkNativeBatch } from '../services/nativeIntegrity.js';
 import { seedBundle } from './seedBundle.js';
+export function formatSimulationTimestamp(date: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 export type Job={job_id:string;scenario_id:string;scenario_version:number;status:'queued'|'running'|'completed'|'failed';comparison_id:string|null;error:string|null;stale:boolean;notice:string;package_screen:unknown;payload:any;lease_token:string};
 export type EvaluationResult={comparison:Comparison;delayedComparison?:Comparison;native_replay?:NativeReplay|null;native_metrics?:{run_id:string;summary:unknown}[];package_screen:unknown;notice:string};
 export type PastRun={comparison_id:string;scenario_id:string;scenario_version:number;created_at:string;contract_version:string;fixture:boolean};
@@ -148,16 +152,17 @@ export class PgStore implements Store {
     return r.rows;
   }
   async saveSimulation(batch:NativeBatch,name?:string){
-    const simName=(name??batch.name)?.trim()||null;
+    const simName=(name??batch.name)?.trim()||formatSimulationTimestamp();
     const checked=checkNativeBatch(NativeBatchSchema.parse(simName?{...batch,name:simName}:batch));
     await this.pool.query('INSERT INTO c_simulations(id,payload,model_version,data_version,created_at,name) VALUES($1,$2,$3,$4,now(),$5) ON CONFLICT(id) DO UPDATE SET payload=EXCLUDED.payload,model_version=EXCLUDED.model_version,data_version=EXCLUDED.data_version,name=COALESCE(EXCLUDED.name,c_simulations.name)',[checked.id,checked,simulationModelVersion,dataVersion,simName]);
     return checked;
   }
   async fetchSimulations(){
-    const r=await this.pool.query('SELECT payload,name FROM c_simulations ORDER BY created_at DESC, id DESC');
+    const r=await this.pool.query('SELECT payload,name,created_at::text FROM c_simulations ORDER BY created_at DESC, id DESC');
     return r.rows.map(row=>{
       const raw=row.payload;
-      if(row.name&&!raw.name)raw.name=row.name;
+      const simName=row.name||raw.name||formatSimulationTimestamp(row.created_at?new Date(row.created_at):new Date());
+      raw.name=simName;
       return checkNativeBatch(NativeBatchSchema.parse(raw));
     });
   }

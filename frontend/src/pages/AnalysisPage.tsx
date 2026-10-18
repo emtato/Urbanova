@@ -4,7 +4,7 @@ import { simulationTimes } from '../lib/analysisParameters'
 import { apiRequest, checkBackendHealth, deleteSimulation, getSimulations, renameSimulation, runSimulation, setUseFixture } from '../lib/api'
 import type { Scenario } from '../lib/types'
 import type { NativeBatch, NativeReplay } from '../lib/liveTypes'
-import { setActiveSimulation } from '../lib/simulationHistory'
+import { formatSimulationTimestamp, setActiveSimulation } from '../lib/simulationHistory'
 import { NativeReplayPanel } from '../panels/NativeReplayPanel'
 import { HeadwaySelector } from '../panels/HeadwaySelector'
 import { ConfirmDialog } from '../panels/ConfirmDialog'
@@ -117,6 +117,17 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
       if (compare) setProgress(`Running ${Math.round(headwayS)} s headway…`)
       const batch = await request(headwayS)
       if (abort.signal.aborted) return
+      const now = new Date()
+      const timestamp = formatSimulationTimestamp(now)
+      if (before) {
+        const baselineName = `${timestamp} (Baseline)`
+        before.name = baselineName
+        void renameSimulation(before.id, baselineName).catch(() => {})
+      }
+      if (!batch.name) {
+        batch.name = timestamp
+        void renameSimulation(batch.id, timestamp).catch(() => {})
+      }
       const added = before ? [batch, before] : [batch]
       setSimulations(prev => [...added, ...prev.filter(item => !added.some(a => a.id === item.id))])
       setSelectedBatchId(batch.id)
@@ -246,13 +257,13 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
           <table>
             <thead>
               <tr>
-                <th>Simulation</th>
+                <th className="analysis-col-simulation">Simulation</th>
                 <th>Buildings included</th>
                 <th>Headway</th>
                 <th>Runs (seeds)</th>
                 <th>Mean wait (avg)</th>
                 <th>P95 wait (avg)</th>
-                <th>Denied share (avg)</th>
+                <th className="analysis-col-denied">Denied % (avg)</th>
                 <th>Runtime</th>
                 <th>Actions</th>
               </tr>
@@ -262,23 +273,26 @@ export function AnalysisPage({ onNavigate }: { onNavigate: (path: string) => voi
                 const devs = batch.individual_results[0]?.inputs.developments ?? []
                 const metrics = batch.overall_results.metrics
                 const isSelected = currentBatch?.id === batch.id
+                const displayName = batch.name || formatSimulationTimestamp(
+                  batch.provenance?.recorded_at ? new Date(batch.provenance.recorded_at) : undefined
+                )
                 return (
                   <tr key={batch.id} className={isSelected ? 'is-active-row' : undefined}>
-                    <th className="analysis-id" title={batch.id}>
-                      {batch.name ? <span><strong>{batch.name}</strong> <small style={{ opacity: 0.6 }}>({batch.id.slice(0, 8)}…)</small></span> : `${batch.id.slice(0, 8)}…`}
+                    <th className="analysis-id analysis-col-simulation" title={batch.id}>
+                      <strong className="analysis-simulation-name">{displayName}</strong>
                     </th>
                     <td>{devs.length ? devs.map(d => d.name).join(', ') : 'None (baseline only)'}</td>
                     <td>{typeof batch.individual_results[0]?.inputs.headway_s === 'number' ? `${Math.round(batch.individual_results[0].inputs.headway_s)} s` : 'Unknown'}</td>
                     <td>{batch.overall_results.run_count} ({batch.overall_results.seeds.join(', ')})</td>
                     <td>{seconds(metrics.mean_wait_s?.mean)}</td>
                     <td>{seconds(metrics.p95_wait_s?.mean)}</td>
-                    <td>{percent(metrics.denied_boarding_share?.mean)}</td>
+                    <td className="analysis-col-denied">{percent(metrics.denied_boarding_share?.mean)}</td>
                     <td>{seconds(batch.overall_results.runtime.total_s)}</td>
                     <td>
                       <button type="button" onClick={() => { setSelectedBatchId(batch.id); setSelectedRunIndex(0) }}>
                         {isSelected ? 'Viewing' : 'View'}
                       </button>{' '}
-                      <button type="button" onClick={() => void handleRename(batch.id, batch.name || '')}>Rename</button>{' '}
+                      <button type="button" onClick={() => void handleRename(batch.id, displayName)}>Rename</button>{' '}
                       <button type="button" onClick={() => setPendingDeleteId(batch.id)}>Delete</button>
                     </td>
                   </tr>
