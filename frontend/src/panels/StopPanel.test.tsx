@@ -3,7 +3,7 @@ import { renderToString } from 'react-dom/server'
 import { StopPanel } from './StopPanel'
 import { mapComparison, todayBaseline } from '../lib/simulationHistory'
 const comparison = mapComparison(todayBaseline)
-const props = { stop: comparison.corridor.stops[4], stops: comparison.corridor.stops, onClose: () => {} }
+const props = { stop: comparison.corridor.stops[4], stops: comparison.corridor.stops }
 const clean = (html: string) => html.replace(/<!--.*?-->/g, '')
 
 describe('saved-configuration inspector', () => {
@@ -27,7 +27,7 @@ describe('saved-configuration inspector', () => {
     expect(html).not.toContain('berth')
   })
   it('preserves missing stop metrics instead of inventing zeros', () => {
-    const html = clean(renderToString(<StopPanel stop={{ id: 'missing', name: 'Missing stop' }} onClose={() => {}} />))
+    const html = clean(renderToString(<StopPanel stop={{ id: 'missing', name: 'Missing stop' }} />))
     expect(html).toContain('—')
     expect(html).not.toContain('<strong>0%</strong>')
   })

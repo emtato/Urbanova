@@ -92,7 +92,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     }
   }
 
-  const [isSolarMinimized, setIsSolarMinimized] = useState(false)
+  const [isSolarMinimized, setIsSolarMinimized] = useState(true)
   const [selectedSeason, setSelectedSeason] = useState<SeasonId>('summer_solstice')
   const [selectedTimeId, setSelectedTimeId] = useState<TimeOfDayId>('noon')
   // Derive the thumb position from the same time used by the map and labels.
@@ -677,15 +677,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
                 >
                   ▾
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleToggleShadows(false)}
-                  className="hover:text-foreground text-muted-foreground cursor-pointer text-xs p-0.5"
-                  title="Turn Off Sunlight & Shadows"
-                  aria-label="Turn Off Sunlight & Shadows"
-                >
-                  ✕
-                </button>
               </div>
             </div>
           ) : (
@@ -706,15 +697,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
                     aria-label="Minimize to pill"
                   >
                     −
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleShadows(false)}
-                    className="text-muted-foreground hover:text-foreground text-xs p-1 cursor-pointer"
-                    title="Turn Off Sunlight & Shadows"
-                    aria-label="Turn Off Sunlight & Shadows"
-                  >
-                    ✕
                   </button>
                 </div>
               </div>

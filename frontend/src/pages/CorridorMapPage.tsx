@@ -377,7 +377,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               comparison={comparison}
               isMinimized={isStopMinimized}
               onToggleMinimize={() => setIsStopMinimized((prev) => !prev)}
-              onClose={() => setSelectedStop(null)}
               onSelectDevelopment={(dev) => {
                 setBuildingViewRequest(null)
                 setPlatformViewRequest(null)

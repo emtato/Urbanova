@@ -15,7 +15,6 @@ export interface StopPanelProps {
   growthCase?: CaseResult
   supportedCase?: CaseResult
   comparison?: Comparison
-  onClose: () => void
   onViewPlatform?: () => void
   onSelectDevelopment?: (dev: CorridorDevelopment) => void
   isMinimized?: boolean
@@ -40,7 +39,7 @@ function MetricTable({ columns, rows }: { columns: Column[]; rows: { label: stri
   </div>
 }
 
-export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops = [], onClose, onViewPlatform,
+export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops = [], onViewPlatform,
   isMinimized = false, onToggleMinimize, className = '' }) => {
   const [scope, setScope] = useState<'station' | 'line'>('station')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -72,7 +71,6 @@ export const StopPanel: FC<StopPanelProps> = ({ stop: rawStop, stops: rawStops =
     .filter(dev => !station || dev.accessible_stop_ids.includes(stop.stop_id)).reduce((sum, dev) => sum + dev.net_added_units, 0)
   const controls = <div className="transit-window-controls">
     {onToggleMinimize && <button type="button" onClick={onToggleMinimize} aria-label={isMinimized ? 'Expand stop details' : 'Minimize panel'}>{isMinimized ? '▾' : '−'}</button>}
-    <button type="button" onClick={onClose} aria-label="Close stop panel">✕</button>
   </div>
   if (isMinimized) return <div data-testid="stop-panel" className={`liquid-glass transit-inspector-minimized ${className}`}><span>{title}</span>{controls}</div>
 

@@ -422,7 +422,6 @@ export const ListView: FC<ListViewProps> = ({
               growthCase={growthCase}
               supportedCase={supportedCase}
               comparison={comparison}
-              onClose={() => setSelectedStop(null)}
               onSelectDevelopment={(dev) => {
                 setSelectedDev(dev)
                 setSelectedStop(null)
