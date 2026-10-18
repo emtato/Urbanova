@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react'
+import { useState, useEffect, type FC } from 'react'
 import type { Scenario, Assumption, DemandCase } from '../lib/types'
 
 export interface ScenarioEditorProps {
@@ -21,6 +21,11 @@ export const ScenarioEditor: FC<ScenarioEditorProps> = ({
   className = '',
 }) => {
   const [scenario, setScenario] = useState<Scenario>(initialScenario)
+
+  useEffect(() => {
+    setScenario(initialScenario)
+  }, [initialScenario])
+
   const [selectedPhaseId, setSelectedPhaseId] = useState<string>(
     scenario.phases[0]?.phase_id ?? 'phase-1'
   )

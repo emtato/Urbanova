@@ -4,7 +4,7 @@ import { getSimulations } from '../lib/api'
 import { publicAssetPath } from '../lib/publicAssetPath'
 import { SimulationPicker } from '../panels/SimulationPicker'
 import { MapReplayControls } from '../replay/MapReplayControls'
-import type { Comparison, Scenario } from '../lib/types'
+import type { Comparison, Scenario, DemandCase } from '../lib/types'
 import type { NativeBatch } from '../lib/liveTypes'
 import type { FeatureCollection } from 'geojson'
 import { indexWalkingRoutes, preparePassengerReplay, type WalkingRoutes } from '../map/passengerReplay'
@@ -27,7 +27,7 @@ import { CaseCompare } from '../panels/CaseCompare'
 import { PackageTable } from '../panels/PackageTable'
 import { Sensitivity } from '../panels/Sensitivity'
 import { Evidence } from '../panels/Evidence'
-import { AskBox } from '../panels/AskBox'
+import { AskBox, type InterpretedField } from '../panels/AskBox'
 
 interface CorridorMapPageProps {
   onNavigate?: (path: string) => void
@@ -89,6 +89,75 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
     setTimeout(() => {
       setScenarioNotice(null)
     }, 4000)
+  }
+
+  const handleApplyGeminiChanges = (fields: InterpretedField[]) => {
+    if (!comparison) return
+
+    let updatedScenario: Scenario = structuredClone(comparison.scenario)
+    let noticeMessage = ''
+
+    for (const field of fields) {
+      if (field.key === 'occupied_share') {
+        const raw =
+          typeof field.interpretedValue === 'string'
+            ? parseFloat(field.interpretedValue.replace('%', ''))
+            : Number(field.interpretedValue)
+        const normalized = raw > 1 ? raw / 100 : raw
+
+        updatedScenario = {
+          ...updatedScenario,
+          phases: updatedScenario.phases.map((p) => ({
+            ...p,
+            occupied_share: normalized,
+          })),
+          developments: updatedScenario.developments.map((d) => ({
+            ...d,
+            occupied_share: normalized,
+          })),
+        }
+        noticeMessage = `Scenario updated: Occupied Share set to ${Math.round(normalized * 100)}%`
+      } else if (field.key === 'demand_case') {
+        const val = String(field.interpretedValue).toLowerCase() as DemandCase
+        if (val === 'low' || val === 'central' || val === 'high') {
+          updatedScenario = { ...updatedScenario, demand_case: val }
+          noticeMessage = `Scenario updated: ${val.toUpperCase()} demand tier`
+        }
+      } else if (field.key === 'annual_operating_budget_cad') {
+        const budget = Number(field.interpretedValue)
+        updatedScenario = { ...updatedScenario, annual_operating_budget_cad: budget }
+        noticeMessage = `Scenario updated: Operating Budget set to $${(budget / 1000).toFixed(0)}k/yr`
+      } else if (field.key === 'headway_s') {
+        const headway = Number(field.interpretedValue)
+        updatedScenario = {
+          ...updatedScenario,
+          interventions: updatedScenario.interventions.map((inv) =>
+            inv.type === 'extra_service' ? { ...inv, headway_s: headway } : inv
+          ),
+        }
+        noticeMessage = `Scenario updated: Headway set to ${(headway / 60).toFixed(1)} min`
+      }
+    }
+
+    updatedScenario.version = (updatedScenario.version ?? 1) + 1
+
+    setComparison((prev) => {
+      if (!prev) return prev
+
+      return {
+        ...prev,
+        scenario: updatedScenario,
+        // Simulation cases remain strictly untouched and unmutated:
+        cases: prev.cases,
+      }
+    })
+
+    if (noticeMessage) {
+      setScenarioNotice(`${noticeMessage} (Simulation ground truth preserved)`)
+      setTimeout(() => {
+        setScenarioNotice(null)
+      }, 4000)
+    }
   }
 
   const [batches, setBatches] = useState<NativeBatch[]>([])
@@ -477,6 +546,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
               {activeTool === 'ask' && (
                 <AskBox
                   scenario={comparison.scenario}
+                  onApplyChanges={handleApplyGeminiChanges}
                   isMinimized={isToolMinimized}
                   onToggleMinimize={() => setIsToolMinimized((p) => !p)}
                   onClose={() => setActiveTool(null)}
@@ -485,7 +555,6 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             </>
           ) : null}
         />
-
         {/* Selected Development Panel (Lane D4 - Top Right) */}
         {selectedDev && !hideAllPopups && (
           <div className="!absolute top-6 right-6 z-30">

@@ -1,0 +1,28 @@
+{
+  "verified_at": "2026-10-18T12:36:08.366Z",
+  "notes": [
+    {
+      "id": "nte_300916d959c5ec978c24499c4cb0df06",
+      "title": "505 Dundas service constraint",
+      "author": "Research Team / Human Judgment",
+      "text": "505 Dundas service constraint: No extra vehicles at move-in; keep current service frequency. Exclude extra-service experiments from the follow-up and retain the reviewed current headway. Housing stays unchanged while testing other uncertain inputs. Incoming streetcar load remains unobserved.",
+      "knob": "incoming_load",
+      "mode": "papiers_live",
+      "retrieved_at": "2026-10-18T12:36:08.361Z",
+      "signal": "human_judgment",
+      "locator": "note; request req_2345d33cd0e94411901412cf40ddb4e7; truncated=false"
+    }
+  ],
+  "receipt": {
+    "document_id": "nte_300916d959c5ec978c24499c4cb0df06",
+    "retrieved_at": "2026-10-18T12:36:08.361Z",
+    "request_id": "req_2345d33cd0e94411901412cf40ddb4e7",
+    "search_request_id": "req_1099c4597c7a4e679f0488ce71088979",
+    "item_ids": [
+      "nte_300916d959c5ec978c24499c4cb0df06"
+    ],
+    "attempted_queries": [
+      "incoming load"
+    ]
+  }
+}
