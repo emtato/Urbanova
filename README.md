@@ -66,11 +66,14 @@ The 3D buildings are simplified representations, and the shadow comparison model
 
 ### Emilia
 
-- Developed the core transit simulation, modelling passenger demand, streetcar frequency, delays and crowding, with passenger destinations informed by Toronto's workplace distribution.
-- Designed the passenger, streetcar, input and event-log models, and helped align how the backend and frontend interpret simulation data.
-- Built the full 3D simulation replay, including streetcar movement, passengers walking to stops, clickable passenger counts and colour-coded crowding indicators, all driven by recorded simulation events.
-- Helped the frontend team resolve UI issues and improve presentation so the connection between housing growth and transit demand is clearer.
+Emilia
 
+- Developed the core transit simulation, modelling passenger demand, streetcar frequency, headways, variable delays and crowding, with passenger origins and destinations informed by residential locations and Toronto’s workplace distribution.
+- Designed the simulation’s core data structures, including passenger, streetcar, input and event-log models, defining how simulation state and events are represented.
+- Led the design and integration of the simulation’s end-to-end data flow, defining input/output schemas and coordinating backend/frontend data contracts, including implementing changes across both systems to ensure compatibility.
+- Built the full 3D simulation replay, including realistic streetcar movement reflecting operational behaviour, passengers walking from residential locations to stops, clickable streetcar and station passenger counts, and colour-coded crowding indicators, all driven by recorded simulation events.
+- Helped the frontend team resolve UI issues, improve visual presentation and refine the user experience so the connection between housing growth and transit demand is clearer.
+  
 ### Zain
 
 - Built the interactive corridor map frontend, including the TypeScript types, the API client and the design-token system.
