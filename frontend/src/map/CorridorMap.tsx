@@ -54,6 +54,7 @@ export interface CorridorMapProps {
   onToggleDevelopment?: (devId: string) => void
   shadowsEnabled?: boolean
   onToggleShadows?: (enabled: boolean) => void
+  onMapLightChange?: (dark: boolean) => void
   hideAllPopups?: boolean
   onSelectStop?: (stop: any) => void
   onSelectVehicle?: (vehicleId: string) => void
@@ -89,6 +90,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
   onToggleDevelopment,
   shadowsEnabled,
   onToggleShadows,
+  onMapLightChange,
   hideAllPopups = false,
   onSelectStop,
   onSelectVehicle,
@@ -140,6 +142,10 @@ export const CorridorMap: FC<CorridorMapProps> = ({
     getShadowSlot(selectedSeason, selectedTimeId) ||
     getShadowSlot('summer_solstice', 'noon') ||
     SHADOW_SLOTS[0]
+
+  useEffect(() => {
+    onMapLightChange?.(isShadowsActive && (currentSlot.lightPreset === 'dusk' || currentSlot.lightPreset === 'night'))
+  }, [isShadowsActive, currentSlot.lightPreset, onMapLightChange])
 
   // Development visibility state (powers the 3 development pill buttons)
   const [localVisibleDevIds, setLocalVisibleDevIds] = useState<string[]>(() =>
@@ -226,8 +232,6 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         pitch: 55,
         bearing: -20,
       })
-
-      map.addControl(new mapboxgl.NavigationControl({ showCompass: true }), 'bottom-right')
 
       const cleanupKeyboard = setupMapKeyboardNavigation(map, {
         enabled: () => !showTokenPromptRef.current,
@@ -671,7 +675,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
 
       {/* Floating Map Controls Overlay (Top Left) */}
       {/* Hitbox fix: outer container is pointer-events-none and select-none so clicking outside any pill passes directly to Mapbox */}
-      <div className="!absolute top-5 left-6 flex flex-col items-start gap-2.5 z-20 pointer-events-none select-none">
+      <div className="map-floating-map-controls !absolute flex flex-col items-start gap-2.5 z-20 pointer-events-none select-none">
         {/* Development Visibility Toggle Pills & Sunlight Button */}
         <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
           {displayDevs.map((rawDev) => {
@@ -722,7 +726,7 @@ export const CorridorMap: FC<CorridorMapProps> = ({
         </div>
 
         {/* Camera Perspective Controls */}
-        <div className="liquid-glass rounded-full px-3 py-1 flex items-center gap-2 self-start text-xs pointer-events-auto">
+        <div className="liquid-glass rounded-full px-3 py-1 flex items-center gap-2 self-start text-xs pointer-events-auto map-camera-controls">
           <button
             type="button"
             onClick={togglePitch}

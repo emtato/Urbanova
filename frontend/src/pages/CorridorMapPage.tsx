@@ -56,6 +56,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
   const usingFixture = false
   const [activePhase] = useState<number>(2)
   const [shadowsEnabled, setShadowsEnabled] = useState(true)
+  const [darkMap, setDarkMap] = useState(false)
   const [hideAllPopups] = useState(false)
   const [isStopMinimized, setIsStopMinimized] = useState(true)
   const [isDevMinimized, setIsDevMinimized] = useState(false)
@@ -291,44 +292,14 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
         </div>
       )}
 
-      {/* Header: brand, planning workspace, replay, and simulation selection. */}
-      <header className="relative z-20 w-full bg-background/80 backdrop-blur-md border-b border-border/40 shrink-0">
-        <div className="map-header-row">
-          {/* Left: Urbanova Logo (shifted right) */}
-          <div className="map-header-brand pl-3 sm:pl-5">
-            <span
-              className="text-2xl md:text-3xl tracking-tight text-foreground select-none cursor-pointer"
-              style={{ fontFamily: "'Instrument Serif', serif" }}
-            >
-              Urbanova
-            </span>
-            {usingFixture && (
-              <span
-                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30"
-                title="Fixture mode is active."
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span>FIXTURE</span>
-              </span>
-            )}
-          </div>
+      {/* Main Workspace Area: 3D Map + Overlay Inspector */}
+      <main className="relative flex-1 min-h-0 w-full overflow-hidden">
+        <div className={`map-floating-brand${darkMap ? ' is-dark-map' : ''}`} aria-label="Urbanova">
+          <span style={{ fontFamily: "'Instrument Serif', serif" }}>Urbanova</span>
+          {usingFixture && <span className="map-fixture-badge">FIXTURE</span>}
+        </div>
 
-          <div className="map-header-title">
-            <h1>Housing &amp; Transit Readiness</h1>
-            <p>505 Dundas demo · {selectedSim?.name ?? 'Today baseline'} · {configurationSummary(activeBatch ?? todayBaseline)}</p>
-          </div>
-
-          {activeBatch && <MapReplayControls
-            playing={isPlaying} time={simTime} horizon={maxHorizon} startTime={startTime}
-            speed={playbackSpeed} silly={sillyMode}
-            onTogglePlay={togglePlay}
-            onSeek={setSimTime} onSpeed={setPlaybackSpeed}
-            onRestart={() => { setIsPlaying(false); setSimTime(0); setSpinDegrees(0) }}
-            onToggleSilly={() => { setSillyMode(value => !value); setSpinDegrees(0) }}
-          />}
-
-          {/* Right: Actions */}
-          <div className="map-header-actions">
+        <div className="map-floating-actions" aria-label="Simulation actions">
             <SimulationPicker
               label={pickerLabel}
               history={saved.history}
@@ -349,16 +320,28 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
             <button
               type="button"
               onClick={() => onNavigate?.('/analysis')}
-              className="simulation-picker-trigger justify-center"
+              className="simulation-picker-trigger map-run-button"
             >
               <span>Run simulation</span>
             </button>
-          </div>
         </div>
-      </header>
 
-      {/* Main Workspace Area: 3D Map + Overlay Inspector */}
-      <main className="relative flex-1 min-h-0 w-full overflow-hidden">
+        {activeBatch && <div className="map-floating-replay">
+          <MapReplayControls
+            playing={isPlaying} time={simTime} horizon={maxHorizon} startTime={startTime}
+            speed={playbackSpeed} silly={sillyMode}
+            onTogglePlay={togglePlay}
+            onSeek={setSimTime} onSpeed={setPlaybackSpeed}
+            onRestart={() => { setIsPlaying(false); setSimTime(0); setSpinDegrees(0) }}
+            onToggleSilly={() => { setSillyMode(value => !value); setSpinDegrees(0) }}
+          />
+          <p className="map-replay-summary" title={`${selectedSim?.name ?? 'Today baseline'} · ${configurationSummary(activeBatch)}`}>
+            <strong>{selectedSim?.name ?? 'Today baseline'}</strong>
+            <span aria-hidden="true">·</span>
+            <span>{configurationSummary(activeBatch)}</span>
+          </p>
+        </div>}
+
         <CorridorMap
           corridor={comparison.corridor}
           developments={proposalOptions}
@@ -374,6 +357,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
           activePhase={activePhase}
           shadowsEnabled={shadowsEnabled}
           onToggleShadows={setShadowsEnabled}
+          onMapLightChange={setDarkMap}
           hideAllPopups={hideAllPopups}
           isCopilotActive={activeTool === 'ask'}
           onToggleCopilot={() => {
@@ -492,7 +476,7 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
 
         {/* Selected Development Panel (Lane D4 - Top Right) */}
         {selectedDev && !hideAllPopups && (
-          <div className="!absolute top-6 right-6 z-30">
+          <div className="map-inspector-position">
             <DevelopmentPanel
               development={selectedDev}
               onViewBuilding={() => {
@@ -515,14 +499,14 @@ export function CorridorMapPage({ onNavigate }: CorridorMapPageProps) {
         )}
 
         {selectedVehicleId && !selectedStop && !selectedDev && !hideAllPopups && (
-          <div className="!absolute top-6 right-6 z-30"><StreetcarPanel vehicleId={selectedVehicleId}
+          <div className="map-inspector-position"><StreetcarPanel vehicleId={selectedVehicleId}
             vehicle={simVehicles.find(vehicle => vehicle.vehicle_id === selectedVehicleId)}
             onClose={() => setSelectedVehicleId(null)} /></div>
         )}
 
         {/* Selected Stop Panel (Lane D5 - Top Right) */}
         {selectedStop && !selectedDev && !hideAllPopups && (
-          <div className="!absolute top-6 right-6 z-30">
+          <div className="map-inspector-position">
             <StopPanel
               stop={selectedStop}
               liveWaiting={passengerFrame.hasReplay
